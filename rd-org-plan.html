@@ -1,0 +1,382 @@
+<title>研发自研项目组架构规划</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 工程图纸式单栏文档，章节编号对应决策顺序；架构图放在可横向滚动的图框内 */
+:root{
+  --paper:#f5f7f8; --sheet:#ffffff; --ink:#15212b; --muted:#5a6873; --rule:#d5dde2;
+  --line:#8a9aa6; --accent:#c2410c; --accent-soft:#fdebe1; --steel:#1f5f7a; --steel-soft:#e3f0f5;
+  --ok:#2f7d4f; --warn:#b7791f;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#0f161b; --sheet:#162028; --ink:#e4ebef; --muted:#9aabb6; --rule:#2a3843;
+  --line:#5f7280; --accent:#f08a4b; --accent-soft:#3a2418; --steel:#6fb3d0; --steel-soft:#16303c;
+  --ok:#6cc08f; --warn:#e0b050; color-scheme:dark }}
+:root[data-theme="dark"]{
+  --paper:#0f161b; --sheet:#162028; --ink:#e4ebef; --muted:#9aabb6; --rule:#2a3843;
+  --line:#5f7280; --accent:#f08a4b; --accent-soft:#3a2418; --steel:#6fb3d0; --steel-soft:#16303c;
+  --ok:#6cc08f; --warn:#e0b050; color-scheme:dark }
+
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.7}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:20px;padding-block:40px 64px;display:flex;flex-direction:column;gap:44px}
+header{display:flex;flex-direction:column;gap:10px;border-bottom:2px solid var(--ink);padding-bottom:18px}
+.docno{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--muted);text-transform:uppercase}
+h1{font-size:clamp(26px,4vw,36px);font-weight:900;margin:0;line-height:1.25;text-wrap:balance}
+.lede{margin:0;color:var(--muted);max-width:68ch}
+section{display:flex;flex-direction:column;gap:16px}
+h2{font-size:21px;font-weight:700;margin:0;display:flex;gap:12px;align-items:baseline;text-wrap:balance}
+h2 .n{font-family:var(--f-mono);font-size:13px;font-weight:500;color:var(--accent);letter-spacing:.06em}
+h3{font-size:16px;margin:0;font-weight:700}
+p{margin:0;max-width:72ch}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+
+/* 结论框 */
+.verdict{background:var(--accent-soft);border-left:4px solid var(--accent);padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.verdict .k{font-family:var(--f-mono);font-size:12px;letter-spacing:.08em;color:var(--accent);text-transform:uppercase}
+.verdict p{font-size:16px}
+
+/* 图框 */
+.frame{background:var(--sheet);border:1px solid var(--rule);overflow-x:auto}
+.frame-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--rule);font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.frame-body{padding:28px 16px 30px;min-width:max-content}
+
+/* 组织树 */
+.tree ul{margin:0;padding:20px 0 0;position:relative;display:flex;justify-content:center}
+.tree>ul{padding-top:0}
+.tree li{list-style:none;position:relative;padding:20px 6px 0;display:flex;flex-direction:column;align-items:center}
+.tree li::before,.tree li::after{content:"";position:absolute;top:0;right:50%;width:50%;height:20px;border-top:1.5px solid var(--line)}
+.tree li::after{right:auto;left:50%;border-left:1.5px solid var(--line)}
+.tree li:only-child::before,.tree li:only-child::after{display:none}
+.tree li:only-child{padding-top:0}
+.tree li:first-child::before,.tree li:last-child::after{border:0}
+.tree li:last-child::before{border-right:1.5px solid var(--line)}
+.tree ul ul::before{content:"";position:absolute;top:0;left:50%;height:20px;border-left:1.5px solid var(--line)}
+.tree li.dash::before,.tree li.dash::after,.tree li.dash>ul::before,.tree li.dash ul li::before,.tree li.dash ul li::after{border-style:dashed;border-color:var(--accent)}
+.tree>ul>li>ul>li:last-child.dash::before{border-top:1.5px dashed var(--accent);border-right:1.5px dashed var(--accent)}
+
+.node{background:var(--sheet);border:1.5px solid var(--ink);padding:8px 12px;min-width:104px;text-align:center;display:flex;flex-direction:column;gap:2px}
+.node b{font-weight:700;font-size:14px;line-height:1.35}
+.node span{font-size:12px;color:var(--muted);line-height:1.4}
+.node.lead{background:var(--ink);color:var(--sheet);border-color:var(--ink)}
+.node.lead span{color:var(--rule)}
+.node.dept{border-width:2.5px}
+.node.ve{border:1.5px dashed var(--accent);background:var(--accent-soft)}
+.node.ve b{color:var(--accent)}
+.node.new{border:1.5px dashed var(--steel);background:var(--steel-soft)}
+.node.new b{color:var(--steel)}
+.node .pct{font-family:var(--f-mono);font-size:11px;color:var(--accent)}
+.legend{display:flex;gap:18px;flex-wrap:wrap;font-size:12px;color:var(--muted);padding:0 16px 12px}
+.legend i{display:inline-block;width:18px;height:12px;vertical-align:-1px;margin-right:6px;border:1.5px solid var(--ink)}
+.legend i.v{border-style:dashed;border-color:var(--accent);background:var(--accent-soft)}
+.legend i.w{border-style:dashed;border-color:var(--steel);background:var(--steel-soft)}
+
+/* 表格 */
+.tbl{overflow-x:auto;background:var(--sheet);border:1px solid var(--rule)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-size:12px;letter-spacing:.04em;color:var(--muted);font-weight:500;background:var(--paper);white-space:nowrap}
+tbody tr:last-child td{border-bottom:0}
+td.num,th.num{font-family:var(--f-mono);font-variant-numeric:tabular-nums;text-align:center;white-space:nowrap}
+.dot{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--ink)}
+.dot.o{background:transparent;border:1.5px solid var(--ink)}
+.chip{display:inline-block;font-size:12px;padding:1px 8px;border:1px solid currentColor;white-space:nowrap}
+.chip.bad{color:var(--accent)} .chip.mid{color:var(--warn)} .chip.good{color:var(--ok)}
+tr.pick td{background:var(--accent-soft)}
+
+/* 方案卡 */
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:14px}
+.opt{background:var(--sheet);border:1px solid var(--rule);padding:18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.opt.pick{border:2px solid var(--accent)}
+.opt .tag{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.opt.pick .tag{color:var(--accent)}
+.opt ul{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+
+ol.plain,ul.plain{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:74ch}
+
+/* 路线图 */
+.road{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:0;border:1px solid var(--rule);background:var(--sheet)}
+.phase{padding:18px;border-right:1px solid var(--rule);display:flex;flex-direction:column;gap:8px;min-width:0}
+.phase:last-child{border-right:0}
+.phase .when{font-family:var(--f-mono);font-size:12px;color:var(--accent);letter-spacing:.04em}
+.phase ul{margin:0;padding-left:18px;font-size:14px;display:flex;flex-direction:column;gap:4px}
+.phase .gate{margin-top:auto;font-size:12px;color:var(--muted);border-top:1px dashed var(--rule);padding-top:8px}
+@media (max-width:700px){.phase{border-right:0;border-bottom:1px solid var(--rule)}.phase:last-child{border-bottom:0}}
+
+footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);padding-top:14px}
+</style>
+
+<div class="wrap">
+
+<header>
+  <div class="docno">R&amp;D-ORG · 自研项目组 · 2026-09 草案</div>
+  <h1>研发自研项目组 架构设计与后续规划</h1>
+  <p class="lede">现状架构、职责分工、KPI 与奖金结构，以及新增 VE 降本组是否从自研项目组借调人员的建议和 2026 Q4 – 2028 的分阶段规划。文中比例和金额均为建议值，需结合实际工时数据校准。</p>
+</header>
+
+<section>
+  <div class="verdict">
+    <div class="k">核心建议</div>
+    <p><b>不整建制借调，先做“矩阵式 VE 虚拟小组”。</b>自研组只有 5 名工程师，模具、电子、ID 都是单人岗位，全职抽走任何一个都会让自研项目和承接评审断档。建议由 Allen 兼任 VE 负责人，模具工程师和 1 名结构工程师按固定工时比例兼职参与，并给 VE 单独设 KPI 和降本奖金；降本成果验证后（约 6–9 个月）再招聘专职 VE 工程师，独立成组。</p>
+  </div>
+</section>
+
+<section id="current">
+  <h2><span class="n">01</span>现状架构</h2>
+  <div class="frame">
+    <div class="frame-head"><span>图 1 · 当前组织架构</span><span>编制 1 + 5</span></div>
+    <div class="frame-body tree">
+      <ul><li>
+        <div class="node dept"><b>研发部</b><span>自研项目组</span></div>
+        <ul><li>
+          <div class="node lead"><b>Allen</b><span>项目组 Leader</span></div>
+          <ul>
+            <li><div class="node"><b>结构工程师 A</b><span>自研结构 / 工厂结构评估</span></div></li>
+            <li><div class="node"><b>结构工程师 B</b><span>自研结构 / 工厂结构评估</span></div></li>
+            <li><div class="node"><b>电子工程师</b><span>自研电子 / BOM</span></div></li>
+            <li><div class="node"><b>ID 设计</b><span>自研 ID / PM 项目 ID</span></div></li>
+            <li><div class="node"><b>模具工程师</b><span>自研模具 / 工厂模具评估</span></div></li>
+          </ul>
+        </li></ul>
+      </li></ul>
+    </div>
+  </div>
+</section>
+
+<section id="duty">
+  <h2><span class="n">02</span>职责与业务线分工</h2>
+  <p>部门目前承接五条业务线。●为主责，○为协作。右侧“单点风险”列表示该业务线只依赖一个人。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>业务线</th><th class="num">Allen</th><th class="num">结构×2</th><th class="num">电子</th><th class="num">ID</th><th class="num">模具</th><th>考核口径</th><th>单点风险</th></tr></thead>
+    <tbody>
+      <tr><td><b>承接 PM 自研项目</b></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td>自研项目销售额</td><td><span class="chip mid">中</span></td></tr>
+      <tr><td><b>工厂项目模具评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
+      <tr><td><b>PM 项目 ID 设计</b></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td class="num"></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
+      <tr><td><b>工厂项目结构设计评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot o"></span></td><td>承接完成率</td><td><span class="chip good">低</span></td></tr>
+      <tr><td><b>VE 降本</b>（拟新增组）</td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>目前无，建议新增降本金额</td><td><span class="chip bad">高</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">模具工程师同时负责自研模具、工厂模具评估和 VE 中的工艺/模具降本，是全组负荷最重、最不能被借走的岗位。</p>
+</section>
+
+<section id="kpi-now">
+  <h2><span class="n">03</span>现行 KPI 与奖金结构</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>项目</th><th>挂钩指标</th><th>适用范围</th><th>存在的问题</th></tr></thead>
+    <tbody>
+      <tr><td><b>自研项目 KPI</b></td><td>自研项目销售额</td><td>全组</td><td>销售额受市场、定价、推广影响大，研发可控部分有限；项目在研期没有可考核的产出。</td></tr>
+      <tr><td><b>承接评审 KPI</b></td><td>承接完成率</td><td>结构 / 模具 / ID</td><td>只看“完成”，不看及时性和评审质量（漏检问题在量产时才暴露）。</td></tr>
+      <tr><td><b>发明专利奖金</b></td><td>自研项目产生发明专利</td><td>发明人</td><td>建议拆成“申请”和“授权”两段发放，授权周期长，一次性发放激励滞后。</td></tr>
+      <tr><td><b>项目奖金</b></td><td>自研项目销售额达公司 S / A 级</td><td>项目成员</td><td>需要明确分配规则，否则兼职参与者（例如借调去 VE 的人）容易被忽略。</td></tr>
+      <tr><td><b>VE 降本</b></td><td>无</td><td>—</td><td>如果借调人员 KPI 仍全部挂自研销售额，做 VE 没有回报，会出现“挂名不干活”。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="ve">
+  <h2><span class="n">04</span>VE 降本组：是否借调自研项目人员</h2>
+  <p>三种组建方式对比如下。判断依据是：自研项目销售额是全组主 KPI，而 5 人团队中有 3 个单人岗位，抽调的代价远大于在大团队中。</p>
+  <div class="grid3">
+    <div class="opt">
+      <div class="tag">方案 A · 全职借调</div>
+      <h3>从自研组抽 1–2 人全职做 VE</h3>
+      <ul>
+        <li>见效最快，不增加编制</li>
+        <li>被抽的岗位立即断档：抽模具则工厂模具评估停摆，抽结构则自研进度下降约 50%</li>
+        <li>自研销售额 KPI 与 VE 目标冲突，被借调人员奖金来源不清</li>
+      </ul>
+      <span class="chip bad">不建议</span>
+    </div>
+    <div class="opt pick">
+      <div class="tag">方案 B · 矩阵式虚拟小组（推荐）</div>
+      <h3>固定工时比例兼职，Allen 兼任负责人</h3>
+      <ul>
+        <li>模具工程师约 20%、结构工程师 B 约 30%、电子工程师约 15% 工时投入 VE</li>
+        <li>自研和承接业务不断档，VE 可以马上启动</li>
+        <li>需配套：VE 单独 KPI、降本奖金、每月工时登记，防止被日常工作挤占</li>
+      </ul>
+      <span class="chip good">第一阶段采用</span>
+    </div>
+    <div class="opt">
+      <div class="tag">方案 C · 外部招聘专职</div>
+      <h3>直接招 VE / 成本工程师独立成组</h3>
+      <ul>
+        <li>不影响现有团队，职责最清晰</li>
+        <li>新人不熟悉产品和供应链，前 3–6 个月产出低</li>
+        <li>降本空间尚未验证，先招人的投入风险高</li>
+      </ul>
+      <span class="chip mid">第二阶段采用</span>
+    </div>
+  </div>
+
+  <div class="frame">
+    <div class="frame-head"><span>图 2 · 第一阶段：矩阵式 VE 虚拟小组</span><span>编制不变 · 虚线 = 兼职投入</span></div>
+    <div class="frame-body tree">
+      <ul><li>
+        <div class="node lead"><b>Allen</b><span>自研项目组 Leader / VE 负责人</span></div>
+        <ul>
+          <li>
+            <div class="node dept"><b>自研 &amp; 承接评审</b><span>主业务线</span></div>
+            <ul>
+              <li><div class="node"><b>结构工程师 A</b><span>自研 100%</span></div></li>
+              <li><div class="node"><b>结构工程师 B</b><span>自研 + 评审</span><span class="pct">VE 30%</span></div></li>
+              <li><div class="node"><b>电子工程师</b><span>自研 + BOM</span><span class="pct">VE 15%</span></div></li>
+              <li><div class="node"><b>ID 设计</b><span>自研 + PM ID</span></div></li>
+              <li><div class="node"><b>模具工程师</b><span>自研 + 模具评估</span><span class="pct">VE 20%</span></div></li>
+            </ul>
+          </li>
+          <li class="dash">
+            <div class="node ve"><b>VE 降本虚拟组</b><span>每月例会 · 降本台账</span></div>
+            <ul>
+              <li><div class="node ve"><b>结构降本</b><span>结构工程师 B</span></div></li>
+              <li><div class="node ve"><b>模具 / 工艺降本</b><span>模具工程师</span></div></li>
+              <li><div class="node ve"><b>BOM 降本</b><span>电子工程师</span></div></li>
+              <li><div class="node ve"><b>外部协同</b><span>采购 · 工厂工艺 · 品质</span></div></li>
+            </ul>
+          </li>
+        </ul>
+      </li></ul>
+    </div>
+    <div class="legend"><span><i></i>实线：行政汇报</span><span><i class="v"></i>虚线：VE 兼职投入</span></div>
+  </div>
+
+  <h3>借调的执行规则</h3>
+  <ol class="plain">
+    <li><b>ID 设计不参与 VE。</b>VE 主要降材料、工艺和 BOM 成本，与 ID 关联小，且 ID 同时承接 PM 项目，没有富余工时。</li>
+    <li><b>结构工程师 A 保持 100% 自研</b>，保证自研项目主力不被稀释；由结构 B 兼做 VE，两人每半年可轮换。</li>
+    <li><b>工时比例写进季度计划</b>，每月按实际工时核对。连续两个月 VE 工时低于计划的一半，由 Allen 调整优先级或上报增员。</li>
+    <li><b>冲突优先级：</b>自研关键节点（试模、量产） &gt; 承接评审交期 &gt; VE 项目。VE 项目按季度排期，不做临时插单。</li>
+    <li><b>VE 提案流程：</b>提案登记 → 成本测算 → 方案验证（打样 / 试模 / 可靠性） → 品质与客户确认 → 切换量产 → 财务确认节省金额。</li>
+  </ol>
+</section>
+
+<section id="kpi-new">
+  <h2><span class="n">05</span>建议的 KPI 权重（引入 VE 后）</h2>
+  <p>销售额保留为奖金池的驱动因素，但在个人 KPI 中加入研发可控的过程指标（节点达成、评审质量、降本金额），让在研期和兼职 VE 的工作都有据可考。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>岗位</th><th class="num">自研销售额</th><th class="num">自研节点达成</th><th class="num">承接完成率</th><th class="num">VE 降本达成</th><th class="num">专利 / 标准化</th></tr></thead>
+    <tbody>
+      <tr><td><b>Allen</b></td><td class="num">35%</td><td class="num">15%</td><td class="num">15%</td><td class="num">25%</td><td class="num">10%</td></tr>
+      <tr><td><b>结构工程师 A</b></td><td class="num">35%</td><td class="num">30%</td><td class="num">20%</td><td class="num">—</td><td class="num">15%</td></tr>
+      <tr class="pick"><td><b>结构工程师 B</b>（兼 VE）</td><td class="num">25%</td><td class="num">20%</td><td class="num">20%</td><td class="num">25%</td><td class="num">10%</td></tr>
+      <tr class="pick"><td><b>电子工程师</b>（兼 VE）</td><td class="num">35%</td><td class="num">30%</td><td class="num">—</td><td class="num">20%</td><td class="num">15%</td></tr>
+      <tr><td><b>ID 设计</b></td><td class="num">30%</td><td class="num">25%</td><td class="num">35%</td><td class="num">—</td><td class="num">10%</td></tr>
+      <tr class="pick"><td><b>模具工程师</b>（兼 VE）</td><td class="num">20%</td><td class="num">20%</td><td class="num">35%</td><td class="num">20%</td><td class="num">5%</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">承接完成率建议拆成“完成率 70% + 及时率 30%”，并对量产阶段暴露的评审漏检问题扣分。VE 降本达成 = 财务确认的年化节省金额 ÷ 年度降本目标。</p>
+
+  <h3>奖金结构</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>奖金</th><th>触发条件</th><th>建议发放方式</th></tr></thead>
+    <tbody>
+      <tr><td><b>发明专利奖金</b></td><td>自研项目产生的发明专利</td><td>申请受理发 40%，授权后发 60%；实用新型 / 外观可设较低档位，鼓励专利布局。</td></tr>
+      <tr><td><b>S / A 级项目奖金</b></td><td>自研项目销售额达到公司 S 级或 A 级</td><td>Allen 分配 20%，其余按成员项目工时和贡献评分分配；兼职参与者按实际工时计入。</td></tr>
+      <tr><td><b>VE 降本奖金</b>（新增）</td><td>降本方案切换量产并经财务确认</td><td>按首年实际节省金额的 3%–5% 提取，设单项上限；量产满 3 个月且无品质问题后发放。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="road">
+  <h2><span class="n">06</span>后续规划路线图</h2>
+  <div class="road">
+    <div class="phase">
+      <div class="when">2026 Q4 · 搭建</div>
+      <h3>VE 虚拟组启动</h3>
+      <ul>
+        <li>发布 VE 组职责、工时比例和冲突优先级</li>
+        <li>与采购、财务确定降本金额的核算口径</li>
+        <li>建立降本台账，梳理在售 TOP 10 产品的降本机会</li>
+        <li>全组开始按业务线登记工时</li>
+      </ul>
+      <div class="gate">阶段目标：立项 3–5 个 VE 项目</div>
+    </div>
+    <div class="phase">
+      <div class="when">2027 H1 · 验证</div>
+      <h3>跑出第一批降本成果</h3>
+      <ul>
+        <li>首批 VE 项目切换量产，财务确认节省金额</li>
+        <li>用工时数据评估模具岗负荷，优先补 1 名模具工程师</li>
+        <li>沉淀 DFM / 降本检查表，纳入自研项目设计评审</li>
+        <li>启动年度专利布局计划</li>
+      </ul>
+      <div class="gate">增员判断：年化降本 ≥ 专职 VE 人力成本的 3 倍</div>
+    </div>
+    <div class="phase">
+      <div class="when">2027 H2 · 独立</div>
+      <h3>VE 组独立成组</h3>
+      <ul>
+        <li>招聘 1 名专职 VE / 成本工程师任 VE 组长</li>
+        <li>结构 B、电子退出兼职，回到自研 100%</li>
+        <li>模具工程师保留约 10% 工时做 VE 技术支持</li>
+        <li>VE 组 KPI 单独核算，不再挂自研销售额</li>
+      </ul>
+      <div class="gate">阶段目标：VE 组年度降本目标独立下达</div>
+    </div>
+    <div class="phase">
+      <div class="when">2028 · 平台化</div>
+      <h3>三组并行的研发部</h3>
+      <ul>
+        <li>自研产品组、评审与技术平台组、VE 降本组</li>
+        <li>ID、模具作为共享平台服务三条线</li>
+        <li>建立标准件库、CMF 库和成本数据库</li>
+        <li>视自研产品线数量增补结构或电子工程师</li>
+      </ul>
+      <div class="gate">阶段目标：研发部二级架构定型</div>
+    </div>
+  </div>
+
+  <div class="frame">
+    <div class="frame-head"><span>图 3 · 2028 目标架构（建议）</span><span>编制 1 + 8 · 蓝色虚线框 = 新增岗位</span></div>
+    <div class="frame-body tree">
+      <ul><li>
+        <div class="node lead"><b>Allen</b><span>研发部负责人</span></div>
+        <ul>
+          <li>
+            <div class="node dept"><b>自研产品组</b><span>KPI：自研销售额 · 节点</span></div>
+            <ul>
+              <li><div class="node"><b>结构工程师 A</b><span>自研结构</span></div></li>
+              <li><div class="node"><b>结构工程师 B</b><span>自研结构</span></div></li>
+              <li><div class="node"><b>电子工程师</b><span>自研电子</span></div></li>
+            </ul>
+          </li>
+          <li>
+            <div class="node dept"><b>评审与技术平台组</b><span>KPI：承接完成率 · 及时率</span></div>
+            <ul>
+              <li><div class="node"><b>ID 设计</b><span>自研 + PM ID</span></div></li>
+              <li><div class="node"><b>模具工程师</b><span>模具评估 · 平台</span></div></li>
+              <li><div class="node new"><b>模具工程师 2</b><span>2027 H1 新增</span></div></li>
+            </ul>
+          </li>
+          <li>
+            <div class="node dept"><b>VE 降本组</b><span>KPI：年化降本金额</span></div>
+            <ul>
+              <li><div class="node new"><b>VE 组长</b><span>2027 H2 新增</span></div></li>
+              <li><div class="node new"><b>成本工程师</b><span>视降本规模新增</span></div></li>
+            </ul>
+          </li>
+        </ul>
+      </li></ul>
+    </div>
+    <div class="legend"><span><i></i>现有岗位</span><span><i class="w"></i>规划新增岗位</span></div>
+  </div>
+</section>
+
+<section id="risk">
+  <h2><span class="n">07</span>风险与应对</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>风险</th><th>表现</th><th>应对</th></tr></thead>
+    <tbody>
+      <tr><td><b>VE 被日常工作挤占</b></td><td>兼职人员优先做有 KPI 的自研和评审，VE 长期没有进展</td><td>VE 权重写进个人 KPI，每月核对工时，连续两月不达标即上报增员。</td></tr>
+      <tr><td><b>模具岗过载</b></td><td>自研试模、工厂评估、VE 三线并行，交期延误</td><td>2027 H1 优先补模具工程师；过渡期工厂模具评估按紧急度排队并公开排期。</td></tr>
+      <tr><td><b>降本金额口径争议</b></td><td>研发、采购、工厂各自认领同一笔降本</td><td>启动前与财务定好口径：以切换后首年实际采购差价 × 实际用量为准，按提案人和执行人分成。</td></tr>
+      <tr><td><b>降本影响品质</b></td><td>材料或工艺替换后出现可靠性问题或客诉</td><td>VE 方案必须通过验证和品质会签；降本奖金在量产满 3 个月无品质问题后发放。</td></tr>
+      <tr><td><b>销售额 KPI 不可控</b></td><td>产品设计达标但市场表现一般，研发奖金归零，影响积极性</td><td>个人 KPI 中加入节点达成率等过程指标，销售额主要用于决定奖金池大小。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<footer>本方案中的工时比例、KPI 权重、奖金比例均为建议起点，建议试行一个季度后按实际工时和降本数据复盘调整。</footer>
+
+</div>
