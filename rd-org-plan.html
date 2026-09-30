@@ -1,4 +1,4 @@
-<title>研发自研项目组架构规划</title>
+<title>研发部架构规划</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
 /* Layout: 工程图纸式单栏文档，章节编号对应决策顺序；架构图放在可横向滚动的图框内 */
@@ -110,27 +110,27 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
 <div class="wrap">
 
 <header>
-  <div class="docno">R&amp;D-ORG · 自研项目组 · 2026-09 草案</div>
-  <h1>研发自研项目组 架构设计与后续规划</h1>
-  <p class="lede">现状架构、职责分工、KPI 与奖金结构，以及新增 VE 降本组是否从自研项目组借调人员的建议和 2026 Q4 – 2028 的分阶段规划。文中比例和金额均为建议值，需结合实际工时数据校准。</p>
+  <div class="docno">R&amp;D-ORG · 研发部 · 2026-09 草案 v2</div>
+  <h1>研发部 架构设计与后续规划</h1>
+  <p class="lede">新增研发部负责人杨洋后的部门架构、杨洋与 Allen 的分工、VE 降本并入研发部的方式、KPI 与奖金结构，以及从杨洋入职到 2028 年的分阶段规划。文中比例和金额均为建议值，需结合实际工时数据校准。</p>
 </header>
 
 <section>
   <div class="verdict">
     <div class="k">核心建议</div>
-    <p><b>不整建制借调，先做“矩阵式 VE 虚拟小组”。</b>自研组只有 5 名工程师，模具、电子、ID 都是单人岗位，全职抽走任何一个都会让自研项目和承接评审断档。建议由 Allen 兼任 VE 负责人，模具工程师和 1 名结构工程师按固定工时比例兼职参与，并给 VE 单独设 KPI 和降本奖金；降本成果验证后（约 6–9 个月）再招聘专职 VE 工程师，独立成组。</p>
+    <p><b>杨洋任研发部负责人，管部门、流程和 VE；Allen 专注自研项目交付。</b>VE 降本由杨洋直管，先从自研项目组按固定工时比例借调模具、结构、电子兼职参与，不整建制抽人；降本成果验证后再招专职 VE 工程师。杨洋在 TTi 的园林工具研发、VE 和项目管理经验，正好补上部门目前最缺的三块：流程体系、降本方法和跨部门协调。</p>
   </div>
 </section>
 
 <section id="current">
   <h2><span class="n">01</span>现状架构</h2>
   <div class="frame">
-    <div class="frame-head"><span>图 1 · 当前组织架构</span><span>编制 1 + 5</span></div>
+    <div class="frame-head"><span>图 1 · 当前组织架构（杨洋入职前）</span><span>编制 1 + 5</span></div>
     <div class="frame-body tree">
       <ul><li>
-        <div class="node dept"><b>研发部</b><span>自研项目组</span></div>
+        <div class="node dept"><b>研发部</b><span>负责人空缺</span></div>
         <ul><li>
-          <div class="node lead"><b>Allen</b><span>项目组 Leader</span></div>
+          <div class="node lead"><b>Allen</b><span>自研项目组 Leader</span></div>
           <ul>
             <li><div class="node"><b>结构工程师 A</b><span>自研结构 / 工厂结构评估</span></div></li>
             <li><div class="node"><b>结构工程师 B</b><span>自研结构 / 工厂结构评估</span></div></li>
@@ -144,80 +144,136 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
   </div>
 </section>
 
-<section id="duty">
-  <h2><span class="n">02</span>职责与业务线分工</h2>
-  <p>部门目前承接五条业务线。●为主责，○为协作。右侧“单点风险”列表示该业务线只依赖一个人。</p>
+<section id="leaders">
+  <h2><span class="n">02</span>杨洋与 Allen 的分工</h2>
+  <p>两人定位不同：杨洋管“部门怎么运转”，Allen 管“自研产品做出来”。分工的关键是让 Allen 的项目研发能力继续发挥，而不是被管理事务和 VE 分散。</p>
+  <div class="grid3">
+    <div class="opt pick">
+      <div class="tag">研发部负责人</div>
+      <h3>杨洋</h3>
+      <ul>
+        <li>部门年度目标、预算、编制与招聘</li>
+        <li>建立项目管理流程：立项、Gate 评审、节点管控、结项复盘</li>
+        <li>直管 VE 降本：立项、降本目标、与采购 / 财务 / 工厂对接</li>
+        <li>承接业务（工厂模具评估、结构评估、PM 项目 ID）的接单和排期</li>
+        <li>技术方向：评估园林类等新品类的自研机会</li>
+      </ul>
+    </div>
+    <div class="opt">
+      <div class="tag">自研项目组 Leader</div>
+      <h3>Allen</h3>
+      <ul>
+        <li>承接 PM 自研项目，对技术方案和交付质量负责</li>
+        <li>日常带领 5 名工程师，分配自研任务</li>
+        <li>主导专利挖掘，冲击 S / A 级项目</li>
+        <li>对 VE 方案做技术可行性评审，不承担 VE 管理</li>
+        <li>培养结构工程师成为后备项目负责人</li>
+      </ul>
+    </div>
+    <div class="opt">
+      <div class="tag">需要避免的问题</div>
+      <h3>双头管理</h3>
+      <ul>
+        <li>工程师同时接到杨洋和 Allen 的任务，优先级不清</li>
+        <li>Allen 被理解为“降级”，积极性下降</li>
+        <li>大公司流程直接照搬到 7 人团队，文档负担过重</li>
+        <li>应对：发布下方授权表；Allen 保留项目奖金和专利奖金主导权；流程按“够用”裁剪</li>
+      </ul>
+    </div>
+  </div>
+
+  <h3>授权表</h3>
   <div class="tbl"><table>
-    <thead><tr><th>业务线</th><th class="num">Allen</th><th class="num">结构×2</th><th class="num">电子</th><th class="num">ID</th><th class="num">模具</th><th>考核口径</th><th>单点风险</th></tr></thead>
+    <thead><tr><th>事项</th><th>杨洋</th><th>Allen</th></tr></thead>
     <tbody>
-      <tr><td><b>承接 PM 自研项目</b></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td>自研项目销售额</td><td><span class="chip mid">中</span></td></tr>
-      <tr><td><b>工厂项目模具评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
-      <tr><td><b>PM 项目 ID 设计</b></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td class="num"></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
-      <tr><td><b>工厂项目结构设计评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot o"></span></td><td>承接完成率</td><td><span class="chip good">低</span></td></tr>
-      <tr><td><b>VE 降本</b>（拟新增组）</td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>目前无，建议新增降本金额</td><td><span class="chip bad">高</span></td></tr>
+      <tr><td>部门年度目标、预算、编制</td><td><b>决策</b></td><td>参与</td></tr>
+      <tr><td>自研项目立项与 Gate 评审</td><td><b>决策 / 主持</b></td><td>提案、汇报</td></tr>
+      <tr><td>自研项目技术方案</td><td>审核</td><td><b>决策</b></td></tr>
+      <tr><td>自研组内任务分配</td><td>知会</td><td><b>决策</b></td></tr>
+      <tr><td>承接评审接单与排期</td><td><b>决策</b></td><td>安排执行人</td></tr>
+      <tr><td>VE 立项、降本目标、借调工时</td><td><b>决策</b></td><td>技术评审，确认借调不影响自研节点</td></tr>
+      <tr><td>组员绩效评价</td><td>终审</td><td><b>初评</b></td></tr>
+      <tr><td>S / A 级项目奖金分配</td><td>审批</td><td><b>提出分配方案</b></td></tr>
+      <tr><td>招聘与转正</td><td><b>决策</b></td><td>面试、建议</td></tr>
     </tbody>
   </table></div>
-  <p class="small muted">模具工程师同时负责自研模具、工厂模具评估和 VE 中的工艺/模具降本，是全组负荷最重、最不能被借走的岗位。</p>
+</section>
+
+<section id="duty">
+  <h2><span class="n">03</span>职责与业务线分工</h2>
+  <p>部门承接五条业务线。●为主责，○为协作。右侧“单点风险”列表示该业务线只依赖一个人。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>业务线</th><th class="num">杨洋</th><th class="num">Allen</th><th class="num">结构×2</th><th class="num">电子</th><th class="num">ID</th><th class="num">模具</th><th>考核口径</th><th>单点风险</th></tr></thead>
+    <tbody>
+      <tr><td><b>承接 PM 自研项目</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot"></span></td><td>自研项目销售额</td><td><span class="chip mid">中</span></td></tr>
+      <tr><td><b>工厂项目模具评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
+      <tr><td><b>PM 项目 ID 设计</b></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot"></span></td><td class="num"></td><td>承接完成率</td><td><span class="chip bad">高</span></td></tr>
+      <tr><td><b>工厂项目结构设计评估</b></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot"></span></td><td class="num"></td><td class="num"></td><td class="num"><span class="dot o"></span></td><td>承接完成率</td><td><span class="chip good">低</span></td></tr>
+      <tr><td><b>VE 降本</b>（并入研发部）</td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"><span class="dot"></span></td><td>年化降本金额</td><td><span class="chip mid">中</span></td></tr>
+      <tr><td><b>项目管理与流程</b>（新增）</td><td class="num"><span class="dot"></span></td><td class="num"><span class="dot o"></span></td><td class="num"></td><td class="num"></td><td class="num"></td><td class="num"></td><td>项目按期达成率</td><td><span class="chip mid">中</span></td></tr>
+    </tbody>
+  </table></div>
+  <p class="small muted">模具工程师同时负责自研模具、工厂模具评估和 VE 中的工艺 / 模具降本，仍是全部门负荷最重的岗位，应作为第一个补员岗位。</p>
 </section>
 
 <section id="kpi-now">
-  <h2><span class="n">03</span>现行 KPI 与奖金结构</h2>
+  <h2><span class="n">04</span>现行 KPI 与奖金结构</h2>
   <div class="tbl"><table>
     <thead><tr><th>项目</th><th>挂钩指标</th><th>适用范围</th><th>存在的问题</th></tr></thead>
     <tbody>
       <tr><td><b>自研项目 KPI</b></td><td>自研项目销售额</td><td>全组</td><td>销售额受市场、定价、推广影响大，研发可控部分有限；项目在研期没有可考核的产出。</td></tr>
       <tr><td><b>承接评审 KPI</b></td><td>承接完成率</td><td>结构 / 模具 / ID</td><td>只看“完成”，不看及时性和评审质量（漏检问题在量产时才暴露）。</td></tr>
-      <tr><td><b>发明专利奖金</b></td><td>自研项目产生发明专利</td><td>发明人</td><td>建议拆成“申请”和“授权”两段发放，授权周期长，一次性发放激励滞后。</td></tr>
-      <tr><td><b>项目奖金</b></td><td>自研项目销售额达公司 S / A 级</td><td>项目成员</td><td>需要明确分配规则，否则兼职参与者（例如借调去 VE 的人）容易被忽略。</td></tr>
-      <tr><td><b>VE 降本</b></td><td>无</td><td>—</td><td>如果借调人员 KPI 仍全部挂自研销售额，做 VE 没有回报，会出现“挂名不干活”。</td></tr>
+      <tr><td><b>发明专利奖金</b></td><td>自研项目产生发明专利</td><td>发明人</td><td>授权周期长，一次性发放激励滞后。</td></tr>
+      <tr><td><b>项目奖金</b></td><td>自研项目销售额达公司 S / A 级</td><td>项目成员</td><td>分配规则不明确时，兼职参与者（例如借调去 VE 的人）容易被忽略。</td></tr>
+      <tr><td><b>VE 降本</b></td><td>无</td><td>—</td><td>借调人员 KPI 如果仍全部挂自研销售额，做 VE 没有回报。</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="ve">
-  <h2><span class="n">04</span>VE 降本组：是否借调自研项目人员</h2>
-  <p>三种组建方式对比如下。判断依据是：自研项目销售额是全组主 KPI，而 5 人团队中有 3 个单人岗位，抽调的代价远大于在大团队中。</p>
+  <h2><span class="n">05</span>VE 并入研发部：是否借调自研项目人员</h2>
+  <p>VE 由杨洋直管后，Allen 不再兼任 VE 负责人，可以全力做自研。但执行 VE 的工程师仍要从自研项目组来，因为 5 人团队中有 3 个单人岗位，全职抽调的代价很大。</p>
   <div class="grid3">
     <div class="opt">
       <div class="tag">方案 A · 全职借调</div>
       <h3>从自研组抽 1–2 人全职做 VE</h3>
       <ul>
-        <li>见效最快，不增加编制</li>
+        <li>见效快，不增加编制</li>
         <li>被抽的岗位立即断档：抽模具则工厂模具评估停摆，抽结构则自研进度下降约 50%</li>
-        <li>自研销售额 KPI 与 VE 目标冲突，被借调人员奖金来源不清</li>
+        <li>与自研销售额 KPI 冲突，Allen 和杨洋之间容易因抢人产生矛盾</li>
       </ul>
       <span class="chip bad">不建议</span>
     </div>
     <div class="opt pick">
-      <div class="tag">方案 B · 矩阵式虚拟小组（推荐）</div>
-      <h3>固定工时比例兼职，Allen 兼任负责人</h3>
+      <div class="tag">方案 B · 杨洋直管的矩阵式 VE 小组（推荐）</div>
+      <h3>固定工时比例兼职参与</h3>
       <ul>
         <li>模具工程师约 20%、结构工程师 B 约 30%、电子工程师约 15% 工时投入 VE</li>
-        <li>自研和承接业务不断档，VE 可以马上启动</li>
-        <li>需配套：VE 单独 KPI、降本奖金、每月工时登记，防止被日常工作挤占</li>
+        <li>杨洋负责 VE 立项、方法和对外协调，工程师只做技术落地</li>
+        <li>借调工时由杨洋和 Allen 在季度计划中共同确认，写入授权表</li>
       </ul>
       <span class="chip good">第一阶段采用</span>
     </div>
     <div class="opt">
       <div class="tag">方案 C · 外部招聘专职</div>
-      <h3>直接招 VE / 成本工程师独立成组</h3>
+      <h3>招 VE 工程师，由杨洋带</h3>
       <ul>
         <li>不影响现有团队，职责最清晰</li>
-        <li>新人不熟悉产品和供应链，前 3–6 个月产出低</li>
+        <li>有杨洋带，新人上手会比无人带快</li>
         <li>降本空间尚未验证，先招人的投入风险高</li>
       </ul>
-      <span class="chip mid">第二阶段采用</span>
+      <span class="chip mid">验证后采用</span>
     </div>
   </div>
 
   <div class="frame">
-    <div class="frame-head"><span>图 2 · 第一阶段：矩阵式 VE 虚拟小组</span><span>编制不变 · 虚线 = 兼职投入</span></div>
+    <div class="frame-head"><span>图 2 · 第一阶段：杨洋入职后架构</span><span>编制 2 + 5 · 虚线 = VE 兼职投入</span></div>
     <div class="frame-body tree">
       <ul><li>
-        <div class="node lead"><b>Allen</b><span>自研项目组 Leader / VE 负责人</span></div>
+        <div class="node lead"><b>杨洋</b><span>研发部负责人 / VE 负责人</span></div>
         <ul>
           <li>
-            <div class="node dept"><b>自研 &amp; 承接评审</b><span>主业务线</span></div>
+            <div class="node dept"><b>Allen</b><span>自研项目组 Leader</span></div>
             <ul>
               <li><div class="node"><b>结构工程师 A</b><span>自研 100%</span></div></li>
               <li><div class="node"><b>结构工程师 B</b><span>自研 + 评审</span><span class="pct">VE 30%</span></div></li>
@@ -227,7 +283,7 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
             </ul>
           </li>
           <li class="dash">
-            <div class="node ve"><b>VE 降本虚拟组</b><span>每月例会 · 降本台账</span></div>
+            <div class="node ve"><b>VE 降本小组</b><span>杨洋直管 · 月度例会 · 降本台账</span></div>
             <ul>
               <li><div class="node ve"><b>结构降本</b><span>结构工程师 B</span></div></li>
               <li><div class="node ve"><b>模具 / 工艺降本</b><span>模具工程师</span></div></li>
@@ -244,20 +300,21 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
   <h3>借调的执行规则</h3>
   <ol class="plain">
     <li><b>ID 设计不参与 VE。</b>VE 主要降材料、工艺和 BOM 成本，与 ID 关联小，且 ID 同时承接 PM 项目，没有富余工时。</li>
-    <li><b>结构工程师 A 保持 100% 自研</b>，保证自研项目主力不被稀释；由结构 B 兼做 VE，两人每半年可轮换。</li>
-    <li><b>工时比例写进季度计划</b>，每月按实际工时核对。连续两个月 VE 工时低于计划的一半，由 Allen 调整优先级或上报增员。</li>
+    <li><b>结构工程师 A 保持 100% 自研</b>，保证 Allen 的项目主力不被稀释；由结构 B 兼做 VE，两人每半年可轮换。</li>
+    <li><b>工时比例写进季度计划</b>，由杨洋和 Allen 共同签字确认，每月按实际工时核对。连续两个月 VE 工时低于计划的一半，由杨洋决定调整优先级或启动招聘。</li>
     <li><b>冲突优先级：</b>自研关键节点（试模、量产） &gt; 承接评审交期 &gt; VE 项目。VE 项目按季度排期，不做临时插单。</li>
-    <li><b>VE 提案流程：</b>提案登记 → 成本测算 → 方案验证（打样 / 试模 / 可靠性） → 品质与客户确认 → 切换量产 → 财务确认节省金额。</li>
+    <li><b>VE 提案流程：</b>提案登记 → 成本测算 → 方案验证（打样 / 试模 / 可靠性） → Allen 技术评审 + 品质会签 → 切换量产 → 财务确认节省金额。杨洋可以参考 TTi 的 VE 流程，按部门规模裁剪。</li>
   </ol>
 </section>
 
 <section id="kpi-new">
-  <h2><span class="n">05</span>建议的 KPI 权重（引入 VE 后）</h2>
-  <p>销售额保留为奖金池的驱动因素，但在个人 KPI 中加入研发可控的过程指标（节点达成、评审质量、降本金额），让在研期和兼职 VE 的工作都有据可考。</p>
+  <h2><span class="n">06</span>建议的 KPI 权重</h2>
+  <p>销售额保留为奖金池的驱动因素，但在个人 KPI 中加入研发可控的过程指标（节点达成、评审质量、降本金额），让在研期和兼职 VE 的工作都有据可考。VE 从 Allen 的 KPI 中移出，转到杨洋。</p>
   <div class="tbl"><table>
-    <thead><tr><th>岗位</th><th class="num">自研销售额</th><th class="num">自研节点达成</th><th class="num">承接完成率</th><th class="num">VE 降本达成</th><th class="num">专利 / 标准化</th></tr></thead>
+    <thead><tr><th>岗位</th><th class="num">自研销售额</th><th class="num">自研节点达成</th><th class="num">承接完成率</th><th class="num">VE 降本达成</th><th class="num">专利 / 流程体系</th></tr></thead>
     <tbody>
-      <tr><td><b>Allen</b></td><td class="num">35%</td><td class="num">15%</td><td class="num">15%</td><td class="num">25%</td><td class="num">10%</td></tr>
+      <tr class="pick"><td><b>杨洋</b></td><td class="num">20%</td><td class="num">20%</td><td class="num">15%</td><td class="num">30%</td><td class="num">15%</td></tr>
+      <tr><td><b>Allen</b></td><td class="num">40%</td><td class="num">30%</td><td class="num">15%</td><td class="num">—</td><td class="num">15%</td></tr>
       <tr><td><b>结构工程师 A</b></td><td class="num">35%</td><td class="num">30%</td><td class="num">20%</td><td class="num">—</td><td class="num">15%</td></tr>
       <tr class="pick"><td><b>结构工程师 B</b>（兼 VE）</td><td class="num">25%</td><td class="num">20%</td><td class="num">20%</td><td class="num">25%</td><td class="num">10%</td></tr>
       <tr class="pick"><td><b>电子工程师</b>（兼 VE）</td><td class="num">35%</td><td class="num">30%</td><td class="num">—</td><td class="num">20%</td><td class="num">15%</td></tr>
@@ -265,41 +322,53 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
       <tr class="pick"><td><b>模具工程师</b>（兼 VE）</td><td class="num">20%</td><td class="num">20%</td><td class="num">35%</td><td class="num">20%</td><td class="num">5%</td></tr>
     </tbody>
   </table></div>
-  <p class="small muted">承接完成率建议拆成“完成率 70% + 及时率 30%”，并对量产阶段暴露的评审漏检问题扣分。VE 降本达成 = 财务确认的年化节省金额 ÷ 年度降本目标。</p>
+  <p class="small muted">杨洋的“流程体系”指项目管理流程落地和项目按期达成率。承接完成率建议拆成“完成率 70% + 及时率 30%”，并对量产阶段暴露的评审漏检问题扣分。VE 降本达成 = 财务确认的年化节省金额 ÷ 年度降本目标。</p>
 
   <h3>奖金结构</h3>
   <div class="tbl"><table>
     <thead><tr><th>奖金</th><th>触发条件</th><th>建议发放方式</th></tr></thead>
     <tbody>
       <tr><td><b>发明专利奖金</b></td><td>自研项目产生的发明专利</td><td>申请受理发 40%，授权后发 60%；实用新型 / 外观可设较低档位，鼓励专利布局。</td></tr>
-      <tr><td><b>S / A 级项目奖金</b></td><td>自研项目销售额达到公司 S 级或 A 级</td><td>Allen 分配 20%，其余按成员项目工时和贡献评分分配；兼职参与者按实际工时计入。</td></tr>
-      <tr><td><b>VE 降本奖金</b>（新增）</td><td>降本方案切换量产并经财务确认</td><td>按首年实际节省金额的 3%–5% 提取，设单项上限；量产满 3 个月且无品质问题后发放。</td></tr>
+      <tr><td><b>S / A 级项目奖金</b></td><td>自研项目销售额达到公司 S 级或 A 级</td><td>Allen 提出分配方案、杨洋审批；Allen 占 20%，其余按成员项目工时和贡献评分分配，兼职参与者按实际工时计入。杨洋不参与项目奖金分配，避免与 Allen 团队争利。</td></tr>
+      <tr><td><b>VE 降本奖金</b>（新增）</td><td>降本方案切换量产并经财务确认</td><td>按首年实际节省金额的 3%–5% 提取，设单项上限，按提案人和执行人贡献分配；量产满 3 个月且无品质问题后发放。</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="onboard">
+  <h2><span class="n">07</span>杨洋入职 90 天计划</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>时间</th><th>重点</th><th>产出</th></tr></thead>
+    <tbody>
+      <tr><td class="num">第 1–30 天</td><td>了解在研自研项目、承接业务量、团队每个人的能力和负荷；不改变 Allen 团队的现有运作。</td><td>部门现状诊断、工时基线</td></tr>
+      <tr><td class="num">第 31–60 天</td><td>与 Allen 确认授权表；按部门规模裁剪项目管理流程；和采购、财务定好降本核算口径。</td><td>授权表、项目 Gate 流程初版、VE 台账</td></tr>
+      <tr><td class="num">第 61–90 天</td><td>VE 首批立项；新立项自研项目按新流程走；提出年度编制和招聘计划。</td><td>3–5 个 VE 项目、下年度部门规划</td></tr>
     </tbody>
   </table></div>
 </section>
 
 <section id="road">
-  <h2><span class="n">06</span>后续规划路线图</h2>
+  <h2><span class="n">08</span>后续规划路线图</h2>
   <div class="road">
     <div class="phase">
-      <div class="when">2026 Q4 · 搭建</div>
-      <h3>VE 虚拟组启动</h3>
+      <div class="when">入职后 0–3 个月 · 交接</div>
+      <h3>杨洋到岗，VE 并入</h3>
       <ul>
-        <li>发布 VE 组职责、工时比例和冲突优先级</li>
-        <li>与采购、财务确定降本金额的核算口径</li>
-        <li>建立降本台账，梳理在售 TOP 10 产品的降本机会</li>
-        <li>全组开始按业务线登记工时</li>
+        <li>发布研发部新架构和授权表</li>
+        <li>VE 小组启动，借调工时写入季度计划</li>
+        <li>梳理在售 TOP 10 产品的降本机会</li>
+        <li>全部门按业务线登记工时</li>
       </ul>
       <div class="gate">阶段目标：立项 3–5 个 VE 项目</div>
     </div>
     <div class="phase">
       <div class="when">2027 H1 · 验证</div>
-      <h3>跑出第一批降本成果</h3>
+      <h3>流程落地，降本出成果</h3>
       <ul>
+        <li>自研项目全面按 Gate 流程管理</li>
         <li>首批 VE 项目切换量产，财务确认节省金额</li>
-        <li>用工时数据评估模具岗负荷，优先补 1 名模具工程师</li>
-        <li>沉淀 DFM / 降本检查表，纳入自研项目设计评审</li>
-        <li>启动年度专利布局计划</li>
+        <li>补 1 名模具工程师，缓解模具岗过载</li>
+        <li>沉淀 DFM / 降本检查表，纳入自研设计评审</li>
       </ul>
       <div class="gate">增员判断：年化降本 ≥ 专职 VE 人力成本的 3 倍</div>
     </div>
@@ -307,12 +376,12 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
       <div class="when">2027 H2 · 独立</div>
       <h3>VE 组独立成组</h3>
       <ul>
-        <li>招聘 1 名专职 VE / 成本工程师任 VE 组长</li>
+        <li>招聘 1 名专职 VE 工程师，杨洋带</li>
         <li>结构 B、电子退出兼职，回到自研 100%</li>
         <li>模具工程师保留约 10% 工时做 VE 技术支持</li>
-        <li>VE 组 KPI 单独核算，不再挂自研销售额</li>
+        <li>评估园林类等新品类的自研立项</li>
       </ul>
-      <div class="gate">阶段目标：VE 组年度降本目标独立下达</div>
+      <div class="gate">阶段目标：VE 年度降本目标独立下达</div>
     </div>
     <div class="phase">
       <div class="when">2028 · 平台化</div>
@@ -321,20 +390,20 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
         <li>自研产品组、评审与技术平台组、VE 降本组</li>
         <li>ID、模具作为共享平台服务三条线</li>
         <li>建立标准件库、CMF 库和成本数据库</li>
-        <li>视自研产品线数量增补结构或电子工程师</li>
+        <li>培养结构工程师成为第二个自研项目负责人</li>
       </ul>
       <div class="gate">阶段目标：研发部二级架构定型</div>
     </div>
   </div>
 
   <div class="frame">
-    <div class="frame-head"><span>图 3 · 2028 目标架构（建议）</span><span>编制 1 + 8 · 蓝色虚线框 = 新增岗位</span></div>
+    <div class="frame-head"><span>图 3 · 2028 目标架构（建议）</span><span>编制 2 + 8 · 蓝色虚线框 = 新增岗位</span></div>
     <div class="frame-body tree">
       <ul><li>
-        <div class="node lead"><b>Allen</b><span>研发部负责人</span></div>
+        <div class="node lead"><b>杨洋</b><span>研发部负责人</span></div>
         <ul>
           <li>
-            <div class="node dept"><b>自研产品组</b><span>KPI：自研销售额 · 节点</span></div>
+            <div class="node dept"><b>自研产品组</b><span>Allen · KPI：自研销售额 · 节点</span></div>
             <ul>
               <li><div class="node"><b>结构工程师 A</b><span>自研结构</span></div></li>
               <li><div class="node"><b>结构工程师 B</b><span>自研结构</span></div></li>
@@ -342,7 +411,7 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
             </ul>
           </li>
           <li>
-            <div class="node dept"><b>评审与技术平台组</b><span>KPI：承接完成率 · 及时率</span></div>
+            <div class="node dept"><b>评审与技术平台组</b><span>杨洋直管 · KPI：完成率 · 及时率</span></div>
             <ul>
               <li><div class="node"><b>ID 设计</b><span>自研 + PM ID</span></div></li>
               <li><div class="node"><b>模具工程师</b><span>模具评估 · 平台</span></div></li>
@@ -350,9 +419,9 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
             </ul>
           </li>
           <li>
-            <div class="node dept"><b>VE 降本组</b><span>KPI：年化降本金额</span></div>
+            <div class="node dept"><b>VE 降本组</b><span>杨洋直管 · KPI：年化降本</span></div>
             <ul>
-              <li><div class="node new"><b>VE 组长</b><span>2027 H2 新增</span></div></li>
+              <li><div class="node new"><b>VE 工程师</b><span>2027 H2 新增</span></div></li>
               <li><div class="node new"><b>成本工程师</b><span>视降本规模新增</span></div></li>
             </ul>
           </li>
@@ -364,19 +433,20 @@ footer{font-size:12px;color:var(--muted);border-top:1px solid var(--rule);paddin
 </section>
 
 <section id="risk">
-  <h2><span class="n">07</span>风险与应对</h2>
+  <h2><span class="n">09</span>风险与应对</h2>
   <div class="tbl"><table>
     <thead><tr><th>风险</th><th>表现</th><th>应对</th></tr></thead>
     <tbody>
-      <tr><td><b>VE 被日常工作挤占</b></td><td>兼职人员优先做有 KPI 的自研和评审，VE 长期没有进展</td><td>VE 权重写进个人 KPI，每月核对工时，连续两月不达标即上报增员。</td></tr>
+      <tr><td><b>双头管理</b></td><td>工程师同时收到杨洋和 Allen 的任务，优先级冲突</td><td>自研组内任务只由 Allen 下达；杨洋的需求（VE、承接排期）通过季度计划和 Allen 确认后执行。</td></tr>
+      <tr><td><b>Allen 积极性</b></td><td>新负责人到岗，Allen 感觉被架空或降级</td><td>入职前由公司与 Allen 单独沟通定位；保留自研技术决策权和项目奖金分配提案权；杨洋不参与项目奖金分配。</td></tr>
+      <tr><td><b>流程过重</b></td><td>照搬 TTi 大公司流程，文档和评审占用大量工时</td><td>Gate 评审控制在 3–4 个节点，模板一页纸；试行一个季度后与 Allen 复盘精简。</td></tr>
+      <tr><td><b>VE 被日常工作挤占</b></td><td>兼职人员优先做有 KPI 的自研和评审</td><td>VE 权重写进个人 KPI，每月核对工时，连续两月不达标即启动招聘。</td></tr>
       <tr><td><b>模具岗过载</b></td><td>自研试模、工厂评估、VE 三线并行，交期延误</td><td>2027 H1 优先补模具工程师；过渡期工厂模具评估按紧急度排队并公开排期。</td></tr>
-      <tr><td><b>降本金额口径争议</b></td><td>研发、采购、工厂各自认领同一笔降本</td><td>启动前与财务定好口径：以切换后首年实际采购差价 × 实际用量为准，按提案人和执行人分成。</td></tr>
-      <tr><td><b>降本影响品质</b></td><td>材料或工艺替换后出现可靠性问题或客诉</td><td>VE 方案必须通过验证和品质会签；降本奖金在量产满 3 个月无品质问题后发放。</td></tr>
-      <tr><td><b>销售额 KPI 不可控</b></td><td>产品设计达标但市场表现一般，研发奖金归零，影响积极性</td><td>个人 KPI 中加入节点达成率等过程指标，销售额主要用于决定奖金池大小。</td></tr>
+      <tr><td><b>降本影响品质</b></td><td>材料或工艺替换后出现可靠性问题或客诉</td><td>VE 方案必须通过 Allen 技术评审和品质会签；降本奖金在量产满 3 个月无品质问题后发放。</td></tr>
     </tbody>
   </table></div>
 </section>
 
-<footer>本方案中的工时比例、KPI 权重、奖金比例均为建议起点，建议试行一个季度后按实际工时和降本数据复盘调整。</footer>
+<footer>本方案中的工时比例、KPI 权重、奖金比例均为建议起点，建议杨洋到岗一个季度后，按实际工时和降本数据与 Allen 一起复盘调整。</footer>
 
 </div>
