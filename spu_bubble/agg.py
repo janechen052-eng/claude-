@@ -8,11 +8,12 @@ df=q[['ASIN','型号','三级分类','国家','小计']].rename(columns={'小计
 df['销售额']=s['小计']; df['订单量']=o['小计']
 # 增长率：近3月(7-9月) 对比 前3月(4-6月)，10月不完整不计入
 df['前3月']=q[['2026-04','2026-05','2026-06']].sum(axis=1); df['近3月']=q[['2026-07','2026-08','2026-09']].sum(axis=1)
+df['前3月额']=s[['2026-04','2026-05','2026-06']].sum(axis=1); df['近3月额']=s[['2026-07','2026-08','2026-09']].sum(axis=1)
 df['型号']=df['型号'].fillna('(未填型号)').replace(MERGE); df['三级分类']=df['三级分类'].fillna('(未分类)')
 cat=df.groupby(['型号','三级分类'])['销量'].sum().reset_index().sort_values('销量',ascending=False).drop_duplicates('型号').set_index('型号')['三级分类']
-m=df.groupby('型号').agg(销量=('销量','sum'),销售额=('销售额','sum'),订单量=('订单量','sum'),链接数=('ASIN','nunique'),站点数=('国家','nunique'),前3月=('前3月','sum'),近3月=('近3月','sum')).reset_index()
+m=df.groupby('型号').agg(销量=('销量','sum'),销售额=('销售额','sum'),订单量=('订单量','sum'),链接数=('ASIN','nunique'),站点数=('国家','nunique'),前3月=('前3月','sum'),近3月=('近3月','sum'),前3月额=('前3月额','sum'),近3月额=('近3月额','sum')).reset_index()
 m['三级分类']=m['型号'].map(cat)
-c=df.groupby('三级分类').agg(销量=('销量','sum'),销售额=('销售额','sum'),订单量=('订单量','sum'),型号数=('型号','nunique'),链接数=('ASIN','nunique'),前3月=('前3月','sum'),近3月=('近3月','sum')).reset_index()
+c=df.groupby('三级分类').agg(销量=('销量','sum'),销售额=('销售额','sum'),订单量=('订单量','sum'),型号数=('型号','nunique'),链接数=('ASIN','nunique'),前3月=('前3月','sum'),近3月=('近3月','sum'),前3月额=('前3月额','sum'),近3月额=('近3月额','sum')).reset_index()
 for t in (m,c): t['均价']=(t['销售额']/t['销量']).round(2)
 m=m.sort_values('销量',ascending=False); c=c.sort_values('销量',ascending=False)
 for t in (m,c):
@@ -25,8 +26,9 @@ def quad(t):
   return pd.Series(['明星' if h and u else '金牛' if h else '问题' if u else '瘦狗' for h,u in zip(hi,up)],index=t.index)
 m['象限']=''; m.iloc[:TOPN,m.columns.get_loc('象限')]=quad(m.iloc[:TOPN]); c['象限']=quad(c)
 m.to_csv('m.csv',index=False)
-mc=m[['型号','三级分类','象限','销量','销量占比','前3月','近3月','增长率','订单量','销售额','均价','链接数','站点数']].rename(columns={'销售额':'销售额 (USD)','均价':'均价 (USD)','象限':'象限 (Top60口径)'})
-cc=c[['三级分类','象限','销量','销量占比','前3月','近3月','增长率','订单量','销售额','均价','型号数','链接数']].rename(columns={'销售额':'销售额 (USD)','均价':'均价 (USD)'})
+for t in (m,c): t['销售额变化']=(t['近3月额']-t['前3月额']).round(2)
+mc=m[['型号','三级分类','象限','销量','销量占比','前3月','近3月','增长率','订单量','销售额','前3月额','近3月额','销售额变化','均价','链接数','站点数']].rename(columns={'销售额':'销售额 (USD)','均价':'均价 (USD)','前3月':'4-6月销量','近3月':'7-9月销量','前3月额':'4-6月销售额 (USD)','近3月额':'7-9月销售额 (USD)','销售额变化':'销售额变化 (USD)','象限':'象限 (Top60口径)'})
+cc=c[['三级分类','象限','销量','销量占比','前3月','近3月','增长率','订单量','销售额','前3月额','近3月额','销售额变化','均价','型号数','链接数']].rename(columns={'销售额':'销售额 (USD)','均价':'均价 (USD)','前3月':'4-6月销量','近3月':'7-9月销量','前3月额':'4-6月销售额 (USD)','近3月额':'7-9月销售额 (USD)','销售额变化':'销售额变化 (USD)'})
 with pd.ExcelWriter(OUT+'SPU销量汇总.xlsx') as w:
   mc.to_excel(w,sheet_name='按产品型号',index=False); cc.to_excel(w,sheet_name='按三级分类',index=False)
   # 近3个月(7-9月)比前3个月(4-6月)下跌超过30%的型号，全部型号口径，新品(4-6月无销量)不计
@@ -50,8 +52,8 @@ for ws in wb:
     ws.column_dimensions[col[0].column_letter].width=max(10,min(48,max(len(str(c.value or ''))*1.6 for c in col[:200])))
 wb.save(OUT+'SPU销量汇总.xlsx')
 r=lambda v: round(float(v),2)
-data={'m':[[a,b,int(v),r(sa),int(n),int(st),int(p),int(l)] for a,b,v,sa,n,st,p,l in m[['型号','三级分类','销量','销售额','链接数','站点数','前3月','近3月']].values],
-      'c':[[a,int(v),r(sa),int(k),int(n),int(p),int(l)] for a,v,sa,k,n,p,l in c[['三级分类','销量','销售额','型号数','链接数','前3月','近3月']].values]}
+data={'m':[[a,b,int(v),r(sa),int(n),int(st),int(p),int(l),r(pa),r(la)] for a,b,v,sa,n,st,p,l,pa,la in m[['型号','三级分类','销量','销售额','链接数','站点数','前3月','近3月','前3月额','近3月额']].values],
+      'c':[[a,int(v),r(sa),int(k),int(n),int(p),int(l),r(pa),r(la)] for a,v,sa,k,n,p,l,pa,la in c[['三级分类','销量','销售额','型号数','链接数','前3月','近3月','前3月额','近3月额']].values]}
 h=OUT+'SPU销量气泡图.html'; page=open(h).read()
 page=re.sub(r'const DATA = .*?;\n','const DATA = '+json.dumps(data,ensure_ascii=False,separators=(',',':')).replace('\\','\\\\')+';\n',page,count=1,flags=re.S)
 open(h,'w').write(page)
