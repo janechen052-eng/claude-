@@ -3,15 +3,15 @@
 /* Layout: single reading column; filter row on top, two chart cards stacked, each with its own table view */
 :root{
   --bg:#f6f7f9; --surface:#ffffff; --ink:#14171c; --ink-2:#4f5663; --muted:#7c8391; --line:#e3e6eb; --grid:#eef0f3;
-  --q-star:#e3f3ea; --q-cow:#e6eefa; --q-ques:#fbf1de; --q-dog:#efeff2; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --other:#b4b9c2; --solo:#2a78d6;
+  --crit:#cf3434; --q-star:#e3f3ea; --q-cow:#e6eefa; --q-ques:#fbf1de; --q-dog:#efeff2; --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --other:#b4b9c2; --solo:#2a78d6;
   --font:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --num:"IBM Plex Mono",ui-monospace,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#121417; --surface:#1a1d21; --ink:#f3f4f6; --ink-2:#c3c7cf; --muted:#8b919c; --line:#2c3037; --grid:#23272d;
-  --q-star:#1b2c23; --q-cow:#1a2436; --q-ques:#2e2717; --q-dog:#212327; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --other:#5b616b; --solo:#3987e5; color-scheme:dark}}
+  --crit:#ef6b6b; --q-star:#1b2c23; --q-cow:#1a2436; --q-ques:#2e2717; --q-dog:#212327; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --other:#5b616b; --solo:#3987e5; color-scheme:dark}}
 :root[data-theme="dark"]{
   --bg:#121417; --surface:#1a1d21; --ink:#f3f4f6; --ink-2:#c3c7cf; --muted:#8b919c; --line:#2c3037; --grid:#23272d;
-  --q-star:#1b2c23; --q-cow:#1a2436; --q-ques:#2e2717; --q-dog:#212327; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --other:#5b616b; --solo:#3987e5; color-scheme:dark}
+  --crit:#ef6b6b; --q-star:#1b2c23; --q-cow:#1a2436; --q-ques:#2e2717; --q-dog:#212327; --s1:#3987e5; --s2:#d95926; --s3:#199e70; --other:#5b616b; --solo:#3987e5; color-scheme:dark}
 body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.55}
 .wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 48px;display:grid;gap:22px}
 h1{font-size:24px;margin:0;text-wrap:balance;font-weight:700}
@@ -52,6 +52,12 @@ td:nth-child(2){white-space:normal;min-width:220px}
 .qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
 .qc{border:1px solid var(--line);border-radius:8px;padding:10px 12px;min-width:0}
 .qc b{font-size:14px} .qc .num{font:600 18px var(--num);display:block;margin-top:2px} .qc p{margin:2px 0 0;color:var(--muted);font-size:12px}
+circle.b.drop{stroke:var(--crit);stroke-width:2.5}
+.dline{stroke:var(--crit);stroke-width:1.2;stroke-dasharray:2 3}
+.chart .dlab{font-size:11.5px;fill:var(--crit);font-weight:600}
+.legend .ring{background:transparent!important;border:2.5px solid var(--crit);width:8px;height:8px}
+.card h3{font-size:14px;margin:8px 0 0}
+.flag{color:var(--crit);font-weight:600}
 @media (prefers-reduced-motion:reduce){circle.b{transition:none}}
 </style>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=Noto+Sans+SC:wght@400;600;700&display=swap">
@@ -60,6 +66,7 @@ td:nth-child(2){white-space:normal;min-width:220px}
     <h1>产品 SPU 销量四象限</h1>
     <p class="sub">数据来源：ASIN 产品表现报表（2026-01 至 2026-10，金额单位为美元），按 F 列“产品型号”汇总全部站点与链接。横轴是销售额，纵轴是近 3 个月（7–9 月）比前 3 个月（4–6 月）的销量增长率，气泡面积与 1–10 月总销量成正比。10 月只有几天数据，不计入增长率。</p>
     <div class="kpis" id="kpis"></div>
+    <p class="sub"><a href="#drop" style="color:var(--crit);font-weight:600">→ 近 3 个月销量下跌超过 30% 的产品汇总</a></p>
   </header>
 
   <div class="bar">
@@ -86,7 +93,18 @@ td:nth-child(2){white-space:normal;min-width:220px}
     <p class="note" id="n2"></p>
     <div class="qcards" id="q2"></div>
     <div class="chart" id="c2"></div>
+    <div class="legend" id="lg2"></div>
     <details><summary>查看三级分类明细表</summary><div class="tbl" id="tb2"></div></details>
+  </section>
+
+  <section class="card" id="drop">
+    <h2>近 3 个月销量下跌超过 30% 的产品</h2>
+    <p class="note">口径：全部 625 个型号中，7–9 月销量比 4–6 月少 30% 以上的型号（4–6 月无销量的新品不计）。按减少的件数从多到少排列。</p>
+    <div class="kpis" id="dk"></div>
+    <h3>按三级分类汇总</h3>
+    <div class="tbl" id="dc"></div>
+    <h3>型号明细</h3>
+    <div class="tbl" id="dm"></div>
   </section>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
@@ -103,12 +121,15 @@ const colorVar = c => { const i = TOP3.indexOf(c); return i<0 ? "var(--other)" :
 const QUADS = {star:["明星","销售额高 · 在增长"], cow:["金牛","销售额高 · 在下滑"], ques:["问题","销售额低 · 在增长"], dog:["瘦狗","销售额低 · 在下滑"]};
 const Y_MIN = -1, Y_MAX = 2;            // y axis: -100% … +200%, larger growth pinned to the top edge
 let topN = 60;
+const DROP = -0.3;   // 下跌超过 30%
+const isDrop = d => d.g!==null && d.g!==Infinity && d.g < DROP;
 
 const kp = document.getElementById("kpis");
 [["总销量",fmt(total)],["总销售额 (USD)",usd(totalRev)],["整体销量增长率 (7–9月 vs 4–6月)",pct(totL/totP-1)],["产品型号 (SPU)",fmt(models.length)],["三级分类",fmt(cats.length)]]
  .forEach(([l,v])=>{const d=document.createElement("div");d.className="kpi";const b=document.createElement("b");b.textContent=v;const s=document.createElement("span");s.textContent=l;d.append(b,s);kp.append(d);});
 const lg = document.getElementById("lg1");
 [...TOP3,"其他分类"].forEach((c,i)=>{const s=document.createElement("span");const dot=document.createElement("i");dot.style.background=i<3?`var(--s${i+1})`:"var(--other)";s.append(dot,document.createTextNode(c));lg.append(s);});
+for (const el of [lg, document.getElementById("lg2")]) { const s=document.createElement("span"); const i=document.createElement("i"); i.className="ring"; s.append(i,document.createTextNode("红色描边 = 近 3 个月销量下跌超过 30%")); el.append(s); }
 
 function quadOf(d, medRev){ const hi=d.rev>=medRev, up=d.g!==null && d.g>=0; return hi?(up?"star":"cow"):(up?"ques":"dog"); }
 function gText(d){ return d.g===Infinity ? "新品（4–6 月无销量）" : d.g===null ? "4–9 月无销量" : pct(d.g); }
@@ -169,6 +190,8 @@ function draw(hostId, rows, kind){
   svg.append("line").attr("class","qline").attr("x1",X0).attr("x2",X0).attr("y1",T).attr("y2",B);
   svg.append("line").attr("class","qline").attr("x1",L).attr("x2",R).attr("y1",Y0).attr("y2",Y0);
   svg.append("text").attr("x",X0+4).attr("y",B-6).attr("class","qsub").text("中位数 "+usd(medRev));
+  svg.append("line").attr("class","dline").attr("x1",L).attr("x2",R).attr("y1",y(DROP)).attr("y2",y(DROP));
+  svg.append("text").attr("class","dlab").attr("x",L+8).attr("y",y(DROP)-5).text("下跌 30% 线");
   svg.append("text").attr("x",R).attr("y",H-8).attr("text-anchor","end").attr("class","qsub").text("销售额 USD（对数轴）→");
   // quadrant names in outer corners
   const qn=(k,tx,ty,anchor)=>{const g=svg.append("text").attr("x",tx).attr("y",ty).attr("text-anchor",anchor).attr("pointer-events","none");
@@ -177,7 +200,7 @@ function draw(hostId, rows, kind){
   // bubbles, largest first so small ones stay on top
   const fill = kind==="m" ? d=>colorVar(d.cat) : ()=>"var(--solo)";
   const sorted=[...rows].sort((a,b)=>b.qty-a.qty);
-  svg.append("g").selectAll("circle").data(sorted).join("circle").attr("class","b")
+  svg.append("g").selectAll("circle").data(sorted).join("circle").attr("class",d=>isDrop(d)?"b drop":"b")
     .attr("cx",d=>x(d.rev)).attr("cy",d=>y(d.gy)).attr("r",d=>Math.max(3,r(d.qty))).attr("fill",fill).attr("fill-opacity",.75)
     .attr("tabindex",0).attr("role","img").attr("aria-label",d=>d.name+" 销量 "+d.qty+" 增长 "+gText(d))
     .on("pointermove",(ev,d)=>showTip(host,ev,d,kind)).on("pointerleave",()=>hideTip(host))
@@ -208,14 +231,28 @@ function render(){
   const ms=models.slice(0,topN);
   const med1=draw("c1", ms, "m"), med2=draw("c2", cats, "c");
   const share=d3.sum(ms,d=>d.qty)/total*100;
-  document.getElementById("n1").textContent=`显示销量前 ${ms.length} 个型号（共 ${models.length} 个，覆盖总销量 ${share.toFixed(1)}%）。竖线是这 ${ms.length} 个型号的销售额中位数 ${usd(med1)}，横线是增长率 0%。颜色标出销量前三的三级分类，其余为灰色。增长超过 +200% 的气泡固定画在顶部边缘，悬停可看实际值。`;
-  document.getElementById("n2").textContent=`全部 ${cats.length} 个三级分类。竖线是销售额中位数 ${usd(med2)}，横线是增长率 0%。`;
+  document.getElementById("n1").textContent=`显示销量前 ${ms.length} 个型号（共 ${models.length} 个，覆盖总销量 ${share.toFixed(1)}%）。竖线是这 ${ms.length} 个型号的销售额中位数 ${usd(med1)}，横线是增长率 0%。颜色标出销量前三的三级分类，其余为灰色。增长超过 +200% 的气泡固定画在顶部边缘，悬停可看实际值。红色虚线是 -30%。`;
+  document.getElementById("n2").textContent=`全部 ${cats.length} 个三级分类。竖线是销售额中位数 ${usd(med2)}，横线是增长率 0%，红色虚线是 -30%。`;
   quadCards("q1", ms); quadCards("q2", cats);
   table("tb1",["#","产品型号","三级分类","象限","销量","4–6月","7–9月","增长率","销售额 (USD)","链接数","站点数"],
     ms.map((d,i)=>[i+1,d.name,d.cat,QUADS[d.q][0],fmt(d.qty),fmt(d.p),fmt(d.l),gText(d),usd(d.rev),d.links,d.sites]));
   table("tb2",["#","三级分类","象限","型号数","销量","4–6月","7–9月","增长率","销售额 (USD)","链接数"],
     cats.map((d,i)=>[i+1,d.name,QUADS[d.q][0],d.nm,fmt(d.qty),fmt(d.p),fmt(d.l),gText(d),usd(d.rev),d.links]));
 }
+// standalone summary of >30% decliners across ALL models (independent of the Top N toggle)
+(function dropSummary(){
+  const ds=models.filter(isDrop).map(d=>({...d,lost:d.p-d.l})).sort((a,b)=>b.lost-a.lost);
+  const P=d3.sum(ds,d=>d.p), Lq=d3.sum(ds,d=>d.l);
+  const dk=document.getElementById("dk");
+  [["型号数",fmt(ds.length)+" 个"],["4–6月 → 7–9月",fmt(P)+" → "+fmt(Lq)],["合计减少",fmt(P-Lq)+" 件 ("+pct(Lq/P-1)+")"],["全店净减少",fmt(totP-totL)+" 件"],["其中 7–9月零销量",fmt(ds.filter(d=>d.l===0).length)+" 个"]]
+    .forEach(([l,v])=>{const d=document.createElement("div");d.className="kpi";const b=document.createElement("b");b.textContent=v;const s=document.createElement("span");s.textContent=l;d.append(b,s);dk.append(d);});
+  const byCat=d3.rollups(ds,v=>({n:v.length,p:d3.sum(v,d=>d.p),l:d3.sum(v,d=>d.l),rev:d3.sum(v,d=>d.rev)}),d=>d.cat).sort((a,b)=>(b[1].p-b[1].l)-(a[1].p-a[1].l));
+  table("dc",["#","三级分类","下跌型号数","4–6月","7–9月","增长率","减少件数","占下跌总量"],
+    byCat.map(([c,v],i)=>[i+1,c,v.n,fmt(v.p),fmt(v.l),pct(v.l/v.p-1),fmt(v.p-v.l),((v.p-v.l)/(P-Lq)*100).toFixed(1)+"%"]));
+  table("dm",["#","产品型号","三级分类","4–6月","7–9月","增长率","减少件数","1–10月销量","销售额 (USD)","链接数","站点数"],
+    ds.map((d,i)=>[i+1,d.name,d.cat,fmt(d.p),fmt(d.l),pct(d.g),fmt(d.lost),fmt(d.qty),usd(d.rev),d.links,d.sites]));
+  document.querySelectorAll("#dc td:nth-child(3),#dc th:nth-child(3)").forEach(e=>e.style.textAlign="right");
+})();
 document.getElementById("topn").addEventListener("click",e=>{const b=e.target.closest("button"); if(!b) return;
   document.querySelectorAll("#topn button").forEach(x=>x.setAttribute("aria-pressed", x===b)); topN=+b.dataset.n; render();});
 let rt; addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(render,150);});
