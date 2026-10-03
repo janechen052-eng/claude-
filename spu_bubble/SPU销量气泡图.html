@@ -52,7 +52,7 @@ td:nth-child(2){white-space:normal;min-width:220px}
 <div class="wrap">
   <header>
     <h1>产品 SPU 销量气泡图</h1>
-    <p class="sub">数据来源：ASIN 产品表现报表（2026-01 至 2026-10，“小计”列），按 F 列“产品型号”汇总全部站点与链接。气泡面积与销量成正比。</p>
+    <p class="sub">数据来源：ASIN 产品表现报表（2026-01 至 2026-10，“小计”列，金额单位为美元），按 F 列“产品型号”汇总全部站点与链接。气泡面积与销量成正比。</p>
     <div class="kpis" id="kpis"></div>
   </header>
 
@@ -99,7 +99,7 @@ let view = "pack", topN = 60;
 
 // KPIs
 const kp = document.getElementById("kpis");
-[["总销量",fmt(total)],["总销售额",fmt(Math.round(totalRev))],["产品型号 (SPU)",fmt(models.length)],["三级分类",fmt(cats.length)]]
+[["总销量",fmt(total)],["总销售额 (USD)","$"+fmt(Math.round(totalRev))],["产品型号 (SPU)",fmt(models.length)],["三级分类",fmt(cats.length)]]
  .forEach(([l,v])=>{const d=document.createElement("div");d.className="kpi";const b=document.createElement("b");b.textContent=v;const s=document.createElement("span");s.textContent=l;d.append(b,s);kp.append(d);});
 
 // legend for chart 1
@@ -115,7 +115,7 @@ function showTip(host, ev, d, kind){
   add("n", d.name);
   if(kind==="m") add("m", "分类 "+d.cat+" · 链接 "+d.links+" · 站点 "+d.sites);
   else add("m", "型号 "+d.nm+" 个 · 链接 "+d.links+" 条");
-  add("m", "销售额 "+fmt(Math.round(d.rev))+" · 均价 "+d.price.toFixed(2));
+  add("m", "销售额 $"+fmt(Math.round(d.rev))+" · 均价 $"+d.price.toFixed(2));
   t.hidden=false;
   const r=host.getBoundingClientRect(); let x=ev.clientX-r.left+14, y=ev.clientY-r.top+14;
   const w=t.offsetWidth, h=t.offsetHeight; if(x+w>r.width) x=Math.max(0,ev.clientX-r.left-w-14); if(y+h>r.height) y=Math.max(0,ev.clientY-r.top-h-14);
@@ -154,10 +154,10 @@ function draw(hostId, rows, kind){
     const r=d3.scaleSqrt().domain([0,d3.max(rows,d=>d.qty)]).range([0,rMax]);
     const yt=y.ticks(6).filter(v=>[1,2,5].includes(+String(v)[0]) ), xt=x.ticks(8).filter(v=>[1,2,5].includes(+String(v)[0]));
     svg.append("g").attr("class","gridl").attr("transform",`translate(${m.l},0)`).call(d3.axisLeft(y).tickValues(yt).tickSize(-(W-m.l-m.r)).tickFormat(""));
-    svg.append("g").attr("class","axis").attr("transform",`translate(0,${H-m.b})`).call(d3.axisBottom(x).tickValues(xt).tickFormat(d3.format("~s")));
-    svg.append("g").attr("class","axis").attr("transform",`translate(${m.l},0)`).call(d3.axisLeft(y).tickValues(yt).tickFormat(d3.format("~s")));
-    svg.append("text").attr("x",W-m.r).attr("y",H-8).attr("text-anchor","end").style("font-size","12px").style("fill","var(--muted)").text("平均单价（销售额 ÷ 销量，对数轴）→");
-    svg.append("text").attr("x",m.l).attr("y",12).style("font-size","12px").style("fill","var(--muted)").text("↑ 销售额（对数轴）");
+    svg.append("g").attr("class","axis").attr("transform",`translate(0,${H-m.b})`).call(d3.axisBottom(x).tickValues(xt).tickFormat(v=>"$"+d3.format("~s")(v)));
+    svg.append("g").attr("class","axis").attr("transform",`translate(${m.l},0)`).call(d3.axisLeft(y).tickValues(yt).tickFormat(v=>"$"+d3.format("~s")(v)));
+    svg.append("text").attr("x",W-m.r).attr("y",H-8).attr("text-anchor","end").style("font-size","12px").style("fill","var(--muted)").text("平均单价 USD（销售额 ÷ 销量，对数轴）→");
+    svg.append("text").attr("x",m.l).attr("y",12).style("font-size","12px").style("fill","var(--muted)").text("↑ 销售额 USD（对数轴）");
     const sorted=[...rows].sort((a,b)=>b.qty-a.qty);
     bindCircle(svg.append("g").selectAll("circle").data(sorted).join("circle").attr("class","b")
       .attr("cx",d=>x(d.price)).attr("cy",d=>y(d.rev)).attr("r",d=>Math.max(3,r(d.qty))).attr("fill-opacity",.72), host, kind, fill);
@@ -186,9 +186,9 @@ function table(id, head, rows){
   const tb=t.createTBody(); rows.forEach(r=>{const tr=tb.insertRow(); r.forEach(v=>{tr.insertCell().textContent=v;});});
   document.getElementById(id).append(t);
 }
-table("tb1",["#","产品型号","三级分类","销量","占比","销售额","均价","链接数","站点数"],
+table("tb1",["#","产品型号","三级分类","销量","占比","销售额 (USD)","均价 (USD)","链接数","站点数"],
   models.map((d,i)=>[i+1,d.name,d.cat,fmt(d.qty),(d.qty/total*100).toFixed(2)+"%",fmt(Math.round(d.rev)),d.price.toFixed(2),d.links,d.sites]));
-table("tb2",["#","三级分类","型号数","销量","占比","销售额","均价","链接数"],
+table("tb2",["#","三级分类","型号数","销量","占比","销售额 (USD)","均价 (USD)","链接数"],
   cats.map((d,i)=>[i+1,d.name,d.nm,fmt(d.qty),(d.qty/total*100).toFixed(2)+"%",fmt(Math.round(d.rev)),d.price.toFixed(2),d.links]));
 // fix column alignment for table 2 (name is col 2, 型号数 numeric)
 document.querySelectorAll("#tb2 td:nth-child(3),#tb2 th:nth-child(3)").forEach(e=>e.style.textAlign="right");
