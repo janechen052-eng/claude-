@@ -22,17 +22,25 @@ def parse_rank(s):
     s = s.astype(str)
     return s.str.split('：').str[0], pd.to_numeric(s.str.split('：').str[-1], errors='coerce')
 
-def daily(df):
+def daily(df, warn=None):
     df = df.copy()
     df['cat'], df['r'] = parse_rank(df['小类排名'])
     _, df['b'] = parse_rank(df['大类排名'])
+    # 冻结排名：某父体在整个区间（≥14 天）排名一成不变，多半是快照没更新，会把“最好排名”钉死。排名统计时剔除。
+    if '父ASIN' in df and df['父ASIN'].nunique() > 1:
+        dm = df[df['r'].notna()].groupby(['父ASIN', '日期'])['r'].min().reset_index()
+        st = dm.groupby('父ASIN').agg(n=('日期', 'nunique'), u=('r', 'nunique'), v=('r', 'min'))
+        frozen = st[(st['n'] >= 14) & (st['u'] == 1)].index.tolist()
+        if frozen and len(frozen) < len(st):
+            df.loc[df['父ASIN'].isin(frozen), ['r', 'b']] = float('nan')
+            if warn is not None: warn += ['父ASIN %s 排名 %d 天恒为 #%d，疑似未更新，已不参与排名统计' % (f, st.loc[f, 'n'], st.loc[f, 'v']) for f in frozen]
     agg = {k: (v, 'sum') for k, v in NUM.items() if v in df}
     for t in TYPES:
         for k, c in (('spend', '广告费'), ('sales', '广告销售额'), ('orders', '广告订单量')):
             if t + c in df: agg[f'{t}_{k}'] = (t + c, 'sum')
     g = df.groupby('日期').agg(rank=('r', 'min'), big=('b', 'min'), **agg).reset_index()
     best = df.loc[df['r'].notna()]
-    cat = best.loc[best.groupby('日期')['r'].idxmin(), 'cat'].mode()
+    cat = best.loc[best.groupby('日期')['r'].idxmin(), 'cat'].mode() if len(best) else pd.Series(dtype=str)
     return g, (cat.iloc[0] if len(cat) else '')
 
 def auto_phases(ranks, min_len=3, max_n=6):
@@ -55,8 +63,14 @@ def auto_phases(ranks, min_len=3, max_n=6):
         merge(k)
     return [(s['s'], s['e']) for s in segs]
 
-def build_market(df, country, phases_cfg):
-    g, cat = daily(df[df['国家'] == country])
+def build_market(df, key, phases_cfg, warn):
+    # key = "国家" 或 "国家:父ASIN"（同站点多个父体各自有排名时，按父体单独看）
+    country, _, parent = key.partition(':')
+    sub = df[df['国家'] == country]
+    if parent: sub = sub[sub['父ASIN'] == parent]
+    w = []
+    g, cat = daily(sub, w)
+    warn += ['%s：%s' % (key, x) for x in w]
     g = g[g['rank'].notna()].reset_index(drop=True)
     if g.empty: return None
     if phases_cfg:
@@ -83,7 +97,7 @@ def build_market(df, country, phases_cfg):
             for k in ('spend', 'sales', 'orders'):
                 o[f'{t}_{k}'] = round(float(r.get(f'{t}_{k}', 0) or 0), 2)
         rows.append(o)
-    return {'country': country, 'title': f'{country} · 最好排名 #{best}', 'cat': cat, 'best': best, 'types': types,
+    return {'country': key, 'title': f'{key} · 最好排名 #{best}', 'cat': cat, 'best': best, 'types': types,
             'phases': phases, 'rows': rows, 'desc': '', 'notes': []}
 
 def phase_summary(m):
@@ -112,13 +126,18 @@ def main():
     # 去掉不完整的最后一天：当天销售额 < 前 7 天中位数的 20%
     if a.end: df = df[df['日期'] < a.end]
     else:
-        ds = df.groupby('日期')['销售额'].sum()
-        if len(ds) > 7 and ds.iloc[-1] < 0.2 * ds.iloc[-8:-1].median():
-            print('剔除不完整的最后一天', ds.index[-1].date(), file=sys.stderr); df = df[df['日期'] < ds.index[-1]]
+        # 最后一天销售额 < 前 7 天中位数 50% 或广告费 < 30%，视为当天未跑完
+        ds = df.groupby('日期')[['销售额', '广告花费']].sum()
+        if len(ds) > 7:
+            med = ds.iloc[-8:-1].median()
+            if ds['销售额'].iloc[-1] < 0.5 * med['销售额'] or ds['广告花费'].iloc[-1] < 0.3 * med['广告花费']:
+                print('剔除不完整的最后一天', ds.index[-1].date(), file=sys.stderr); df = df[df['日期'] < ds.index[-1]]
     cs = a.countries.split(',') if a.countries else df.groupby('国家')['销售额'].sum().sort_values(ascending=False).index[:2].tolist()
     pcfg = json.load(open(a.phases, encoding='utf-8')) if a.phases else {}
     notes = json.load(open(a.notes, encoding='utf-8')) if a.notes else {}
-    markets = [m for m in (build_market(df, c, pcfg.get(c)) for c in cs) if m]
+    warn = []
+    markets = [m for m in (build_market(df, c, pcfg.get(c), warn) for c in cs) if m]
+    for x in warn: print('注意：' + x, file=sys.stderr)
     for m in markets:
         mn = notes.get('markets', {}).get(m['country'], {})
         m['title'] = mn.get('title', m['title']); m['desc'] = mn.get('desc', ''); m['notes'] = mn.get('notes', [])
@@ -139,7 +158,7 @@ def main():
     html = open(os.path.join(HERE, '..', 'assets', 'template.html'), encoding='utf-8').read()
     html = html.replace('__TITLE__', data['title']).replace('/*__DATA__*/null', json.dumps(AI.clean(data), ensure_ascii=False))
     open(a.out, 'w', encoding='utf-8').write(html)
-    summ = {'markets': {m['country']: {'category': m['cat'], 'best_rank': m['best'], 'types': m['types'], 'phases': phase_summary(m)} for m in markets}}
+    summ = {'warnings': warn, 'markets': {m['country']: {'category': m['cat'], 'best_rank': m['best'], 'types': m['types'], 'phases': phase_summary(m)} for m in markets}}
     if data['plan']: summ['plan_vs_actual'] = data['plan']['actual']['vs_plan']
     s = json.dumps(AI.clean(summ), ensure_ascii=False, indent=1)
     if a.dump_json: open(a.dump_json, 'w', encoding='utf-8').write(s)
