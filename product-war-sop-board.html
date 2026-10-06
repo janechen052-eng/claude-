@@ -1,4 +1,4 @@
-<title>产品战时 SOP</title>
+<title>产品战时 SOP 看板</title>
 <meta name="description" content="运营、供应链、产品三线协同的产品打仗 SOP 横向流程图">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -107,6 +107,10 @@ svg.edges path.hl { stroke-width: 2.6; }
 .rule-key ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
 .rule-key li { font-weight: 700; font-size: 15.5px; }
 .red { color: var(--cmd); font-weight: 700; }
+.modes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 12px; }
+.mode { display: grid; gap: 4px; padding: 14px 18px; border-radius: 10px; border: 1.5px solid var(--cmd); background: var(--cmd-t); color: var(--cmd); }
+.mode-k { font-family: var(--f-mono); font-size: 12px; letter-spacing: .2em; }
+.mode-v { font-weight: 700; font-size: 18px; line-height: 1.4; }
 /* 角色定义 */
 .roles { display: grid; gap: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
 .roles-head { display: grid; gap: 4px; }
@@ -128,17 +132,14 @@ svg.edges path.hl { stroke-width: 2.6; }
 
 <div class="wrap">
   <header>
-    <div class="eyebrow">War-time SOP · 战时作战流程</div>
-    <h1>产品战时 SOP 流程图</h1>
+    <div class="eyebrow">War-time SOP Board · 流程 · 角色 · 主导权</div>
+    <h1>产品战时 SOP 看板</h1>
     <p class="sub">运营总下达指令后，运营线与产品线并行做 Forecast，由 PMC 汇总、供应链总复核，再落到库存盘点、调度与 Sourcing，最后由 Data 复核回传运营总，形成闭环。点击任一节点可高亮它的上下游。</p>
   </header>
 
-  <div class="rule-key" role="note">
-    <b>重点 · Forecast 主导权</b>
-    <ul>
-      <li>战时：运营 Forecast 以运营总确认的为主。</li>
-      <li>非战时：由 PMC 主导。</li>
-    </ul>
+  <div class="modes" role="note" aria-label="Forecast 主导权">
+    <div class="mode war"><span class="mode-k">战时</span><span class="mode-v">运营 Forecast 以运营总确认的为主</span></div>
+    <div class="mode peace"><span class="mode-k">非战时</span><span class="mode-v">由 PMC 主导</span></div>
   </div>
 
   <div class="legend" aria-label="图例">
