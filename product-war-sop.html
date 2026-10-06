@@ -102,6 +102,22 @@ svg.edges path.hl { stroke-width: 2.6; }
 .rules ol { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
 .rules li b { display: block; }
 .rules li span { color: var(--muted); font-size: 13px; }
+/* 角色定义 */
+.roles { display: grid; gap: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
+.roles-head { display: grid; gap: 4px; }
+.roles h2 { font-family: var(--f-display); font-size: 24px; margin: 0; }
+.role-group { display: grid; gap: 10px; }
+.role-group h3 { margin: 0; font-size: 13px; letter-spacing: .2em; color: var(--c); display: flex; align-items: center; gap: 8px; }
+.role-group h3::before { content: ""; width: 10px; height: 10px; border-radius: 50%; background: var(--c); }
+.role-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 14px; }
+.role { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.role-top { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.role-name { font-weight: 700; font-size: 17px; }
+.role-pos { font-size: 12px; padding: 1px 8px; border-radius: 999px; background: var(--t); color: var(--c); }
+.role p { margin: 0; color: var(--muted); font-size: 13.5px; }
+.role dl { margin: 0; display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 6px 10px; font-size: 13.5px; }
+.role dt { color: var(--c); font-size: 12px; padding-top: 2px; }
+.role dd { margin: 0; }
 @media (prefers-reduced-motion: reduce) { .node, svg.edges path { transition: none; } .node:hover { transform: none; } }
 </style>
 
@@ -141,6 +157,109 @@ svg.edges path.hl { stroke-width: 2.6; }
       </ol>
     </section>
   </div>
+
+  <section class="roles" aria-labelledby="roles-h">
+    <div class="roles-head">
+      <h2 id="roles-h">角色定义</h2>
+      <p class="sub">每个角色在战时流程里的定位、职责、交付物和上下游，按泳道分组。</p>
+    </div>
+
+    <div class="role-group L-cmd">
+      <h3>决策层</h3>
+      <div class="role-grid">
+        <article class="role">
+          <div class="role-top"><span class="role-name">运营总</span><span class="role-pos">战时总指挥</span></div>
+          <p>对整场战役的目标和结果负责，是流程的起点，也是复盘闭环的终点。</p>
+          <dl>
+            <dt>职责</dt><dd>设定战时目标（销量、排名、利润）与优先级；向运营线下达指令；根据 Data 复核结论调整下一轮打法。</dd>
+            <dt>交付物</dt><dd>作战指令、资源与优先级决策</dd>
+            <dt>上下游</dt><dd>下达给运营；接收 Data 复核</dd>
+          </dl>
+        </article>
+        <article class="role">
+          <div class="role-top"><span class="role-name">Data</span><span class="role-pos">数据复核</span></div>
+          <p>流程的“裁判”，用数据检验 Forecast、库存和落地结果，给决策层一个可信的结论。</p>
+          <dl>
+            <dt>职责</dt><dd>对比 Forecast 与实际销量的偏差；汇总库存调度与 Sourcing 落地情况；指出偏差原因与风险。</dd>
+            <dt>交付物</dt><dd>复核结论（偏差、风险、建议）</dd>
+            <dt>上下游</dt><dd>接收 PMC 调度结果、Sourcing 结论；回传运营总</dd>
+          </dl>
+        </article>
+      </div>
+    </div>
+
+    <div class="role-group L-ops">
+      <h3>运营线</h3>
+      <div class="role-grid">
+        <article class="role">
+          <div class="role-top"><span class="role-name">运营</span><span class="role-pos">前线执行</span></div>
+          <p>把运营总的指令落到具体 SKU 和站点，并给出运营视角的销量预测。</p>
+          <dl>
+            <dt>职责</dt><dd>按 SKU、站点拆解目标；结合活动、广告节奏和历史销量做 Forecast；按时提交给 PMC。</dd>
+            <dt>交付物</dt><dd>拆解后的销售目标、运营 Forecast</dd>
+            <dt>上下游</dt><dd>接收运营总指令；提交 PMC</dd>
+          </dl>
+        </article>
+      </div>
+    </div>
+
+    <div class="role-group L-sc">
+      <h3>供应链线</h3>
+      <div class="role-grid">
+        <article class="role">
+          <div class="role-top"><span class="role-name">PMC</span><span class="role-pos">计划与物控中枢</span></div>
+          <p>流程的枢纽，把两条线的需求变成一份计划，并管住所有库存的口径和流向。</p>
+          <dl>
+            <dt>职责</dt><dd>汇总运营与 PM 的 Forecast；做角色定义，明确 Supply 仓、PO 单、Stock 的口径与责任人；盘点 FBA、在途、中转仓库存；调度库存，识别缺口与冗余。</dd>
+            <dt>交付物</dt><dd>需求计划、库存全景表、调度方案、缺口清单</dd>
+            <dt>上下游</dt><dd>接收运营、PM 总；提交 Rocky 复核；缺口交给 Sourcing</dd>
+          </dl>
+        </article>
+        <article class="role">
+          <div class="role-top"><span class="role-name">Rocky</span><span class="role-pos">供应链总 · 复核人</span></div>
+          <p>供应链侧的最终把关人，对需求计划能否执行签字确认。</p>
+          <dl>
+            <dt>职责</dt><dd>复核 PMC 汇总后的需求计划；判断产能、资金和库存风险；对需要调整的计划拍板。</dd>
+            <dt>交付物</dt><dd>复核通过的需求计划</dd>
+            <dt>上下游</dt><dd>复核 PMC 的输出</dd>
+          </dl>
+        </article>
+      </div>
+    </div>
+
+    <div class="role-group L-pm">
+      <h3>产品线</h3>
+      <div class="role-grid">
+        <article class="role">
+          <div class="role-top"><span class="role-name">PM</span><span class="role-pos">产品经理</span></div>
+          <p>从产品生命周期出发看需求，保证新品、迭代、停售的节奏反映在预测里。</p>
+          <dl>
+            <dt>职责</dt><dd>复核产品 Roadmap；按新品上市、老品迭代、停售节奏做 Forecast；交 PM 总校对。</dd>
+            <dt>交付物</dt><dd>产品节奏表、PM Forecast</dd>
+            <dt>上下游</dt><dd>提交 PM 总；为 Sourcing 提供需求依据</dd>
+          </dl>
+        </article>
+        <article class="role">
+          <div class="role-top"><span class="role-name">PM 总</span><span class="role-pos">产品线负责人</span></div>
+          <p>产品线数字的把关人，确保 PM Forecast 和 Roadmap、运营 Forecast 都对得上。</p>
+          <dl>
+            <dt>职责</dt><dd>校对 PM Forecast 与 Roadmap 是否一致；与运营 Forecast 对齐差异；把校对后的数字交给 PMC。</dd>
+            <dt>交付物</dt><dd>校对后的 PM Forecast</dd>
+            <dt>上下游</dt><dd>接收 PM；提交 PMC</dd>
+          </dl>
+        </article>
+        <article class="role">
+          <div class="role-top"><span class="role-name">Sourcing</span><span class="role-pos">采购与供应商落地</span></div>
+          <p>负责把计划变成能到货的货，判断缺口在现实中能不能补上。</p>
+          <dl>
+            <dt>职责</dt><dd>接收 PMC 的库存缺口；评估供应商产能、交期和成本；判断能否落地并给出方案（加单、换供应商、延期）。</dd>
+            <dt>交付物</dt><dd>落地结论与补货方案</dd>
+            <dt>上下游</dt><dd>接收 PMC 缺口、PM Forecast；结果回传 Data</dd>
+          </dl>
+        </article>
+      </div>
+    </div>
+  </section>
 </div>
 
 <script>
