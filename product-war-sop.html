@@ -1,0 +1,311 @@
+<title>产品战时 SOP</title>
+<meta name="description" content="运营、供应链、产品三线协同的产品打仗 SOP 横向流程图">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@700;900&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: 横向泳道图 — 行 = 角色线，列 = 作战阶段；箭头由 SVG 叠加层按节点实际位置绘制 */
+:root {
+  --bg: #f3f4f1;
+  --paper: #ffffff;
+  --ink: #1d2430;
+  --muted: #5d6675;
+  --line: #d5d9d4;
+  --edge: #3a4456;
+  --cmd: #c2412d;      /* 决策层 */
+  --ops: #2f5fa8;      /* 运营线 */
+  --sc: #1f7a64;       /* 供应链线 */
+  --pm: #b0731a;       /* 产品线 */
+  --cmd-t: #f7e4e0;
+  --ops-t: #e2eaf6;
+  --sc-t: #ddefe9;
+  --pm-t: #f6ebd9;
+  --focus: #c2412d;
+  --f-display: "Noto Serif SC", "Songti SC", "STSong", serif;
+  --f-body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14171c; --paper: #1d2128; --ink: #e8eaee; --muted: #9aa3b2; --line: #2e343e; --edge: #aab3c3;
+    --cmd: #ef7a63; --ops: #7aa6ec; --sc: #5cc3a3; --pm: #e0a656;
+    --cmd-t: #3a2420; --ops-t: #1f2c42; --sc-t: #19332c; --pm-t: #372b19; --focus: #ef7a63;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14171c; --paper: #1d2128; --ink: #e8eaee; --muted: #9aa3b2; --line: #2e343e; --edge: #aab3c3;
+  --cmd: #ef7a63; --ops: #7aa6ec; --sc: #5cc3a3; --pm: #e0a656;
+  --cmd-t: #3a2420; --ops-t: #1f2c42; --sc-t: #19332c; --pm-t: #372b19; --focus: #ef7a63;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.6; }
+.wrap { max-width: 1480px; margin: 0 auto; padding-inline: 16px; padding-block: 28px 48px; display: grid; gap: 22px; }
+
+header { display: grid; gap: 6px; }
+.eyebrow { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; color: var(--cmd); text-transform: uppercase; }
+h1 { font-family: var(--f-display); font-weight: 900; font-size: clamp(26px, 4vw, 38px); line-height: 1.2; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); max-width: 68ch; margin: 0; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 13px; color: var(--muted); align-items: center; }
+.legend span { display: inline-flex; align-items: center; gap: 6px; }
+.dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.ln { width: 26px; height: 0; border-top: 2px solid var(--edge); display: inline-block; }
+.ln.dash { border-top-style: dashed; border-color: var(--cmd); }
+
+/* 流程图 */
+.board { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.chart { position: relative; display: grid; grid-template-columns: 88px repeat(6, 184px); column-gap: 40px; padding: 56px 28px 24px 0; width: max-content; }
+.stage { font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; color: var(--muted); padding-bottom: 10px; border-bottom: 1px dashed var(--line); margin-bottom: 4px; }
+.stage b { display: block; font-family: var(--f-body); font-size: 14px; letter-spacing: 0; color: var(--ink); font-weight: 700; }
+.lane-label { display: flex; align-items: center; justify-content: center; writing-mode: vertical-rl; font-weight: 700; letter-spacing: .3em; font-size: 14px; border-radius: 0 8px 8px 0; margin-block: 8px; }
+.lane-bg { grid-column: 1 / -1; border-radius: 0 8px 8px 0; margin-block: 8px; z-index: 0; opacity: .55; }
+.cell { padding-block: 22px; display: flex; align-items: center; z-index: 1; min-height: 150px; }
+.L-cmd { --c: var(--cmd); --t: var(--cmd-t); }
+.L-ops { --c: var(--ops); --t: var(--ops-t); }
+.L-sc  { --c: var(--sc);  --t: var(--sc-t); }
+.L-pm  { --c: var(--pm);  --t: var(--pm-t); }
+.lane-label, .lane-bg { background: var(--t); color: var(--c); }
+
+.node { width: 100%; background: var(--paper); border: 1.5px solid var(--c); border-radius: 8px; padding: 10px 12px; text-align: left; font: inherit; color: var(--ink); cursor: pointer; display: grid; gap: 4px; transition: transform .15s, box-shadow .15s; }
+.node:hover { transform: translateY(-2px); box-shadow: 0 6px 16px -8px var(--c); }
+.node:focus-visible { outline: 3px solid var(--focus); outline-offset: 3px; }
+.node.key { border-width: 2.5px; box-shadow: 0 0 0 4px var(--t); }
+.node.on { background: var(--t); }
+.node .tag { font-family: var(--f-mono); font-size: 11px; color: var(--c); letter-spacing: .04em; }
+.node .nm { font-weight: 700; font-size: 15px; line-height: 1.35; }
+.node .ds { font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.chips { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 2px; }
+.chips i { font-style: normal; font-size: 11.5px; padding: 1px 7px; border-radius: 999px; background: var(--t); color: var(--c); }
+
+svg.edges { position: absolute; inset: 0; pointer-events: none; z-index: 2; overflow: visible; }
+svg.edges path { fill: none; stroke: var(--edge); stroke-width: 1.6; transition: opacity .2s, stroke-width .2s; }
+svg.edges path.loop { stroke: var(--cmd); stroke-dasharray: 6 5; }
+svg.edges .lbl rect { fill: var(--paper); }
+svg.edges .lbl text { fill: var(--muted); font-size: 11.5px; font-family: var(--f-body); }
+svg.edges.dim path:not(.hl), svg.edges.dim .lbl:not(.hl) { opacity: .3; }
+svg.edges path.hl { stroke-width: 2.6; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+
+/* 详情 + 要点 */
+.lower { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .lower { grid-template-columns: minmax(0, 1fr); } }
+.detail { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; display: grid; gap: 12px; }
+.detail h2, .rules h2 { font-family: var(--f-display); font-size: 20px; margin: 0; }
+.detail .who { font-family: var(--f-mono); font-size: 12px; color: var(--c, var(--muted)); }
+.io { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 6px 12px; margin: 0; }
+.io dt { font-size: 12px; color: var(--muted); padding-top: 2px; }
+.io dd { margin: 0; }
+.io ul { margin: 0; padding-left: 18px; }
+.rules { display: grid; gap: 12px; padding-top: 4px; }
+.rules ol { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
+.rules li b { display: block; }
+.rules li span { color: var(--muted); font-size: 13px; }
+@media (prefers-reduced-motion: reduce) { .node, svg.edges path { transition: none; } .node:hover { transform: none; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">War-time SOP · 战时作战流程</div>
+    <h1>产品战时 SOP 流程图</h1>
+    <p class="sub">运营总下达指令后，运营线与产品线并行做 Forecast，由 PMC 汇总、供应链总复核，再落到库存盘点、调度与 Sourcing，最后由 Data 复核回传运营总，形成闭环。点击任一节点查看输入、动作和产出。</p>
+  </header>
+
+  <div class="legend" aria-label="图例">
+    <span><i class="dot" style="background:var(--cmd)"></i>决策层</span>
+    <span><i class="dot" style="background:var(--ops)"></i>运营线</span>
+    <span><i class="dot" style="background:var(--sc)"></i>供应链线</span>
+    <span><i class="dot" style="background:var(--pm)"></i>产品线</span>
+    <span><i class="ln"></i>流程推进</span>
+    <span><i class="ln dash"></i>复盘回传</span>
+  </div>
+
+  <div class="board">
+    <div class="chart" id="chart">
+      <svg class="edges" id="edges" aria-hidden="true"></svg>
+    </div>
+  </div>
+  <p class="hint">屏幕较窄时可左右滑动查看完整流程。</p>
+
+  <div class="lower">
+    <section class="detail" id="detail" aria-live="polite"></section>
+    <section class="rules">
+      <h2>相比草图的优化点</h2>
+      <ol>
+        <li><b>按阶段分列、按角色分泳道</b><span>六个阶段从左到右推进，每条线各管一段，谁在什么时候交付一目了然。</span></li>
+        <li><b>双线 Forecast 在 PMC 汇合</b><span>运营 Forecast 与 PM 总校对后的 Forecast 统一交给 PMC，避免两套数字各自下单。</span></li>
+        <li><b>PMC 角色定义前置</b><span>PMC 在库存盘点前先明确 Supply 仓 / PO 单 / Stock 的口径与责任人。</span></li>
+        <li><b>Sourcing 接住库存缺口</b><span>调度库存后仍有缺口时，由 Sourcing 判断能否落地，结果同步回传。</span></li>
+        <li><b>Data 复核闭环</b><span>库存数据和落地结果统一进入 Data 复核，回到运营总作为下一轮指令的依据。</span></li>
+      </ol>
+    </section>
+  </div>
+</div>
+
+<script>
+(function () {
+  var stages = [
+    ["STAGE 01", "指令下达"], ["STAGE 02", "需求预测"], ["STAGE 03", "汇总复核"],
+    ["STAGE 04", "库存盘点"], ["STAGE 05", "调度落地"], ["STAGE 06", "数据复盘"]
+  ];
+  var lanes = [
+    { id: "cmd", name: "决策层" }, { id: "ops", name: "运营线" },
+    { id: "sc", name: "供应链线" }, { id: "pm", name: "产品线" }
+  ];
+  var nodes = {
+    A: { lane: "cmd", col: 1, key: true, tag: "运营总", name: "给出作战指令", desc: "定目标、定节奏、定优先级",
+         owner: "运营总", input: ["上一轮 Data 复核结论", "市场与竞品动态"], act: ["明确战时目标（销量 / 排名 / 利润）", "向运营线下达指令"], out: ["作战指令"] },
+    B: { lane: "ops", col: 1, tag: "运营", name: "承接指令", desc: "拆解到 SKU / 站点 / 节点",
+         owner: "运营", input: ["作战指令"], act: ["按 SKU、站点拆解目标", "确认活动与广告节奏"], out: ["拆解后的销售目标"] },
+    C: { lane: "ops", col: 2, tag: "运营", name: "做 Forecast", desc: "运营侧销量预测",
+         owner: "运营", input: ["销售目标", "历史销量与活动计划"], act: ["输出分 SKU、分周的销量预测"], out: ["运营 Forecast → PMC"] },
+    G: { lane: "pm", col: 1, tag: "PM", name: "复核产品 Roadmap", desc: "新品、迭代、停售节奏",
+         owner: "PM", input: ["产品 Roadmap", "作战指令"], act: ["确认新品上市与老品迭代时间"], out: ["产品节奏表"] },
+    H: { lane: "pm", col: 2, tag: "PM", name: "做 Forecast", desc: "产品侧需求预测",
+         owner: "PM", input: ["产品节奏表"], act: ["按产品生命周期预测需求"], out: ["PM Forecast"] },
+    I: { lane: "pm", col: 3, tag: "PM 总", name: "PM 总校对", desc: "校对 PM Forecast",
+         owner: "PM 总", input: ["PM Forecast"], act: ["校对数字与 Roadmap 是否一致", "与运营 Forecast 对齐差异"], out: ["校对后 Forecast → PMC"] },
+    D: { lane: "sc", col: 3, key: true, tag: "PMC", name: "汇总 Forecast", desc: "Rocky · 供应链总复核", chips: ["角色定义"],
+         owner: "PMC（供应链总 Rocky 复核）", input: ["运营 Forecast", "PM 校对后 Forecast"], act: ["合并两条线的 Forecast", "定义 Supply 仓 / PO 单 / Stock 的口径与责任人", "提交供应链总 Rocky 复核"], out: ["复核后的需求计划"] },
+    E: { lane: "sc", col: 4, tag: "PMC", name: "库存盘点", desc: "Supply 仓 / PO 单 + Stock", chips: ["FBA", "在途", "中转仓"],
+         owner: "PMC", input: ["需求计划"], act: ["盘点 Supply 仓与 PO 单", "盘点 Stock：FBA、在途、中转仓"], out: ["库存全景表"] },
+    F: { lane: "sc", col: 5, tag: "PMC", name: "调度库存", desc: "目的：库存一目了然",
+         owner: "PMC", input: ["库存全景表", "需求计划"], act: ["在 FBA / 在途 / 中转仓之间调拨", "识别缺口与冗余"], out: ["调度方案", "库存缺口 → Sourcing"] },
+    J: { lane: "pm", col: 5, tag: "Sourcing", name: "判断落地", desc: "评估缺口能否补上",
+         owner: "Sourcing", input: ["库存缺口", "PM Forecast"], act: ["评估供应商产能与交期", "判断是否可落地，给出方案"], out: ["落地结论"] },
+    K: { lane: "cmd", col: 6, key: true, tag: "Data", name: "Data 复核", desc: "数据回传运营总",
+         owner: "Data", input: ["调度结果", "Sourcing 落地结论"], act: ["核对 Forecast 与实际偏差", "汇总库存与落地情况"], out: ["复核结论 → 运营总"] }
+  };
+  var edges = [
+    ["A", "B", "v", "下达指令"], ["B", "C", "h"], ["C", "D", "h", "提交"],
+    ["G", "H", "h"], ["H", "I", "h"], ["I", "D", "v", "对齐"],
+    ["D", "E", "h", "角色定义"], ["E", "F", "h"], ["F", "J", "v", "缺口"],
+    ["F", "K", "h"], ["J", "K", "h", "结果"], ["K", "A", "loop", "复盘 → 下一轮指令"]
+  ];
+
+  var chart = document.getElementById("chart");
+  var svg = document.getElementById("edges");
+  var detail = document.getElementById("detail");
+  var NS = "http://www.w3.org/2000/svg";
+
+  // 阶段表头
+  var corner = document.createElement("div");
+  corner.style.gridRow = "1"; corner.style.gridColumn = "1";
+  chart.appendChild(corner);
+  stages.forEach(function (s, i) {
+    var el = document.createElement("div");
+    el.className = "stage";
+    el.style.gridRow = "1"; el.style.gridColumn = String(i + 2);
+    el.innerHTML = s[0] + "<b>" + s[1] + "</b>";
+    chart.appendChild(el);
+  });
+
+  // 泳道
+  lanes.forEach(function (ln, r) {
+    var row = String(r + 2);
+    var bg = document.createElement("div");
+    bg.className = "lane-bg L-" + ln.id; bg.style.gridRow = row;
+    chart.appendChild(bg);
+    var lb = document.createElement("div");
+    lb.className = "lane-label L-" + ln.id; lb.style.gridRow = row; lb.style.gridColumn = "1";
+    lb.textContent = ln.name;
+    chart.appendChild(lb);
+    for (var c = 1; c <= 6; c++) {
+      var cell = document.createElement("div");
+      cell.className = "cell L-" + ln.id; cell.style.gridRow = row; cell.style.gridColumn = String(c + 1);
+      cell.dataset.key = ln.id + c;
+      chart.appendChild(cell);
+    }
+  });
+
+  // 节点
+  Object.keys(nodes).forEach(function (id) {
+    var n = nodes[id];
+    var cell = chart.querySelector('[data-key="' + n.lane + n.col + '"]');
+    var b = document.createElement("button");
+    b.type = "button"; b.id = "node-" + id;
+    b.className = "node" + (n.key ? " key" : "");
+    b.dataset.id = id;
+    b.innerHTML = '<span class="tag">' + n.tag + '</span><span class="nm">' + n.name + '</span><span class="ds">' + n.desc + "</span>" +
+      (n.chips ? '<span class="chips">' + n.chips.map(function (c) { return "<i>" + c + "</i>"; }).join("") + "</span>" : "");
+    b.addEventListener("click", function () { select(id); });
+    cell.appendChild(b);
+  });
+
+  function box(id) {
+    var el = document.getElementById("node-" + id), cr = chart.getBoundingClientRect(), r = el.getBoundingClientRect();
+    return { l: r.left - cr.left, r: r.right - cr.left, t: r.top - cr.top, b: r.bottom - cr.top, cx: (r.left + r.right) / 2 - cr.left, cy: (r.top + r.bottom) / 2 - cr.top };
+  }
+
+  function draw() {
+    svg.innerHTML = "";
+    svg.setAttribute("width", chart.scrollWidth);
+    svg.setAttribute("height", chart.scrollHeight);
+    var defs = document.createElementNS(NS, "defs");
+    defs.innerHTML = '<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--edge);stroke:none"/></marker>' +
+      '<marker id="arL" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--cmd);stroke:none"/></marker>';
+    svg.appendChild(defs);
+    var gap = 4;
+    edges.forEach(function (e) {
+      var s = box(e[0]), t = box(e[1]), d, lx, ly;
+      if (e[2] === "h") {
+        var sx = s.r + gap, tx = t.l - gap, mx = (s.r + t.l) / 2;
+        d = Math.abs(s.cy - t.cy) < 2 ? "M" + sx + "," + s.cy + " H" + tx
+          : "M" + sx + "," + s.cy + " H" + mx + " V" + t.cy + " H" + tx;
+        lx = Math.abs(s.cy - t.cy) < 2 ? (sx + tx) / 2 : mx; ly = Math.abs(s.cy - t.cy) < 2 ? s.cy - 10 : (s.cy + t.cy) / 2;
+      } else if (e[2] === "v") {
+        var down = t.t > s.b, y1 = down ? s.b + gap : s.t - gap, y2 = down ? t.t - gap : t.b + gap;
+        d = "M" + s.cx + "," + y1 + " V" + y2; lx = s.cx; ly = (y1 + y2) / 2;
+      } else {
+        var top = 22;
+        d = "M" + s.cx + "," + (s.t - gap) + " V" + top + " H" + t.cx + " V" + (t.t - gap);
+        lx = (s.cx + t.cx) / 2; ly = top;
+      }
+      var p = document.createElementNS(NS, "path");
+      p.setAttribute("d", d);
+      p.setAttribute("marker-end", e[2] === "loop" ? "url(#arL)" : "url(#ar)");
+      if (e[2] === "loop") p.setAttribute("class", "loop");
+      p.dataset.from = e[0]; p.dataset.to = e[1];
+      svg.appendChild(p);
+      if (e[3]) {
+        var g = document.createElementNS(NS, "g");
+        g.setAttribute("class", "lbl"); g.dataset.from = e[0]; g.dataset.to = e[1];
+        var tx2 = document.createElementNS(NS, "text");
+        tx2.setAttribute("x", lx); tx2.setAttribute("y", ly + 4); tx2.setAttribute("text-anchor", "middle");
+        tx2.textContent = e[3];
+        g.appendChild(tx2); svg.appendChild(g);
+        var bb = tx2.getBBox(), rc = document.createElementNS(NS, "rect");
+        rc.setAttribute("x", bb.x - 5); rc.setAttribute("y", bb.y - 2); rc.setAttribute("width", bb.width + 10); rc.setAttribute("height", bb.height + 4); rc.setAttribute("rx", 4);
+        g.insertBefore(rc, tx2);
+      }
+    });
+    if (current) highlight(current);
+  }
+
+  var current = null;
+  function highlight(id) {
+    svg.classList.add("dim");
+    svg.querySelectorAll("path[data-from], g.lbl").forEach(function (el) {
+      el.classList.toggle("hl", el.dataset.from === id || el.dataset.to === id);
+    });
+  }
+  function list(arr) { return "<ul>" + arr.map(function (x) { return "<li>" + x + "</li>"; }).join("") + "</ul>"; }
+  function select(id, quiet) {
+    if (!quiet) current = id;
+    var n = nodes[id];
+    chart.querySelectorAll(".node").forEach(function (b) { b.classList.toggle("on", b.dataset.id === id); });
+    if (!quiet) highlight(id);
+    detail.className = "detail L-" + n.lane;
+    detail.innerHTML = '<div class="who">' + stages[n.col - 1][0] + " · " + stages[n.col - 1][1] + " · " + n.owner + "</div>" +
+      "<h2>" + n.tag + "｜" + n.name + "</h2>" +
+      '<dl class="io"><dt>输入</dt><dd>' + list(n.input) + "</dd><dt>动作</dt><dd>" + list(n.act) + "</dd><dt>产出</dt><dd>" + list(n.out) + "</dd></dl>";
+  }
+
+  select("D", true);
+  draw();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(draw);
+  window.addEventListener("resize", draw);
+  if (window.ResizeObserver) new ResizeObserver(draw).observe(chart);
+})();
+</script>
