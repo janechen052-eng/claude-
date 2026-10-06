@@ -102,6 +102,11 @@ svg.edges path.hl { stroke-width: 2.6; }
 .rules ol { margin: 0; padding-left: 22px; display: grid; gap: 10px; }
 .rules li b { display: block; }
 .rules li span { color: var(--muted); font-size: 13px; }
+.rule-key { display: grid; gap: 6px; padding: 12px 16px; border: 1.5px solid var(--cmd); border-radius: 10px; background: var(--cmd-t); color: var(--cmd); }
+.rule-key b { font-size: 13px; letter-spacing: .15em; }
+.rule-key ul { margin: 0; padding-left: 20px; display: grid; gap: 4px; }
+.rule-key li { font-weight: 700; font-size: 15.5px; }
+.red { color: var(--cmd); font-weight: 700; }
 /* 角色定义 */
 .roles { display: grid; gap: 18px; padding-top: 12px; border-top: 1px solid var(--line); }
 .roles-head { display: grid; gap: 4px; }
@@ -127,6 +132,14 @@ svg.edges path.hl { stroke-width: 2.6; }
     <h1>产品战时 SOP 流程图</h1>
     <p class="sub">运营总下达指令后，运营线与产品线并行做 Forecast，由 PMC 汇总、供应链总复核，再落到库存盘点、调度与 Sourcing，最后由 Data 复核回传运营总，形成闭环。点击任一节点查看输入、动作和产出。</p>
   </header>
+
+  <div class="rule-key" role="note">
+    <b>重点 · Forecast 主导权</b>
+    <ul>
+      <li>战时：运营 Forecast 以运营总确认的为主。</li>
+      <li>非战时：由 PMC 主导。</li>
+    </ul>
+  </div>
 
   <div class="legend" aria-label="图例">
     <span><i class="dot" style="background:var(--cmd)"></i>决策层</span>
@@ -171,7 +184,7 @@ svg.edges path.hl { stroke-width: 2.6; }
           <div class="role-top"><span class="role-name">运营总</span><span class="role-pos">战时总指挥</span></div>
           <p>对整场战役的目标和结果负责，是流程的起点，也是复盘闭环的终点。</p>
           <dl>
-            <dt>职责</dt><dd>设定战时目标（销量、排名、利润）与优先级；向运营线下达指令；根据 Data 复核结论调整下一轮打法。</dd>
+            <dt>职责</dt><dd><span class="red">战时，运营 Forecast 以运营总确认的为主。</span>设定战时目标（销量、排名、利润）与优先级；向运营线下达指令；根据 Data 复核结论调整下一轮打法。</dd>
             <dt>交付物</dt><dd>作战指令、资源与优先级决策</dd>
             <dt>上下游</dt><dd>下达给运营；接收 Data 复核</dd>
           </dl>
@@ -210,7 +223,7 @@ svg.edges path.hl { stroke-width: 2.6; }
           <div class="role-top"><span class="role-name">PMC</span><span class="role-pos">计划与物控中枢</span></div>
           <p>流程的枢纽，把两条线的需求变成一份计划，并管住所有库存的口径和流向。</p>
           <dl>
-            <dt>职责</dt><dd>汇总运营与 PM 的 Forecast；做角色定义，明确 Supply 仓、PO 单、Stock 的口径与责任人；盘点 FBA、在途、中转仓库存；调度库存，识别缺口与冗余。</dd>
+            <dt>职责</dt><dd><span class="red">非战时，Forecast 由 PMC 主导。</span>汇总运营与 PM 的 Forecast；做角色定义，明确 Supply 仓、PO 单、Stock 的口径与责任人；盘点 FBA、在途、中转仓库存；调度库存，识别缺口与冗余。</dd>
             <dt>交付物</dt><dd>需求计划、库存全景表、调度方案、缺口清单</dd>
             <dt>上下游</dt><dd>接收运营、PM 总；提交 Rocky 复核；缺口交给 Sourcing</dd>
           </dl>
