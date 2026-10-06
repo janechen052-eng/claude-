@@ -1,0 +1,231 @@
+<title>__TITLE__</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: single reading column; each market = rank strip stacked over spend bars sharing one date axis, phase bands shaded */
+:root{
+  --bg:#f7f8f6; --surface:#ffffff; --fg:#14181a; --fg2:#4d5559; --muted:#7c8589; --line:#e1e5e3; --grid:#edf0ee;
+  --band:#eef3f8; --band-hi:#fdf1e6; --hi:#b35a10; --plan:#b9c1c4;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100;
+  --sans:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141716; --surface:#1b1f1e; --fg:#f1f3f2; --fg2:#bcc4c1; --muted:#8b9592; --line:#2e3533; --grid:#262c2a;
+  --band:#1f2a33; --band-hi:#35281b; --hi:#f0a060; --plan:#4c5558;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141716; --surface:#1b1f1e; --fg:#f1f3f2; --fg2:#bcc4c1; --muted:#8b9592; --line:#2e3533; --grid:#262c2a;
+  --band:#1f2a33; --band-hi:#35281b; --hi:#f0a060; --plan:#4c5558;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:15px;line-height:1.6}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:flex;flex-direction:column;gap:28px}
+h1{font-size:26px;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-size:19px;margin:0 0 4px;text-wrap:balance}
+h3{font-size:13px;margin:0;color:var(--fg2);font-weight:500;letter-spacing:.04em}
+.sub{color:var(--fg2);margin:6px 0 0;max-width:70ch}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.find{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+.find div{border-top:2px solid var(--fg);padding-top:8px}
+.find b{display:block;font-family:var(--mono);font-size:22px;font-variant-numeric:tabular-nums}
+.find span{color:var(--fg2);font-size:13.5px}
+.chart{position:relative;width:100%}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--fg2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.legend .band{background:var(--band-hi);border:1px solid var(--hi)}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px;font-variant-numeric:tabular-nums;white-space:nowrap}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line)}
+th{color:var(--muted);font-weight:500;font-size:12px}
+th:first-child,td:first-child{text-align:left}
+tr.focus td{background:var(--band-hi)}
+tr.focus td:first-child{box-shadow:inset 3px 0 0 var(--hi);font-weight:700}
+.up{color:var(--hi)}
+ul.notes{margin:0;padding-left:18px;color:var(--fg2);max-width:80ch}
+ul.notes li+li{margin-top:6px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,400px),1fr));gap:20px}
+.grid2>div{min-width:0;display:flex;flex-direction:column;gap:10px}
+#pProfit{white-space:normal;min-width:760px}
+#pProfit td:nth-child(n+2){max-width:220px}
+.foot{font-size:12.5px;color:var(--muted)}
+</style>
+<div class="wrap" id="root">
+<header><h1 id="hTitle"></h1><p class="sub" id="hSub"></p></header>
+<section class="find" id="kpis"></section>
+<div id="markets"></div>
+<div id="typesWrap"></div>
+<div id="planWrap"></div>
+<section class="panel" id="summary" hidden><h2>结论与建议</h2><ul class="notes" id="sumNotes"></ul><p class="foot" id="foot"></p></section>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const DATA=/*__DATA__*/null;
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const TT=[['SP','--s1'],['SB','--s2'],['SBV','--s3'],['SD','--s4']];
+const esc=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+const nn=v=>v==null||Number.isNaN(v)||!Number.isFinite(v);
+const $0=v=>nn(v)?'–':(v<0?'-$':'$')+Math.abs(Math.round(v)).toLocaleString();
+const $2=v=>nn(v)?'–':'$'+v.toFixed(2);
+const pc=v=>nn(v)?'–':(v*100).toFixed(1)+'%';
+const n0=v=>nn(v)?'–':Math.round(v).toLocaleString();
+const x2=v=>nn(v)?'–':v.toFixed(2);
+const sum=(rows,k)=>rows.reduce((s,r)=>s+(r[k]||0),0);
+const div=(a,b)=>b?a/b:null;
+const charts=[];
+// ---------- chart plugins
+const bands={id:'bands',beforeDatasetsDraw(ch,_,o){if(!o||!o.ph)return;const{ctx,chartArea:a,scales:{x}}=ch;const step=x.getPixelForValue(1)-x.getPixelForValue(0);
+  o.ph.forEach((p,i)=>{const l=x.getPixelForValue(p.si)-step/2,r=x.getPixelForValue(p.ei)+step/2;ctx.save();
+    ctx.fillStyle=p.focus?css('--band-hi'):(i%2?css('--band'):'transparent');ctx.fillRect(l,a.top,r-l,a.bottom-a.top);
+    if(o.label){ctx.fillStyle=p.focus?css('--hi'):css('--muted');ctx.font='600 11px '+css('--mono');ctx.textAlign='center';ctx.fillText(p.label,(l+r)/2,a.top+12)}ctx.restore()})}};
+const capLabels={id:'capLabels',afterDatasetsDraw(ch,_,o){if(!o||!o.on)return;const{ctx}=ch;ctx.save();ctx.font='600 11px '+css('--mono');ctx.textAlign='center';ctx.fillStyle=css('--fg');
+  ch.data.datasets.forEach((ds,i)=>ch.getDatasetMeta(i).data.forEach((b,j)=>{const raw=ds.raw&&ds.raw[j];if(raw!=null&&raw>o.cap)ctx.fillText((raw*100).toFixed(0)+'%',b.x,b.y-4)}));ctx.restore()}};
+const refLines={id:'refLines',afterDatasetsDraw(ch,_,o){if(!o||!o.lines)return;const{ctx,chartArea:a,scales:{x,y}}=ch;ctx.save();ctx.setLineDash([5,4]);ctx.lineWidth=1.5;
+  o.lines.forEach(([v,c])=>{ctx.strokeStyle=c;const py=y.getPixelForValue(v);ctx.beginPath();ctx.moveTo(a.left,py);ctx.lineTo(a.right,py);ctx.stroke()});
+  if(o.start>0){const px=(x.getPixelForValue(o.start)+x.getPixelForValue(o.start-1))/2;ctx.strokeStyle=css('--fg2');ctx.setLineDash([2,3]);ctx.beginPath();ctx.moveTo(px,a.top);ctx.lineTo(px,a.bottom);ctx.stroke();
+    ctx.setLineDash([]);ctx.fillStyle=css('--fg2');ctx.font='600 11px '+css('--mono');ctx.textAlign='left';ctx.fillText(o.startLabel||'',px+4,a.top+10)}ctx.restore()}};
+Chart.register(bands,capLabels,refLines);
+function base(ph,label){return{responsive:true,maintainAspectRatio:false,animation:false,interaction:{mode:'index',intersect:false},layout:{padding:{top:label?14:0}},
+  plugins:{legend:{display:false},bands:{ph,label},tooltip:{backgroundColor:css('--surface'),titleColor:css('--fg'),bodyColor:css('--fg2'),footerColor:css('--fg'),borderColor:css('--line'),borderWidth:1,padding:10,
+    titleFont:{family:css('--mono')},bodyFont:{family:css('--mono')},footerFont:{family:css('--mono')}}},
+  scales:{x:{grid:{display:false},ticks:{color:css('--muted'),font:{family:css('--mono'),size:10},maxRotation:0,autoSkipPadding:10},border:{color:css('--line')}},
+          y:{grid:{color:css('--grid')},ticks:{color:css('--muted'),font:{family:css('--mono'),size:11}},border:{display:false}}}}}
+const mk=(id,cfg)=>charts.push(new Chart(document.getElementById(id),cfg));
+const bar=(label,data,color,extra)=>Object.assign({label,data,backgroundColor:color,borderRadius:{topLeft:3,topRight:3},categoryPercentage:.8,barPercentage:.9},extra||{});
+// ---------- phase stats
+function phaseStats(m){return m.phases.map(p=>{const r=m.rows.slice(p.si,p.ei+1),n=r.length,ranks=r.map(x=>x.rank).filter(x=>x!=null);
+  const o={label:p.label,name:p.name,range:r[0].d+'~'+r[n-1].d,days:n,focus:p.focus,rmin:Math.min(...ranks),rmax:Math.max(...ranks),
+    big:sum(r,'big')/n,spend:sum(r,'spend')/n,clicks:sum(r,'clicks')/n,cpc:div(sum(r,'spend'),sum(r,'clicks')),acos:div(sum(r,'spend'),sum(r,'adsales')),
+    tacos:div(sum(r,'spend'),sum(r,'sales')),units:sum(r,'units')/n,sales:sum(r,'sales')/n,gp:sum(r,'gp')/n,adshare:div(sum(r,'adorders'),sum(r,'orders')),
+    sess:(()=>{const s=r.filter(x=>x.sess>0);return s.length?sum(s,'sess')/s.length:null})()};
+  TT.forEach(([t])=>{o[t]=sum(r,t+'_spend')/n});return o})}
+// ---------- market section
+function marketHTML(m,i){return `<section class="panel"><div><h2>${esc(m.title)}</h2><p class="sub">${esc(m.desc||'')}</p></div>
+  <h3>小类排名（越往上越好）· ${esc(m.cat||'')}</h3><div class="chart" style="height:170px"><canvas id="rank${i}" role="img" aria-label="排名走势"></canvas></div>
+  <h3>每日广告花费（按广告类型堆叠）</h3><div class="legend">${m.types.map(t=>`<span><i style="background:var(${TT.find(x=>x[0]===t)[1]})"></i>${t}</span>`).join('')}<span><i class="band"></i>重点关注阶段</span></div>
+  <div class="chart" style="height:260px"><canvas id="spend${i}" role="img" aria-label="每日广告花费"></canvas></div>
+  <h3>ACOS 与 TACOS</h3><div class="legend"><span><i style="background:var(--s1)"></i>ACOS</span><span><i style="background:var(--s2)"></i>TACOS</span></div>
+  <div class="chart" style="height:190px"><canvas id="ratio${i}" role="img" aria-label="ACOS与TACOS"></canvas></div>
+  <h3>每日销量</h3><div class="chart" style="height:170px"><canvas id="units${i}" role="img" aria-label="每日销量"></canvas></div>
+  <h3>分阶段日均对比</h3><div class="tbl"><table id="ptbl${i}"></table></div>
+  ${(m.notes||[]).length?'<ul class="notes">'+m.notes.map(n=>'<li>'+n+'</li>').join('')+'</ul>':''}</section>`}
+function drawMarket(m,i){const L=m.rows.map(r=>r.d),ph=m.phases;
+  let o=base(ph,true);o.scales.y.reverse=true;o.scales.y.min=1;o.scales.y.max=Math.max(...m.rows.map(r=>r.rank||1))+1;o.scales.y.ticks.stepSize=1;o.scales.y.ticks.callback=v=>'#'+v;
+  o.plugins.tooltip.callbacks={label:c=>' 最好小类排名 #'+c.raw};
+  mk('rank'+i,{type:'line',data:{labels:L,datasets:[{data:m.rows.map(r=>r.rank),borderColor:css('--s1'),borderWidth:2,stepped:'middle',pointRadius:m.rows.map(r=>r.rank<=m.best+1?3.5:0),pointBackgroundColor:css('--s1'),pointBorderColor:css('--surface'),pointBorderWidth:2}]},options:o});
+  o=base(ph,false);o.scales.x.stacked=o.scales.y.stacked=true;o.scales.y.ticks.callback=v=>'$'+v;
+  o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  $'+c.raw.toFixed(2),footer:it=>'合计  $'+it.reduce((s,c)=>s+c.raw,0).toFixed(2)};
+  mk('spend'+i,{type:'bar',data:{labels:L,datasets:m.types.map(t=>({label:t,data:m.rows.map(r=>r[t+'_spend']),backgroundColor:css(TT.find(x=>x[0]===t)[1]),borderColor:css('--surface'),borderWidth:{top:1},categoryPercentage:.8,barPercentage:.9}))},options:o});
+  o=base(ph,false);o.scales.y.min=0;o.scales.y.ticks.callback=v=>(v*100).toFixed(0)+'%';o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  '+(c.raw*100).toFixed(1)+'%'};
+  const ln=(n,f,c)=>({label:n,data:m.rows.map(f),borderColor:css(c),borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25});
+  mk('ratio'+i,{type:'line',data:{labels:L,datasets:[ln('ACOS',r=>r.adsales?r.spend/r.adsales:null,'--s1'),ln('TACOS',r=>r.sales?r.spend/r.sales:null,'--s2')]},options:o});
+  o=base(ph,false);o.plugins.tooltip.callbacks={label:c=>' 销量  '+c.raw+' 件'};
+  mk('units'+i,{type:'bar',data:{labels:L,datasets:[bar('销量',m.rows.map(r=>r.units),css('--s1'))]},options:o});
+  const st=phaseStats(m),cols=[['阶段',p=>p.label+' '+esc(p.name)],['日期',p=>p.range],['天数',p=>p.days],['小类排名',p=>p.rmin===p.rmax?'#'+p.rmin:'#'+p.rmin+'~#'+p.rmax],['大类排名均值',p=>n0(p.big)],
+    ['日均广告费',p=>'<b>'+$0(p.spend)+'</b>'],...m.types.map(t=>[t,p=>$0(p[t])]),['日均点击',p=>n0(p.clicks)],['CPC',p=>$2(p.cpc)],['ACOS',p=>pc(p.acos)],['TACOS',p=>pc(p.tacos)],
+    ['日均销量',p=>n0(p.units)],['日均Sessions',p=>n0(p.sess)],['广告订单占比',p=>pc(p.adshare)],['日均订单毛利',p=>$0(p.gp)]];
+  document.getElementById('ptbl'+i).innerHTML='<thead><tr>'+cols.map(c=>'<th>'+c[0]+'</th>').join('')+'</tr></thead><tbody>'+st.map(p=>'<tr class="'+(p.focus?'focus':'')+'">'+cols.map(c=>'<td>'+c[1](p)+'</td>').join('')+'</tr>').join('')+'</tbody>'}
+// ---------- ad types (one market)
+function typesHTML(m){return `<section class="panel"><div><h2>${esc(m.title.split('·')[0])}· 分广告类型效果对比</h2>
+  <p class="sub">ACOS = 该类型广告费 ÷ 该类型广告销售额；TACOS = 该类型广告费 ÷ 总销售额（各类型相加 = 总 TACOS）；ROAS = 广告销售额 ÷ 广告费。阶段同上。</p></div>
+  <div class="legend">${m.types.map(t=>`<span><i style="background:var(${TT.find(x=>x[0]===t)[1]})"></i>${t}</span>`).join('')}</div>
+  <div class="grid2"><div><h3>各阶段 ACOS（超过 100% 截断，顶部标实际值）</h3><div class="chart" style="height:250px"><canvas id="tAcos" role="img" aria-label="分类型ACOS"></canvas></div></div>
+  <div><h3>各阶段 TACOS（按类型堆叠）</h3><div class="chart" style="height:250px"><canvas id="tTacos" role="img" aria-label="分类型TACOS"></canvas></div></div></div>
+  <h3>近 7 天滚动 ACOS（纵轴截到 100%）</h3><div class="chart" style="height:230px"><canvas id="tRoll" role="img" aria-label="7天滚动ACOS"></canvas></div>
+  <div class="grid2"><div><h3>重点阶段：花费占比 vs 广告销售额占比（深色 = 花费，浅色 = 销售额）</h3><div class="chart" style="height:220px"><canvas id="tShare" role="img" aria-label="花费与销售额占比"></canvas></div></div>
+  <div><h3>各阶段 ROAS</h3><div class="chart" style="height:220px"><canvas id="tRoas" role="img" aria-label="分类型ROAS"></canvas></div></div></div>
+  <h3>分类型 × 阶段明细（日均）</h3><div class="tbl"><table id="tTbl"></table></div>
+  ${(DATA.notes.types||[]).length?'<ul class="notes">'+DATA.notes.types.map(n=>'<li>'+n+'</li>').join('')+'</ul>':''}</section>`}
+function drawTypes(m){const PH=m.phases,PL=PH.map(p=>p.label+' '+p.name);
+  const S=PH.map(p=>{const r=m.rows.slice(p.si,p.ei+1),n=r.length,tot=sum(r,'sales'),sp=sum(r,'spend');const o={};
+    m.types.forEach(t=>{const s=sum(r,t+'_spend'),a=sum(r,t+'_sales'),od=sum(r,t+'_orders');o[t]={spend:s/n,sales:a/n,orders:od/n,acos:a?s/a:(s>0?null:null),roas:s?a/s:null,tacos:tot?s/tot:0,cpo:od?s/od:null,share:sp?s/sp:0}});return o});
+  const tb=()=>{const o=base([],false);o.plugins.bands=false;o.interaction={mode:'nearest',intersect:true};return o};
+  let o=tb();o.scales.y.min=0;o.scales.y.max=1.05;o.scales.y.ticks.callback=v=>v<=1?(v*100).toFixed(0)+'%':'';o.layout.padding.top=16;o.plugins.capLabels={on:true,cap:1};
+  o.plugins.tooltip.callbacks={label:c=>{const r=c.dataset.raw[c.dataIndex];return ' '+c.dataset.label+' ACOS  '+(nn(r)?'–':(r*100).toFixed(1)+'%')}};
+  mk('tAcos',{type:'bar',data:{labels:PL,datasets:m.types.map(t=>{const raw=S.map(s=>s[t].acos);return bar(t,raw.map(v=>nn(v)?null:Math.min(v,1.05)),css(TT.find(x=>x[0]===t)[1]),{raw})})},options:o});
+  o=tb();o.interaction={mode:'index',intersect:false};o.scales.x.stacked=o.scales.y.stacked=true;o.scales.y.ticks.callback=v=>(v*100).toFixed(0)+'%';
+  o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  '+(c.raw*100).toFixed(2)+'%',footer:it=>'总 TACOS  '+(it.reduce((s,c)=>s+c.raw,0)*100).toFixed(1)+'%'};
+  mk('tTacos',{type:'bar',data:{labels:PL,datasets:m.types.map(t=>({label:t,data:S.map(s=>s[t].tacos),backgroundColor:css(TT.find(x=>x[0]===t)[1]),borderColor:css('--surface'),borderWidth:{top:1},categoryPercentage:.6,barPercentage:.9}))},options:o});
+  const R=m.rows,roll=t=>R.map((_,i)=>{if(i<6)return null;let s=0,a=0;for(let k=i-6;k<=i;k++){s+=R[k][t+'_spend'];a+=R[k][t+'_sales']}return s<1?null:(a?s/a:9.99)});
+  o=base(PH,true);o.scales.y.min=0;o.scales.y.max=1;o.scales.y.ticks.callback=v=>(v*100).toFixed(0)+'%';
+  o.plugins.tooltip.callbacks={label:c=>{const r=c.dataset.raw[c.dataIndex];return r==null?null:' '+c.dataset.label+'  '+(r>=9.99?'无广告销售':(r*100).toFixed(1)+'%')}};
+  mk('tRoll',{type:'line',data:{labels:R.map(r=>r.d),datasets:m.types.map(t=>{const raw=roll(t),c=css(TT.find(x=>x[0]===t)[1]);return{label:t,raw,data:raw.map(v=>v==null?null:Math.min(v,1)),borderColor:c,backgroundColor:c,borderWidth:2,pointRadius:0,pointHoverRadius:4,tension:.25}})},options:o});
+  const fi=Math.max(0,PH.map(p=>p.focus).lastIndexOf(true)),F=S[fi],tS=m.types.reduce((s,t)=>s+F[t].spend,0),tA=m.types.reduce((s,t)=>s+F[t].sales,0);
+  o=tb();o.indexAxis='y';o.interaction={mode:'index',intersect:false};o.scales.x.ticks.callback=v=>(v*100).toFixed(0)+'%';o.scales.x.grid={color:css('--grid')};o.scales.y.grid={display:false};
+  o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  '+(c.raw*100).toFixed(1)+'%'};
+  mk('tShare',{type:'bar',data:{labels:m.types,datasets:[{label:'花费占比',data:m.types.map(t=>div(F[t].spend,tS)),backgroundColor:m.types.map(t=>css(TT.find(x=>x[0]===t)[1])),categoryPercentage:.8,barPercentage:.9},
+    {label:'广告销售额占比',data:m.types.map(t=>div(F[t].sales,tA)),backgroundColor:m.types.map(t=>css(TT.find(x=>x[0]===t)[1])+'66'),categoryPercentage:.8,barPercentage:.9}]},options:o});
+  o=tb();o.scales.y.min=0;o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+' ROAS  '+x2(c.raw)};
+  mk('tRoas',{type:'bar',data:{labels:PL,datasets:m.types.map(t=>bar(t,S.map(s=>s[t].roas),css(TT.find(x=>x[0]===t)[1])))},options:o});
+  document.getElementById('tTbl').innerHTML='<thead><tr>'+['阶段','类型','日均花费','花费占比','日均广告销售额','日均广告订单','ACOS','TACOS','ROAS','单均广告成本'].map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    S.map((s,i)=>m.types.map((t,j)=>{const r=s[t];return '<tr class="'+(PH[i].focus?'focus':'')+'"><td>'+(j?'':PL[i])+'</td><td>'+t+'</td><td>'+$2(r.spend)+'</td><td>'+pc(r.share)+'</td><td>'+$0(r.sales)+'</td><td>'+r.orders.toFixed(1)+'</td><td'+(r.acos>0.5?' class="up"':'')+'>'+pc(r.acos)+'</td><td>'+pc(r.tacos)+'</td><td>'+x2(r.roas)+'</td><td>'+$2(r.cpo)+'</td></tr>'}).join('')).join('')+'</tbody>'}
+// ---------- plan vs actual
+function planHTML(P){return `<section class="panel"><div><h2>加投方案 vs 实际执行偏差</h2><p class="sub">${esc(P.desc)}</p></div>
+  <section class="find" id="pK"></section>
+  <div class="legend"><span><i style="background:var(--plan)"></i>方案</span><span><i style="background:var(--s1)"></i>实际</span></div>
+  <div class="grid2"><div><h3>增量月花费</h3><div class="chart" style="height:240px"><canvas id="pSpend" role="img" aria-label="增量花费"></canvas></div></div>
+  <div><h3>增量广告订单（单/月）</h3><div class="chart" style="height:240px"><canvas id="pOrders" role="img" aria-label="增量订单"></canvas></div></div></div>
+  <div class="grid2"><div><h3>每个增量广告订单的成本</h3><div class="chart" style="height:230px"><canvas id="pCpo" role="img" aria-label="增量单均成本"></canvas></div></div>
+  <div><h3>每日广告费 vs 方案日预算</h3><div class="legend"><span><i style="background:var(--muted)"></i>基准 ${$0(P.plan.before.ad_spend/30)}/天</span><span><i style="background:var(--hi)"></i>方案 ${$0(P.plan.after.ad_spend/30)}/天</span></div>
+  <div class="chart" style="height:210px"><canvas id="pDaily" role="img" aria-label="每日广告费与预算线"></canvas></div></div></div>
+  <div class="grid2"><div><h3>增量 ROAS（增量广告销售额 ÷ 增量广告费）</h3><div class="chart" style="height:230px"><canvas id="pRoas" role="img" aria-label="增量ROAS"></canvas></div></div>
+  <div><h3>利润率对比（方案 = 方案毛利口径，实际 = 订单毛利）</h3><div class="chart" style="height:230px"><canvas id="pMargin" role="img" aria-label="利润率对比"></canvas></div></div></div>
+  <h3>投放动作明细（月度）</h3><div class="tbl"><table id="pLever"></table></div>
+  <h3>利润影响：方案 vs 实际（月度）</h3><div class="tbl"><table id="pProfit"></table></div>
+  ${(DATA.notes.plan||[]).length?'<ul class="notes">'+DATA.notes.plan.map(n=>'<li>'+n+'</li>').join('')+'</ul>':''}</section>`}
+function drawPlan(P){const V=P.actual.vs_plan,L=V.levers,p=P.plan,a=P.actual,T=V.total,cm=p.contribution_margin;
+  const K=[[$0(T.actual_spend),'实际月增广告费，方案 '+$0(T.plan_spend)+'（'+(T.plan_spend?((T.actual_spend/T.plan_spend-1)*100).toFixed(0)+'%':'')+'）',T.actual_spend>T.plan_spend*1.2],
+    ['+'+n0(T.actual_ad_orders)+' 单','实际月增广告订单，方案 +'+n0(T.plan_orders)+'；全部订单 +'+n0(T.actual_all_orders),false],
+    [$2(T.actual_cpo),'增量广告订单单均成本，方案 '+$2(T.plan_cpo),T.actual_cpo>T.plan_cpo*1.2],
+    [x2(T.actual_roas),'增量 ROAS，方案 '+x2(T.plan_roas)+'；保本 ROAS '+x2(p.breakeven_roas),T.actual_roas<T.plan_roas]];
+  document.getElementById('pK').innerHTML=K.map(k=>'<div><b'+(k[2]?' class="up"':'')+'>'+k[0]+'</b><span>'+k[1]+'</span></div>').join('');
+  const lab=L.map(l=>l.name),pair=(id,pf,af,fmt,h)=>{const o=base([],false);o.plugins.bands=false;
+    if(h){o.indexAxis='y';o.scales.x.ticks.callback=fmt;o.scales.x.grid={color:css('--grid')};o.scales.y.grid={display:false}}else o.scales.y.ticks.callback=fmt;
+    o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  '+(nn(c.raw)?'方案未包含':fmt(c.raw))};
+    mk(id,{type:'bar',data:{labels:lab,datasets:[bar('方案',L.map(pf),css('--plan')),bar('实际',L.map(af),css('--s1'))]},options:o})};
+  pair('pSpend',l=>l.plan_spend,l=>l.actual_spend,v=>'$'+Math.round(v).toLocaleString());
+  pair('pOrders',l=>l.plan_orders,l=>l.actual_orders,v=>Math.round(v)+' 单');
+  pair('pCpo',l=>l.plan_cpo,l=>l.actual_cpo,v=>'$'+v.toFixed(2),true);
+  pair('pRoas',l=>l.plan_roas,l=>l.actual_roas,v=>v.toFixed(2));
+  const D=P.daily,o=base([],false);o.plugins.bands=false;o.scales.x.stacked=o.scales.y.stacked=true;o.scales.y.ticks.callback=v=>'$'+v;
+  o.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  $'+c.raw.toFixed(0),footer:it=>'合计  $'+it.reduce((s,c)=>s+c.raw,0).toFixed(0)};
+  o.plugins.refLines={lines:[[p.before.ad_spend/30,css('--muted')],[p.after.ad_spend/30,css('--hi')]],start:D.findIndex(r=>r.d===P.post_start),startLabel:P.post_start+' 执行'};
+  mk('pDaily',{type:'bar',data:{labels:D.map(r=>r.d),datasets:TT.map(([t,c])=>({label:t,data:D.map(r=>r[t]),backgroundColor:css(c),categoryPercentage:.85,barPercentage:.9}))},options:o});
+  const pre=a.monthly_pre,post=a.monthly_post,d=a.delta,rp=a.ratios_pre,rq=a.ratios_post,pr=a.profit;
+  const mo=base([],false);mo.plugins.bands=false;mo.scales.y.min=0;mo.scales.y.ticks.callback=v=>(v*100).toFixed(0)+'%';mo.scales.x.ticks.autoSkip=false;mo.scales.x.ticks.font={family:css('--sans'),size:11};
+  mo.plugins.tooltip.callbacks={label:c=>' '+c.dataset.label+'  '+(c.raw*100).toFixed(2)+'%'};
+  mk('pMargin',{type:'bar',data:{labels:['执行前毛利率','执行后毛利率','增量利润率（全部）','增量利润率（广告口径）'],datasets:[
+    bar('方案',[p.before.gp_rate,p.after.gp_rate,p.incremental.marginal_margin,p.incremental.marginal_margin],css('--plan')),
+    bar('实际',[rp.order_gp_rate,rq.order_gp_rate,pr.order_gp_margin_on_incremental_sales,pr.ad_marginal_margin],css('--s1'))]},options:mo});
+  const dev=(x,y)=>x?(y>=x?'+':'')+((y/x-1)*100).toFixed(0)+'%':'方案外';
+  document.getElementById('pLever').innerHTML='<thead><tr>'+['动作','方案花费','实际花费','花费偏差','方案订单','实际广告订单','订单偏差','方案单均成本','实际单均成本','方案 ROAS','实际 ROAS'].map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+
+    L.map(l=>'<tr><td>'+esc(l.name)+(l.plan_levers.length?'<br><span class="foot">'+esc(l.plan_levers.join(' + '))+'</span>':'')+'</td><td>'+$0(l.plan_spend)+'</td><td>'+$0(l.actual_spend)+'</td><td class="up">'+dev(l.plan_spend,l.actual_spend)+'</td><td>'+n0(l.plan_orders)+'</td><td>'+n0(l.actual_orders)+'</td><td>'+dev(l.plan_orders,l.actual_orders)+'</td><td>'+$2(l.plan_cpo)+'</td><td'+(l.actual_cpo>(T.plan_cpo||1e9)*1.3?' class="up"':'')+'>'+$2(l.actual_cpo)+'</td><td>'+x2(l.plan_roas)+'</td><td'+(l.actual_roas<p.breakeven_roas?' class="up"':'')+'>'+x2(l.actual_roas)+'</td></tr>').join('')+
+    '<tr class="focus"><td>合计</td><td>'+$0(T.plan_spend)+'</td><td>'+$0(T.actual_spend)+'</td><td class="up">'+dev(T.plan_spend,T.actual_spend)+'</td><td>'+n0(T.plan_orders)+'</td><td>'+n0(T.actual_ad_orders)+'</td><td>'+dev(T.plan_orders,T.actual_ad_orders)+'</td><td>'+$2(T.plan_cpo)+'</td><td>'+$2(T.actual_cpo)+'</td><td>'+x2(T.plan_roas)+'</td><td>'+x2(T.actual_roas)+'</td></tr></tbody>';
+  const pt=(x,y)=>((y-x)*100>=0?'+':'')+((y-x)*100).toFixed(2)+'pt';
+  const rows=[['月销售额',$0(p.before.sales)+' → '+$0(p.after.sales),'+'+$0(p.total.sales),$0(pre['销售额'])+' → '+$0(post['销售额']),'+'+$0(d['销售额'])],
+    ['月广告花费',$0(p.before.ad_spend)+' → '+$0(p.after.ad_spend),'+'+$0(p.total.spend),$0(pre['广告花费'])+' → '+$0(post['广告花费']),'+'+$0(d['广告花费'])],
+    ['TACOS',pc(p.before.tacos)+' → '+pc(p.after.tacos),pt(p.before.tacos,p.after.tacos),pc(rp.tacos)+' → '+pc(rq.tacos),pt(rp.tacos,rq.tacos)],
+    ['总销售额 ÷ 广告费',x2(p.before.roas_total)+' → '+x2(p.after.roas_total),'',x2(rp.roas_total)+' → '+x2(rq.roas_total),''],
+    ['广告 ROAS','–','',x2(rp.roas_ad)+' → '+x2(rq.roas_ad),''],
+    ['增量订单','','+'+n0(p.total.orders),'','全部 +'+n0(d['订单量'])+'；广告 +'+n0(d['广告订单量'])],
+    ['毛利（率）',$0(p.before.gp)+'（'+pc(p.before.gp_rate)+'）→ '+$0(p.after.gp)+'（'+pc(p.after.gp_rate)+'）',pt(p.before.gp_rate,p.after.gp_rate),'订单毛利 '+$0(pre['订单毛利润'])+'（'+pc(rp.order_gp_rate)+'）→ '+$0(post['订单毛利润'])+'（'+pc(rq.order_gp_rate)+'）','+'+$0(d['订单毛利润'])+' / '+pt(rp.order_gp_rate,rq.order_gp_rate)],
+    ['结算毛利（参考）','','',$0(pre['结算毛利润'])+' → '+$0(post['结算毛利润']),'受结算周期影响'],
+    ['广告带来的增量利润','增量销售额 × '+pc(cm)+' − 增量广告费',$0(p.incremental.profit),'增量广告销售额 × '+pc(cm)+' − 增量广告费',$0(pr.ad_attributed_profit)],
+    ['增量订单边际利润','',$2(p.incremental.profit_per_order)+'/单','广告口径',$2(pr.ad_profit_per_order)+'/单'],
+    ['增量利润率','',pc(p.incremental.marginal_margin),'全部 / 广告口径',pc(pr.order_gp_margin_on_incremental_sales)+' / '+pc(pr.ad_marginal_margin)],
+    ['CTR','','',pc(rp.ctr)+' → '+pc(rq.ctr),pt(rp.ctr,rq.ctr)],['CPC','','',$2(rp.cpc)+' → '+$2(rq.cpc),''],['广告 CVR','','',pc(rp.ad_cvr)+' → '+pc(rq.ad_cvr),pt(rp.ad_cvr,rq.ad_cvr)]];
+  document.getElementById('pProfit').innerHTML='<thead><tr><th>指标</th><th>方案（前 → 后）</th><th>方案变化</th><th>实际（前 → 后）</th><th>实际变化</th></tr></thead><tbody>'+rows.map(r=>'<tr>'+r.map((c,i)=>'<td>'+(i===4?'<b>'+c+'</b>':c)+'</td>').join('')+'</tr>').join('')+'</tbody>'}
+// ---------- boot
+function render(){charts.splice(0).forEach(c=>c.destroy());
+  document.getElementById('hTitle').textContent=DATA.title;document.getElementById('hSub').textContent=DATA.subtitle;
+  document.getElementById('kpis').innerHTML=(DATA.kpis||[]).map(k=>'<div><b>'+esc(k.v)+'</b><span>'+esc(k.t)+'</span></div>').join('');
+  document.getElementById('kpis').hidden=!(DATA.kpis||[]).length;
+  document.getElementById('markets').innerHTML=DATA.markets.map(marketHTML).join('');
+  DATA.markets.forEach(drawMarket);
+  const tm=DATA.markets.find(m=>m.types.length>1);
+  document.getElementById('typesWrap').innerHTML=tm?typesHTML(tm):'';if(tm)drawTypes(tm);
+  document.getElementById('planWrap').innerHTML=DATA.plan?planHTML(DATA.plan):'';if(DATA.plan)drawPlan(DATA.plan);
+  const sn=DATA.notes.summary||[];document.getElementById('summary').hidden=!sn.length&&!DATA.foot;
+  document.getElementById('sumNotes').innerHTML=sn.map(n=>'<li>'+n+'</li>').join('');document.getElementById('foot').textContent=DATA.foot||''}
+render();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',render);
+new MutationObserver(render).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+</script>

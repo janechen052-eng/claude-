@@ -1,0 +1,15 @@
+{
+  "_comment": "三头灯 9 月中加投方案（CTR 优化 + SBV 新增 + SP 加投）。金额为月度，单位 USD。",
+  "baseline": {
+    "impressions": 275940, "clicks": 2002, "cpc": 0.954, "cvr": 0.12,
+    "sales": 150399, "orders": 3853, "aov": 39.04,
+    "ad_spend": 12528, "gp": 32919,
+    "other_cost_ratio": 0.686, "refund_rate": 0.012
+  },
+  "levers": [
+    {"name": "CTR优化", "type": "ctr", "ctr_to": 0.009},
+    {"name": "SBV新增", "type": "budget", "budget": 1000, "cpc": 1.03},
+    {"name": "SP加投",  "type": "budget", "budget": 1000}
+  ],
+  "actual_type_map": {"CTR优化": ["SP"], "SP加投": ["SP"], "SBV新增": ["SBV"]}
+}
