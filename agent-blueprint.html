@@ -1,0 +1,376 @@
+<title>角色 Agent 体系蓝图</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: whiteboard-to-blueprint — one wide business map on top, then the supporting detail in a single reading column */
+:root{
+  --bg:#f5f7fa; --surface:#ffffff; --fg:#1b2433; --muted:#5d6878; --line:#d5dbe4;
+  --p1:#2453c4; --p1-soft:#e8eefb;   /* 阶段一 马克笔蓝 */
+  --p2:#17845a; --p2-soft:#e4f3ec;   /* 阶段二 绿 */
+  --p3:#b4690e; --p3-soft:#fbf0e1;   /* 阶段三 琥珀 */
+  --hot:#c7362c; --hot-soft:#fbe9e7; /* 闭环/判断 红 */
+  --font-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161e; --surface:#19202b; --fg:#e6ebf2; --muted:#9aa5b5; --line:#2f3a4a;
+  --p1:#7ea2ff; --p1-soft:#1d2a47; --p2:#4fc996; --p2-soft:#16302a; --p3:#e7a554; --p3-soft:#33281a;
+  --hot:#ff7d70; --hot-soft:#3a1f1e; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161e; --surface:#19202b; --fg:#e6ebf2; --muted:#9aa5b5; --line:#2f3a4a;
+  --p1:#7ea2ff; --p1-soft:#1d2a47; --p2:#4fc996; --p2-soft:#16302a; --p3:#e7a554; --p3-soft:#33281a;
+  --hot:#ff7d70; --hot-soft:#3a1f1e; color-scheme:dark}
+
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:15px;line-height:1.7}
+.wrap{max-width:1180px;margin:0 auto;padding:40px 20px 72px}
+header h1{font-size:clamp(26px,4vw,38px);font-weight:900;line-height:1.25;margin:0 0 10px;text-wrap:balance;letter-spacing:.01em}
+header p{margin:0;color:var(--muted);max-width:62ch}
+.eyebrow{font-family:var(--font-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--p1);margin-bottom:8px}
+h2{font-size:21px;font-weight:700;margin:0 0 6px;text-wrap:balance}
+.lead{color:var(--muted);margin:0 0 18px;max-width:68ch}
+section{margin-top:56px}
+
+.map{margin-top:28px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+.map svg{display:block;width:100%;min-width:980px;height:auto}
+.legend{display:flex;flex-wrap:wrap;gap:8px 22px;padding:12px 18px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);min-width:980px}
+.legend span{display:inline-flex;align-items:center;gap:8px}
+.legend i{width:12px;height:12px;border-radius:3px;display:inline-block}
+
+/* SVG styling via tokens */
+.b{fill:var(--surface);stroke:var(--line);stroke-width:1.2}
+.b1{fill:var(--p1-soft);stroke:var(--p1);stroke-width:1.2}
+.b2{fill:var(--p2-soft);stroke:var(--p2);stroke-width:1.2}
+.b3{fill:var(--p3-soft);stroke:var(--p3);stroke-width:1.2}
+.bh{fill:var(--hot-soft);stroke:var(--hot);stroke-width:1.6}
+.fr1{fill:none;stroke:var(--p1);stroke-width:1.4}
+.fr2{fill:none;stroke:var(--p2);stroke-width:1.4}
+.fr3{fill:none;stroke:var(--p3);stroke-width:1.4}
+.frh{fill:none;stroke:var(--hot);stroke-width:1.4;stroke-dasharray:6 5}
+.dash{fill:none;stroke:var(--line);stroke-width:1.2;stroke-dasharray:5 4}
+.tt{font-family:var(--font-body);font-size:15px;font-weight:700;fill:var(--fg)}
+.ts{font-family:var(--font-body);font-size:12.5px;fill:var(--muted)}
+.th{font-family:var(--font-body);font-size:17px;font-weight:900}
+.tl{font-family:var(--font-body);font-size:12px;font-weight:500}
+.tm{font-family:var(--font-mono);font-size:11px;letter-spacing:.08em}
+.c1{fill:var(--p1)} .c2{fill:var(--p2)} .c3{fill:var(--p3)} .ch{fill:var(--hot)} .cm{fill:var(--muted)} .cf{fill:var(--fg)}
+.ctr{text-anchor:middle}
+.badge-t{font-family:var(--font-body);font-size:12px;font-weight:700;fill:var(--surface);text-anchor:middle}
+.a{fill:none;stroke-width:1.6}
+.a1{stroke:var(--p1)} .a2{stroke:var(--p2)} .a3{stroke:var(--p3)} .ah{stroke:var(--hot)} .am{stroke:var(--muted)}
+
+/* Tables */
+.tbl{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;min-width:760px;font-size:14px}
+th,td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;font-weight:700;letter-spacing:.06em;color:var(--muted);background:var(--bg)}
+tr:last-child td{border-bottom:0}
+td:first-child{font-weight:700;white-space:nowrap}
+.lv{font-family:var(--font-mono);font-size:12px;padding:2px 8px;border-radius:999px;white-space:nowrap;display:inline-block}
+.L1{background:var(--line);color:var(--fg)}
+.L2{background:var(--p1-soft);color:var(--p1)}
+.L3{background:var(--p3-soft);color:var(--p3)}
+.L4{background:var(--hot-soft);color:var(--hot)}
+.note{font-size:13px;color:var(--muted);margin-top:10px}
+
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.grid2>*{min-width:0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:18px 20px}
+.card h3{margin:0 0 10px;font-size:16px}
+dl.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0;font-size:14px}
+dl.kv dt{color:var(--muted);white-space:nowrap}
+dl.kv dd{margin:0;min-width:0}
+.levels{display:grid;gap:10px}
+.levels div{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:start;font-size:14px}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.step{background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--k);border-radius:8px;padding:16px 18px;min-width:0}
+.step .when{font-family:var(--font-mono);font-size:12px;color:var(--k);letter-spacing:.06em}
+.step h3{margin:4px 0 10px;font-size:17px}
+.step ul{margin:0;padding-left:18px;font-size:14px}
+.step li+li{margin-top:4px}
+.step .ok{margin-top:12px;padding-top:10px;border-top:1px dashed var(--line);font-size:13px;color:var(--muted)}
+.step .ok b{color:var(--fg)}
+
+.risks{display:grid;gap:0;border:1px solid var(--line);border-radius:8px;background:var(--surface)}
+.risks div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:16px;padding:14px 18px;border-bottom:1px solid var(--line);font-size:14px}
+.risks div:last-child{border-bottom:0}
+.risks b{display:block}
+@media (max-width:560px){.risks div{grid-template-columns:1fr;gap:4px}}
+footer{margin-top:56px;font-size:13px;color:var(--muted)}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">AI Agent 规划 · 业务图</div>
+  <h1>把高手的判断，变成每个人都能用的 Agent</h1>
+  <p>按角色拆分，先把部门 leader 看数据、做判断的路径沉淀成 Skill，训练出 6–7 个基础角色 Agent；再搭公司工作台和知识库，让“看板 → 判断 → 行动 → 复盘”形成闭环，越用越准。</p>
+</header>
+
+<div class="map" role="img" aria-label="三阶段业务图：角色Agent、公司工作台、公司知识库，汇入底部判断闭环">
+<svg viewBox="0 0 1240 820" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="m1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="c1"/></marker>
+    <marker id="m2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="c2"/></marker>
+    <marker id="m3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="c3"/></marker>
+    <marker id="mh" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" class="ch"/></marker>
+  </defs>
+
+  <!-- 阶段标题 -->
+  <text x="20" y="34" class="tm c1">STEP 1</text>
+  <text x="20" y="58" class="th c1">角色 Agent · 复用一个人的能力</text>
+  <text x="440" y="34" class="tm c2">STEP 2</text>
+  <text x="440" y="58" class="th c2">公司工作台 · 按部门分板块</text>
+  <text x="860" y="34" class="tm c3">STEP 3</text>
+  <text x="860" y="58" class="th c3">公司知识库 · 判断的依据</text>
+
+  <!-- ============ 阶段一 ============ -->
+  <g>
+    <rect x="20" y="80" width="360" height="62" rx="8" class="b"/>
+    <circle cx="44" cy="111" r="12" class="c1"/><text x="44" y="115" class="badge-t">1</text>
+    <text x="66" y="106" class="tt">区分角色</text>
+    <text x="66" y="127" class="ts">运营 · 广告 · 产品 · 库存 · 采购 · 财务 · 管理层</text>
+
+    <rect x="20" y="160" width="360" height="62" rx="8" class="b"/>
+    <circle cx="44" cy="191" r="12" class="c1"/><text x="44" y="195" class="badge-t">2</text>
+    <text x="66" y="186" class="tt">汇总部门工作看板 V1</text>
+    <text x="66" y="207" class="ts">日常数据 · 库存 · 广告 · 大促打仗</text>
+
+    <rect x="20" y="240" width="360" height="62" rx="8" class="b"/>
+    <circle cx="44" cy="271" r="12" class="c1"/><text x="44" y="275" class="badge-t">3</text>
+    <text x="66" y="266" class="tt">Leader 陈述判断逻辑</text>
+    <text x="66" y="287" class="ts">看什么 → 阈值多少 → 怎么判 → 做什么</text>
+
+    <rect x="20" y="320" width="360" height="62" rx="8" class="b"/>
+    <circle cx="44" cy="351" r="12" class="c1"/><text x="44" y="355" class="badge-t">4</text>
+    <text x="66" y="346" class="tt">沉淀为 Skill</text>
+    <text x="66" y="367" class="ts">一条判断逻辑 = 一张可复用的判断卡</text>
+
+    <rect x="20" y="400" width="360" height="62" rx="8" class="b"/>
+    <circle cx="44" cy="431" r="12" class="c1"/><text x="44" y="435" class="badge-t">5</text>
+    <text x="66" y="426" class="tt">再训练 V2 → V3</text>
+    <text x="66" y="447" class="ts">用历史案例回测，校准到与 leader 判断一致</text>
+
+    <rect x="20" y="480" width="360" height="62" rx="8" class="b1"/>
+    <circle cx="44" cy="511" r="12" class="c1"/><text x="44" y="515" class="badge-t">6</text>
+    <text x="66" y="506" class="tt">6–7 个基础角色 Agent</text>
+    <text x="66" y="527" class="ts">底层先定权责：只看 / 建议 / 审批后执行</text>
+
+    <path d="M200 142V158" class="a a1" marker-end="url(#m1)"/>
+    <path d="M200 222V238" class="a a1" marker-end="url(#m1)"/>
+    <path d="M200 302V318" class="a a1" marker-end="url(#m1)"/>
+    <path d="M200 382V398" class="a a1" marker-end="url(#m1)"/>
+    <path d="M200 462V478" class="a a1" marker-end="url(#m1)"/>
+  </g>
+
+  <!-- 阶段一 → 阶段二 -->
+  <path d="M380 191H438" class="a a2" marker-end="url(#m2)"/>
+  <text x="409" y="183" class="tl c2 ctr">汇总</text>
+  <path d="M380 511H438" class="a a2" marker-end="url(#m2)"/>
+  <text x="409" y="503" class="tl c2 ctr">入驻</text>
+
+  <!-- ============ 阶段二 ============ -->
+  <g>
+    <rect x="440" y="80" width="360" height="462" rx="10" class="fr2"/>
+    <text x="456" y="106" class="tt">公司 AI 工作台</text>
+    <text x="456" y="126" class="ts">一个入口看全公司，按角色开放权限</text>
+
+    <rect x="456" y="142" width="328" height="54" rx="6" class="b2"/>
+    <text x="470" y="165" class="tt">公司级 · 经营总览</text>
+    <text x="470" y="185" class="ts">目标完成率 · 利润 · 现金流 → 管理层 Agent</text>
+
+    <rect x="456" y="206" width="328" height="54" rx="6" class="b2"/>
+    <text x="470" y="229" class="tt">品类级 · 品线看板</text>
+    <text x="470" y="249" class="ts">销量 · 排名 · 毛利 · 退货率</text>
+
+    <text x="456" y="282" class="tl cm">部门板块（每块驻一个角色 Agent）</text>
+    <g>
+      <rect x="456" y="290" width="104" height="40" rx="6" class="b"/><text x="508" y="315" class="tl cf ctr">运营</text>
+      <rect x="568" y="290" width="104" height="40" rx="6" class="b"/><text x="620" y="315" class="tl cf ctr">广告</text>
+      <rect x="680" y="290" width="104" height="40" rx="6" class="b"/><text x="732" y="315" class="tl cf ctr">库存</text>
+      <rect x="456" y="338" width="104" height="40" rx="6" class="b"/><text x="508" y="363" class="tl cf ctr">采购供应链</text>
+      <rect x="568" y="338" width="104" height="40" rx="6" class="b"/><text x="620" y="363" class="tl cf ctr">财务</text>
+      <rect x="680" y="338" width="104" height="40" rx="6" class="b"/><text x="732" y="363" class="tl cf ctr">产品</text>
+      <circle cx="548" cy="302" r="4" class="c1"/><circle cx="660" cy="302" r="4" class="c1"/><circle cx="772" cy="302" r="4" class="c1"/>
+      <circle cx="548" cy="350" r="4" class="c1"/><circle cx="660" cy="350" r="4" class="c1"/><circle cx="772" cy="350" r="4" class="c1"/>
+    </g>
+
+    <rect x="456" y="392" width="328" height="54" rx="6" class="b2"/>
+    <text x="470" y="415" class="tt">平台 / 团队视图</text>
+    <text x="470" y="435" class="ts">Amazon · TEMU · 各运营小组</text>
+
+    <rect x="456" y="458" width="328" height="68" rx="6" class="dash"/>
+    <text x="470" y="484" class="tl cf">每个板块 = 看板 + 驻场 Agent + 异常预警</text>
+    <text x="470" y="506" class="ts">先统一指标口径，再上板块</text>
+  </g>
+
+  <!-- ============ 阶段三 ============ -->
+  <g>
+    <rect x="860" y="80" width="360" height="462" rx="10" class="fr3"/>
+    <text x="876" y="106" class="tt">公司知识库</text>
+    <text x="876" y="126" class="ts">Agent 做判断时检索的依据</text>
+
+    <rect x="876" y="142" width="328" height="74" rx="6" class="b3"/>
+    <text x="890" y="172" class="tt"><tspan class="c3">Ⅰ</tspan>  部门级资料</text>
+    <text x="890" y="196" class="ts">SOP · 复盘报告 · 产品与供应商档案</text>
+
+    <rect x="876" y="226" width="328" height="74" rx="6" class="b3"/>
+    <text x="890" y="256" class="tt"><tspan class="c3">Ⅱ</tspan>  技能拆解 Skill</text>
+    <text x="890" y="280" class="ts">各 leader 的判断卡（来自阶段一）</text>
+
+    <rect x="876" y="310" width="328" height="74" rx="6" class="b3"/>
+    <text x="890" y="340" class="tt"><tspan class="c3">Ⅲ</tspan>  外部信息爬取</text>
+    <text x="890" y="364" class="ts">平台政策 · 竞品动态 · 关键词与市场趋势</text>
+
+    <rect x="876" y="394" width="328" height="74" rx="6" class="b"/>
+    <text x="890" y="424" class="tt"><tspan class="c3">Ⅳ</tspan>  案例库（建议补充）</text>
+    <text x="890" y="448" class="ts">历史决策 + 实际结果，用于回测和训练</text>
+
+    <rect x="876" y="478" width="328" height="48" rx="6" class="dash"/>
+    <text x="890" y="507" class="tl cf">统一标签：角色 · 品类 · 时间 · 来源可信度</text>
+  </g>
+
+  <!-- 三路汇入“综合判断” -->
+  <path d="M200 542V600H560V662" class="a a1" marker-end="url(#m1)"/>
+  <text x="380" y="592" class="tl c1 ctr">角色 Agent + Skill</text>
+  <path d="M620 542V662" class="a a2" marker-end="url(#m2)"/>
+  <text x="628" y="580" class="tl c2">看板数据</text>
+  <path d="M1040 542V600H680V662" class="a a3" marker-end="url(#m3)"/>
+  <text x="860" y="592" class="tl c3 ctr">知识 + 案例</text>
+
+  <!-- ============ 闭环 ============ -->
+  <rect x="20" y="620" width="1200" height="182" rx="10" class="frh"/>
+  <text x="42" y="648" class="tt ch">闭环 · 每天在跑的判断循环</text>
+
+  <rect x="42" y="665" width="196" height="70" rx="8" class="b"/>
+  <text x="56" y="693" class="tt">触发</text>
+  <text x="56" y="715" class="ts">数据异常 · 定时巡检 · 提问</text>
+
+  <rect x="282" y="665" width="196" height="70" rx="8" class="b"/>
+  <text x="296" y="693" class="tt">调用角色 Skill</text>
+  <text x="296" y="715" class="ts">匹配对应的判断卡</text>
+
+  <rect x="522" y="665" width="196" height="70" rx="8" class="bh"/>
+  <text x="536" y="693" class="tt ch">综合判断</text>
+  <text x="536" y="715" class="ts">Agent + 看板数据 + 知识库</text>
+
+  <rect x="762" y="665" width="196" height="70" rx="8" class="b"/>
+  <text x="776" y="693" class="tt">行动 / 打仗</text>
+  <text x="776" y="715" class="ts">补货 · 调价 · 调广告 · 大促</text>
+
+  <rect x="1002" y="665" width="196" height="70" rx="8" class="b"/>
+  <text x="1016" y="693" class="tt">结果复盘</text>
+  <text x="1016" y="715" class="ts">对比预期，写入案例库</text>
+
+  <path d="M238 700H280" class="a ah" marker-end="url(#mh)"/>
+  <path d="M478 700H520" class="a ah" marker-end="url(#mh)"/>
+  <path d="M718 700H760" class="a ah" marker-end="url(#mh)"/>
+  <path d="M958 700H1000" class="a ah" marker-end="url(#mh)"/>
+  <path d="M1100 735V766H140V737" class="a ah" marker-end="url(#mh)"/>
+  <text x="620" y="789" class="tl ch ctr">复盘回写：Skill 升版 · 案例入库 · 看板指标调整 → 下一轮判断更准</text>
+</svg>
+<div class="legend">
+  <span><i style="background:var(--p1)"></i>阶段一：角色 Agent</span>
+  <span><i style="background:var(--p2)"></i>阶段二：公司工作台</span>
+  <span><i style="background:var(--p3)"></i>阶段三：公司知识库</span>
+  <span><i style="background:var(--hot)"></i>判断闭环</span>
+  <span><i style="background:var(--p1);border-radius:50%;width:8px;height:8px"></i>板块内驻场 Agent</span>
+</div>
+</div>
+
+<section>
+  <h2>6–7 个基础角色 Agent</h2>
+  <p class="lead">每个 Agent 对应一个部门看板和一位 leader 的判断逻辑。下表的阈值是示例写法，实际数字由各部门 leader 在访谈中给出。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>角色 Agent</th><th>看板核心指标</th><th>示例判断（leader 的思考路径）</th><th>权责</th></tr></thead>
+    <tbody>
+      <tr><td>运营</td><td>销量、BSR 排名、转化率、利润</td><td>排名掉出前 5 且转化率周环比降 15% 以上 → 依次排查价格、差评、广告位</td><td><span class="lv L2">L2 建议</span></td></tr>
+      <tr><td>广告</td><td>ACOS、TACOS、ROAS、CPC</td><td>ACOS 连续 7 天高于目标 1.3 倍 → 降竞价、补否词；冲排名期间放宽到 1.6 倍</td><td><span class="lv L3">L3 审批后执行</span></td></tr>
+      <tr><td>产品 PM</td><td>市场容量、竞品、差评 VOC</td><td>同一问题差评 30 天内 ≥ 3 条 → 发起改良评估</td><td><span class="lv L2">L2 建议</span></td></tr>
+      <tr><td>库存计划</td><td>可售天数、在途、断货风险</td><td>可售天数 &lt; 备货周期 + 安全天数 → 补货预警并给出建议数量</td><td><span class="lv L3">L3 审批后执行</span></td></tr>
+      <tr><td>采购供应链</td><td>交期、采购成本、供应商履约</td><td>交期延误超过 7 天 → 提示启用备选供应商，同步库存 Agent</td><td><span class="lv L2">L2 建议</span></td></tr>
+      <tr><td>财务</td><td>毛利率、费用率、回款</td><td>品线毛利率低于底线 → 标记利润风险，推送给运营和管理层</td><td><span class="lv L1">L1 只看</span></td></tr>
+      <tr><td>管理层</td><td>公司级目标完成率、品类贡献</td><td>完成率落后时间进度 10% 以上 → 建议拉专项“打仗”</td><td><span class="lv L1">L1 只看</span></td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section class="grid2">
+  <div class="card">
+    <h3>Skill 判断卡模板</h3>
+    <p class="note" style="margin:0 0 12px">leader 每讲一条判断，就填一张卡。卡越多，Agent 越像这个人。</p>
+    <dl class="kv">
+      <dt>触发条件</dt><dd>什么情况下要做这个判断</dd>
+      <dt>看哪些数据</dt><dd>指标名 + 看板位置 + 时间范围</dd>
+      <dt>判断规则</dt><dd>阈值、先后顺序、权重</dd>
+      <dt>建议动作</dt><dd>具体做什么，影响多大</dd>
+      <dt>例外情况</dt><dd>大促、新品期、断货期等不适用的场景</dd>
+      <dt>依据案例</dt><dd>2–3 个真实历史案例，用于回测</dd>
+      <dt>负责人 / 版本</dt><dd>谁的逻辑，V1 / V2 / V3</dd>
+    </dl>
+  </div>
+  <div class="card">
+    <h3>Agent 权责分级</h3>
+    <p class="note" style="margin:0 0 12px">对应草图中的“底层 Agent 权责”。新 Agent 从 L1 起步，准确率达标后逐级放权。</p>
+    <div class="levels">
+      <div><span class="lv L1">L1</span><span><b>只看</b>：汇总数据、出日报周报，不给结论</span></div>
+      <div><span class="lv L2">L2</span><span><b>建议</b>：发现异常并给出判断和建议，人来决定</span></div>
+      <div><span class="lv L3">L3</span><span><b>审批后执行</b>：生成操作方案，负责人点确认后执行</span></div>
+      <div><span class="lv L4">L4</span><span><b>授权自动</b>：限额内自动执行（如小幅调竞价），事后通知</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>三阶段落地计划</h2>
+  <p class="lead">时间是建议值，按 6 个月规划。阶段二和阶段三可以在阶段一跑通 2–3 个角色后提前启动。</p>
+  <div class="steps">
+    <div class="step" style="--k:var(--p1)">
+      <div class="when">第 1–2 月</div>
+      <h3>阶段一 · 角色 Agent</h3>
+      <ul>
+        <li>确定 6–7 个角色和对应 leader</li>
+        <li>收集各部门现有看板，整理成看板 V1</li>
+        <li>leader 结合真实案例访谈，每个角色先产出 15–20 张判断卡</li>
+        <li>用历史案例回测，迭代到 V2、V3</li>
+        <li>定好每个 Agent 的权责级别</li>
+      </ul>
+      <div class="ok"><b>验收：</b>回测时 Agent 判断与 leader 一致率 ≥ 80%</div>
+    </div>
+    <div class="step" style="--k:var(--p2)">
+      <div class="when">第 3–4 月</div>
+      <h3>阶段二 · 公司工作台</h3>
+      <ul>
+        <li>统一指标字典和数据口径</li>
+        <li>搭建公司级、品类级、部门、平台/团队四层板块</li>
+        <li>角色 Agent 入驻对应板块，配置异常预警</li>
+        <li>按角色开放查看和操作权限</li>
+      </ul>
+      <div class="ok"><b>验收：</b>各部门日常看数据只用一个入口；每日预警被处理率 ≥ 90%</div>
+    </div>
+    <div class="step" style="--k:var(--p3)">
+      <div class="when">第 4–6 月</div>
+      <h3>阶段三 · 知识库与闭环</h3>
+      <ul>
+        <li>收集部门 SOP、复盘、产品与供应商资料</li>
+        <li>判断卡入库，建立案例库</li>
+        <li>接入外部信息爬取：平台政策、竞品、关键词趋势</li>
+        <li>每次行动的结果自动回写，季度做一次 Skill 升版</li>
+      </ul>
+      <div class="ok"><b>验收：</b>Agent 建议采纳率、判断准确率、节省工时三项指标按月追踪</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>风险与对策</h2>
+  <div class="risks">
+    <div><b>高手的经验说不清楚</b><span>不要让 leader 空讲规则，而是拿 3–5 个真实案例复盘：“当时看到了什么，为什么这么判断”，再从中提炼判断卡。</span></div>
+    <div><b>各部门数据口径不一致</b><span>阶段二开始前先出指标字典，同一指标只有一个定义和一个数据源。</span></div>
+    <div><b>Agent 越权或误判造成损失</b><span>按 L1–L4 逐级放权，L4 设金额和幅度上限，所有自动操作留日志可回滚。</span></div>
+    <div><b>判断逻辑过时</b><span>每张判断卡有负责人和版本号，结果复盘发现偏差就触发升版，季度统一评审。</span></div>
+    <div><b>员工不用</b><span>先从 leader 最头疼的重复判断切入（如补货、广告调价），让一线先感受到省时间。</span></div>
+  </div>
+</section>
+
+<footer>依据白板草图整理：①一个人的能力复用（看板 V1 → 再训练 V2/V3 → Agent）②底层 Agent 权责 ③工作台分级 ④知识库三类来源 → 判断 → 打仗。</footer>
+</div>
