@@ -83,7 +83,7 @@ td input{width:84px}
 <div class="wrap">
   <header>
     <h1>站外渠道产值试算</h1>
-    <p class="sub">6 个核心品线（美国站，月均 GMV 合计 $138 万）。四个渠道分别测算新增销售额：ACC 放量、社媒 KOL、联盟营销、Meta 广告。新增销售额按毛利折成人民币后，和三个岗位的年薪对比。黄色格子都可以改，结果实时更新。</p>
+    <p class="sub">6 个核心品线（美国站，月均 GMV 合计 $138 万）。四个渠道分别测算新增销售额：ACC 放量、社媒 KOL、联盟营销、Meta 广告。新增销售额按毛利折成人民币后，和三个岗位的年薪对比。联盟营销已按 Levanta 竞对实测数据和费用结构修正。黄色格子都可以改，结果实时更新。</p>
   </header>
 
   <section class="kpis" id="kpis" aria-label="核心结论"></section>
@@ -91,13 +91,19 @@ td input{width:84px}
 
   <section class="panel" aria-labelledby="p-h">
     <div class="sec-head"><h2 id="p-h">试算参数</h2><button class="btn" id="reset" type="button">恢复默认值</button></div>
-    <h3>渠道占比与费用率（占品线 GMV，单位 %）</h3>
+    <h3>ACC / 社媒 KOL / Meta：占比与费用率（占品线 GMV，单位 %）</h3>
     <div class="scroll"><table id="chTable"></table></div>
     <div class="params">
       <fieldset><legend>岗位年薪（¥）</legend>
         <div class="row"><label for="sal-kol">KOL 专员（ACC + 社媒）</label><input type="number" step="10000" id="sal-kol"></div>
         <div class="row"><label for="sal-aff">联盟营销专员</label><input type="number" step="10000" id="sal-aff"></div>
         <div class="row"><label for="sal-meta">Meta 投放专员</label><input type="number" step="10000" id="sal-meta"></div>
+      </fieldset>
+      <fieldset><legend>Meta 广告花费（$/月）</legend>
+        <div class="row"><label for="metaSpend">平时月均</label><input type="number" step="100" id="metaSpend"></div>
+        <div class="row"><label for="metaQ4">Q4（10–12 月）</label><input type="number" step="100" id="metaQ4"></div>
+        <div class="row"><label for="start">第1月对应自然月</label><input type="number" step="1" min="1" max="12" id="start"></div>
+        <div class="foot" id="metaNote"></div>
       </fieldset>
       <fieldset><legend>通用</legend>
         <div class="row"><label for="margin">毛利率 %</label><input type="number" step="0.5" id="margin"></div>
@@ -109,12 +115,51 @@ td input{width:84px}
     </div>
   </section>
 
+
+  <section class="panel" aria-labelledby="a-h">
+    <div class="sec-head"><div><div class="tag">联盟营销修正</div><h2 id="a-h">按 Levanta 竞对实测数据测算联盟营销</h2></div></div>
+    <div class="scroll"><table id="bench"></table></div>
+    <div class="foot">来源：Levanta 后台截图（Seesii 近 2 个月、Vevor 近 3 个月）。Seesii 2025 年 10 月上线，首月日均约 $1,500。</div>
+    <div class="sec-head"><h3>联盟日均销售额目标（$/天，6 品线合计，按 30 天/月）</h3>
+      <div class="tabs" role="group" aria-label="情景" id="scen"></div></div>
+    <div class="params">
+      <fieldset><legend>分阶段日均销售额 $</legend>
+        <div class="trip">
+          <label>第1–3月<input type="number" step="100" id="ad0"></label>
+          <label>第4–6月<input type="number" step="100" id="ad1"></label>
+          <label>第7–12月<input type="number" step="100" id="ad2"></label>
+        </div>
+        <div class="foot" id="adNote"></div>
+      </fieldset>
+      <fieldset><legend>单位经济（占联盟销售额 %）</legend>
+        <div class="row"><label for="a-pre">不含广告毛利率</label><input type="number" step="0.5" id="a-pre"></div>
+        <div class="row"><label for="a-brb">亚马逊站外返点 BRB（+）</label><input type="number" step="0.1" id="a-brb"></div>
+        <div class="row"><label for="a-cr">联盟客佣金（−）</label><input type="number" step="0.5" id="a-cr"></div>
+        <div class="row"><label for="a-lev">Levanta 平台佣金（−）</label><input type="number" step="0.5" id="a-lev"></div>
+        <div class="row"><label for="a-ol">Openlight 代运营佣金（−）</label><input type="number" step="0.5" id="a-ol"></div>
+      </fieldset>
+      <fieldset><legend>固定费用</legend>
+        <div class="row"><label for="a-levfix">Levanta 月费 $</label><input type="number" step="50" id="a-levfix"></div>
+        <div class="row"><label for="a-olfix">Openlight 月费 $</label><input type="number" step="100" id="a-olfix"></div>
+        <div class="row"><label for="a-olm">Openlight 合作月数</label><input type="number" step="1" min="0" max="12" id="a-olm"></div>
+        <div class="foot">合同半年。第 7 个月起不续约就填 6，佣金和月费都停掉；默认 12 是假设续约，偏保守。</div>
+      </fieldset>
+    </div>
+    <div class="two">
+      <div class="wf" id="unit"></div>
+      <div class="foot" style="align-content:start">
+        <div><b>和你表里的测算对比：</b>你的表按 BRB 10%、首月 $45k 测得利润 $4,325（9.6%），放量到 $150k 时利润 $20,600（13.7%）。这里 BRB 默认用 Seesii 实际值 8.3%（$43,870 ÷ $525,556），因为不是每一单都能拿到 10%，所以利润会略低一些。</div>
+        <div>不含广告毛利率 27% 来自你的表：尾程 14% + 退货 6% + 平台佣金 15% + 头程 8% + 产品成本 30% = 73%，广告费 0%。</div>
+        <div>Levanta 目前只开通了 Ecarke 品牌，首月测试品是油泵、逆变器、三头灯、黄油枪、吹风机。下方品线表里联盟默认只覆盖油泵、逆变器、工作灯、黄油枪，联盟销售额按这几个品线的 GMV 比例分摊。</div>
+      </div>
+    </div>
+  </section>
   <section class="panel" aria-labelledby="s1-h">
     <div class="sec-head"><div><div class="tag">第一部分</div><h2 id="s1-h">核心品线分月销售目标</h2></div></div>
 
     <h3>品线底数</h3>
     <div class="scroll"><table id="lines"></table></div>
-    <div class="foot">ACC 目标占比 = 品线 ACC 基线 + 当月放量增量 × 放量系数。放量系数只作用于 ACC，达人资源更好的品线可以调高。</div>
+    <div class="foot">ACC 目标占比 = 品线 ACC 基线 + 当月放量增量 × 放量系数。放量系数只作用于 ACC，达人资源更好的品线可以调高。勾选“联盟覆盖”的品线，按 GMV 比例分摊联盟销售额。</div>
 
     <h3>各渠道分月新增销售额（6 品线合计，$）</h3>
     <div class="scroll"><table id="chMonth"></table></div>
@@ -148,7 +193,7 @@ td input{width:84px}
     <h3>分月人民币明细（三岗合计）</h3>
     <div class="scroll"><table id="rmb"></table></div>
     <div class="foot">
-      <div>新增营业额 = 四个渠道的新增销售额 × 汇率。现有 ACC 基线是到岗前就有的，不计入。</div>
+      <div>新增营业额 = 四个渠道的新增销售额 × 汇率。现有 ACC 基线是到岗前就有的，不计入。毛利口径：ACC、社媒、Meta 按扣广告后毛利 15%（+ TACOS 加回）；联盟按 Levanta 表的不含广告毛利 27%，渠道费用里已经扣掉联盟客佣金、平台费、代运营费，并加回了 BRB 返点。</div>
       <div>只算可以直接归因的订单，没有计入站外流量带动的自然排名和自然订单。各渠道之间如有重复归因（例如同一个红人同时挂 ACC 和联盟链接），要去重后再填占比。</div>
     </div>
   </section>
@@ -158,21 +203,26 @@ td input{width:84px}
 <script>
 const DEF={
   lines:[["油泵",200000,5.25,1],["充气泵",250000,5.25,1],["逆变器",340000,5.25,1],["冲击扳手",260000,5.25,1],["黄油枪",130000,5.25,1],["工作灯",200000,5.25,1]],
-  ch:{acc:{s:[0.5,1,1.5],c:10},kol:{s:[0,1,2],c:12},aff:{s:[3,3,3],c:10},meta:{s:[0.5,0.5,0.5],c:0}},
+  ch:{acc:{s:[0.5,1,1.5],c:10},kol:{s:[0,1,2],c:12},meta:{s:[0.5,0.5,0.5],c:0}},
+  metaSpend:1000, metaQ4:2000, start:1,
+  aff:{d:[1500,3300,5000],pre:27,brb:8.3,cr:15,lev:3.5,ol:3,levfix:650,olfix:2000,olm:12,cov:[1,0,1,0,1,1]},
   sal:{kol:400000,aff:250000,meta:150000}, margin:15, tacos:0, setup:1000, fx:7.1
 };
+const SCEN={"保守":[1500,1500,1500],"基准":[1500,3300,5000],"乐观":[1500,5000,8760]};
+const SC_NOTE={"保守":"全年停在 Seesii 首月水平 $1,500/天（$4.5 万/月）。","基准":"首月按 Seesii 首月 $1,500/天；第 7 月起到你表里的放量目标 $5,000/天（$15 万/月）；中间取 $3,300/天。","乐观":"第 7 月起追平 Seesii 近 2 个月均值 $8,760/天（$26.3 万/月）。"};
 const CH=[
   {id:"acc",name:"ACC 放量",owner:"kol",cost:"ACC 加码佣金",color:"--s1",note:"先激活已合作红人，第1月起计"},
   {id:"kol",name:"社媒 KOL",owner:"kol",cost:"达人费",color:"--s2",note:"前3个月搭建，不出单"},
-  {id:"aff",name:"联盟营销",owner:"aff",cost:"联盟佣金",color:"--s3",note:"按 3% 计"},
-  {id:"meta",name:"Meta 广告",owner:"meta",cost:"Meta 广告花费",color:"--s4",note:"按 0.5% 计"}];
+  {id:"aff",name:"联盟营销",owner:"aff",cost:"联盟佣金/平台费（扣 BRB 后）",color:"--s3",note:"Levanta 实测口径"},
+  {id:"meta",name:"Meta 广告",owner:"meta",cost:"Meta 广告花费（固定金额）",color:"--s4",note:"按 0.5% 计"}];
 const PPL=[{id:"kol",name:"KOL 专员",chs:"ACC 放量 + 社媒 KOL"},{id:"aff",name:"联盟营销专员",chs:"联盟营销"},{id:"meta",name:"Meta 投放专员",chs:"Meta 广告"}];
-const KEY="ext-channel-trial-v2";
+const KEY="ext-channel-trial-v4";
 let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(S&&S.tacos==null) S.tacos=0;
 if(!S||!S.ch) S=JSON.parse(JSON.stringify(DEF));
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
 let view="pct", tab="acc";
+const cal=m=>((S.start-1+m-1)%12)+1;
 const M=[...Array(12)].map((_,i)=>i+1), ph=m=>m<=3?0:m<=6?1:2, PH=["搭建","搭建","搭建","测试放量","测试放量","测试放量","稳定","稳定","稳定","稳定","稳定","稳定"];
 const $=id=>document.getElementById(id);
 const usd=v=>(v<0?"−$":"$")+Math.abs(Math.round(v)).toLocaleString("en-US");
@@ -185,51 +235,87 @@ function calc(){
   const r={gmv:Z(),base:Z(),ch:{},line:{}};
   CH.forEach(c=>{r.ch[c.id]=Z();r.line[c.id]=S.lines.map(()=>[])});
   r.accTarget=S.lines.map(()=>[]);
+  const A=S.aff, covG=sum(S.lines.map((l,i)=>A.cov[i]?l[1]:0));
   S.lines.forEach(([n,g,b,f],li)=>M.forEach((m,i)=>{
     r.gmv[i]+=g; r.base[i]+=g*b/100;
-    CH.forEach(c=>{const p=S.ch[c.id].s[ph(m)]/100*(c.id==="acc"?f:1);r.ch[c.id][i]+=g*p;r.line[c.id][li].push({p,v:g*p})});
+    CH.forEach(c=>{let v;
+      if(c.id==="aff") v=A.cov[li]&&covG?A.d[ph(m)]*30*g/covG:0;
+      else v=g*S.ch[c.id].s[ph(m)]/100*(c.id==="acc"?f:1);
+      r.ch[c.id][i]+=v;r.line[c.id][li].push({p:g?v/g:0,v})});
     const up=S.ch.acc.s[ph(m)]/100*f; r.accTarget[li].push({p:b/100+up,v:g*(b/100+up)});
   }));
   const fx=S.fx, mg=(S.margin+(S.tacos||0))/100;
   // per person per month
+  // channel cost per month ($)
+  r.cc={}; CH.forEach(c=>r.cc[c.id]=M.map((m,i)=>{const v=r.ch[c.id][i];
+    if(c.id==="meta") return [10,11,12].includes(cal(m))?S.metaQ4:S.metaSpend;
+    if(c.id!=="aff") return v*S.ch[c.id].c/100;
+    const olOn=m<=A.olm; return v*(A.cr+A.lev-A.brb+(olOn?A.ol:0))/100+A.levfix+(olOn?A.olfix:0);}));
   r.pp={}; PPL.forEach(p=>{
     const mine=CH.filter(c=>c.owner===p.id);
-    r.pp[p.id]=M.map((m,i)=>{const inc=sum(mine.map(c=>r.ch[c.id][i]));const cost=sum(mine.map(c=>r.ch[c.id][i]*S.ch[c.id].c/100))+(p.id==="kol"&&m<=6?S.setup:0);
-      const o={inc,rev:inc*fx,gp:inc*mg*fx,cost:cost*fx,sal:S.sal[p.id]/12};o.contrib=o.gp-o.cost;o.net=o.contrib-o.sal;return o});
+    r.pp[p.id]=M.map((m,i)=>{const inc=sum(mine.map(c=>r.ch[c.id][i]));
+      const gp=sum(mine.map(c=>r.ch[c.id][i]*(c.id==="aff"?A.pre/100:mg)));
+      const cost=sum(mine.map(c=>r.cc[c.id][i]))+(p.id==="kol"&&m<=6?S.setup:0);
+      const o={inc,rev:inc*fx,gp:gp*fx,cost:cost*fx,sal:S.sal[p.id]/12};o.contrib=o.gp-o.cost;o.net=o.contrib-o.sal;return o});
   });
   r.mon=M.map((m,i)=>{const o={inc:0,rev:0,gp:0,cost:0,sal:0,contrib:0,net:0};PPL.forEach(p=>{for(const k in o)o[k]+=r.pp[p.id][i][k]});return o});
   const tot=arr=>{const o={};["inc","rev","gp","cost","sal","contrib","net"].forEach(k=>o[k]=sum(arr.map(x=>x[k])));return o};
   r.T=tot(r.mon); r.P={}; PPL.forEach(p=>r.P[p.id]=tot(r.pp[p.id]));
-  r.T.gmv=sum(r.gmv); r.CT={}; CH.forEach(c=>{r.CT[c.id]=sum(r.ch[c.id]);r.CT[c.id+"_cost"]=r.CT[c.id]*S.ch[c.id].c/100*fx});
+  r.T.gmv=sum(r.gmv); r.CT={}; CH.forEach(c=>{r.CT[c.id]=sum(r.ch[c.id]);r.CT[c.id+"_cost"]=sum(r.cc[c.id])*fx});
   r.T.setup=S.setup*6*fx;
   return r;
 }
 
 function buildInputs(){
   let h='<tr><th>渠道</th><th>负责人</th><th class="n">第1–3月</th><th class="n">第4–6月</th><th class="n">第7–12月</th><th class="n">费用率</th><th>费用口径</th></tr>';
-  CH.forEach(c=>{const p=PPL.find(x=>x.id===c.owner).name;
-    h+=`<tr><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${c.color});margin-right:6px"></i>${c.name}</td><td style="text-align:left">${p}</td>`+[0,1,2].map(i=>`<td><input type="number" step="0.1" id="s-${c.id}-${i}" aria-label="${c.name}阶段${i+1}占比"></td>`).join("")+`<td><input type="number" step="0.5" id="c-${c.id}" aria-label="${c.name}费用率"></td><td style="text-align:left;color:var(--ink-3)">${c.cost}，占该渠道销售额<span id="w-${c.id}"></span></td></tr>`});
+  CH.filter(c=>c.id!=="aff").forEach(c=>{const p=PPL.find(x=>x.id===c.owner).name;
+    h+=`<tr><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${c.color});margin-right:6px"></i>${c.name}</td><td style="text-align:left">${p}</td>`+[0,1,2].map(i=>`<td><input type="number" step="0.1" id="s-${c.id}-${i}" aria-label="${c.name}阶段${i+1}占比"></td>`).join("")+(c.id==="meta"?`<td class="n">—</td><td style="text-align:left;color:var(--ink-3)">固定花费，见下方“Meta 广告花费”</td></tr>`:`<td><input type="number" step="0.5" id="c-${c.id}" aria-label="${c.name}费用率"></td><td style="text-align:left;color:var(--ink-3)">${c.cost}，占该渠道销售额</td></tr>`)});
   $("chTable").innerHTML=h;
-  CH.forEach(c=>{[0,1,2].forEach(i=>{const el=$(`s-${c.id}-${i}`);el.value=S.ch[c.id].s[i];el.oninput=e=>{S.ch[c.id].s[i]=+e.target.value||0;upd()}});
-    const el=$("c-"+c.id);el.value=S.ch[c.id].c;el.oninput=e=>{S.ch[c.id].c=+e.target.value||0;upd()}});
+  CH.filter(c=>c.id!=="aff").forEach(c=>{[0,1,2].forEach(i=>{const el=$(`s-${c.id}-${i}`);el.value=S.ch[c.id].s[i];el.oninput=e=>{S.ch[c.id].s[i]=+e.target.value||0;upd()}});
+    const el=$("c-"+c.id);if(el){el.value=S.ch[c.id].c;el.oninput=e=>{S.ch[c.id].c=+e.target.value||0;upd()}}});
   PPL.forEach(p=>{const el=$("sal-"+p.id);el.value=S.sal[p.id];el.oninput=e=>{S.sal[p.id]=+e.target.value||0;upd()}});
-  ["margin","tacos","fx","setup"].forEach(k=>{$(k).value=S[k];$(k).oninput=e=>{S[k]=+e.target.value||0;upd()}});
-  h='<tr><th>品线</th><th class="n">月均 GMV $</th><th class="n">ACC 基线 %</th><th class="n">ACC 放量系数</th><th class="n">全年 GMV $</th></tr>';
-  S.lines.forEach((l,i)=>{h+=`<tr><td>${l[0]}</td><td><input type="number" step="10000" id="g${i}" value="${l[1]}" aria-label="${l[0]}月均GMV"></td><td><input type="number" step="0.05" id="b${i}" value="${l[2]}" aria-label="${l[0]}ACC基线"></td><td><input type="number" step="0.1" id="f${i}" value="${l[3]}" aria-label="${l[0]}放量系数"></td><td class="n" id="ga${i}"></td></tr>`});
-  h+='<tr class="tot"><td>合计</td><td class="n" id="gt"></td><td></td><td></td><td class="n" id="gat"></td></tr>';
+  [0,1,2].forEach(i=>{const el=$("ad"+i);el.value=S.aff.d[i];el.oninput=e=>{S.aff.d[i]=+e.target.value||0;upd()}});
+  ["pre","brb","cr","lev","ol","levfix","olfix","olm"].forEach(k=>{const el=$("a-"+k);el.value=S.aff[k];el.oninput=e=>{S.aff[k]=+e.target.value||0;upd()}});
+  $("scen").innerHTML=Object.keys(SCEN).map(k=>`<button type="button" class="btn" data-s="${k}">${k}</button>`).join("");
+  $("scen").querySelectorAll("button").forEach(b=>b.onclick=()=>{S.aff.d=[...SCEN[b.dataset.s]];[0,1,2].forEach(i=>$("ad"+i).value=S.aff.d[i]);upd()});
+  ["metaSpend","metaQ4","start","margin","tacos","fx","setup"].forEach(k=>{$(k).value=S[k];$(k).oninput=e=>{S[k]=+e.target.value||0;upd()}});
+  h='<tr><th>品线</th><th class="n">月度 GMV $（每月）</th><th class="n">ACC 基线 %</th><th class="n">ACC 放量系数</th><th class="n">联盟覆盖</th><th class="n">全年 GMV $（×12）</th></tr>';
+  S.lines.forEach((l,i)=>{h+=`<tr><td>${l[0]}</td><td><input type="number" step="10000" id="g${i}" value="${l[1]}" aria-label="${l[0]}月均GMV"></td><td><input type="number" step="0.05" id="b${i}" value="${l[2]}" aria-label="${l[0]}ACC基线"></td><td><input type="number" step="0.1" id="f${i}" value="${l[3]}" aria-label="${l[0]}放量系数"></td><td class="n"><input type="checkbox" id="cv${i}" ${S.aff.cov[i]?"checked":""} aria-label="${l[0]}联盟覆盖" style="width:auto"></td><td class="n" id="ga${i}"></td></tr>`});
+  h+='<tr class="tot"><td>合计</td><td class="n" id="gt"></td><td></td><td></td><td></td><td class="n" id="gat"></td></tr>';
   $("lines").innerHTML=h;
+  S.lines.forEach((l,i)=>{$("cv"+i).onchange=e=>{S.aff.cov[i]=e.target.checked?1:0;upd()}});
   S.lines.forEach((l,i)=>{[["g",1],["b",2],["f",3]].forEach(([k,j])=>{$(k+i).oninput=e=>{l[j]=+e.target.value||0;upd()}})});
   $("tabs").innerHTML=[["acc","ACC 目标（含基线）"],["kol","社媒 KOL"],["aff","联盟营销"],["meta","Meta 广告"]].map(([id,n])=>`<button type="button" class="btn" data-t="${id}" aria-pressed="${id===tab}">${n}</button>`).join("");
   $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;$("tabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
   $("lg1").innerHTML='<span><i style="background:var(--base)"></i>现有 ACC 基线（不计入岗位产值）</span>'+CH.map(c=>`<span><i style="background:var(${c.color})"></i>${c.name}</span>`).join("");
 }
-const mhead=first=>'<tr class="ph"><th></th>'+PH.map(p=>`<th class="n">${p}</th>`).join("")+'<th class="n"></th></tr><tr><th>'+first+'</th>'+M.map(m=>`<th class="n">${m}月</th>`).join("")+'<th class="n">全年</th></tr>';
+const mhead=first=>'<tr class="ph"><th></th>'+PH.map(p=>`<th class="n">${p}</th>`).join("")+'<th class="n"></th></tr><tr><th>'+first+'</th>'+M.map(m=>`<th class="n">${cal(m)}月</th>`).join("")+'<th class="n">全年</th></tr>';
 
 function render(){
   const r=calc(),T=r.T;
   S.lines.forEach((l,i)=>{$("ga"+i).textContent=usd(l[1]*12)});
   $("gt").textContent=usd(sum(S.lines.map(l=>l[1]))); $("gat").textContent=usd(T.gmv);
-  CH.forEach(c=>{$("w-"+c.id).innerHTML=(c.id==="meta"&&S.ch.meta.c===0)?' <span class="chip">未填，净贡献偏乐观</span>':""});
+
+  const A=S.aff;
+  const mSales=r.CT.meta, mSpend=sum(r.cc.meta);
+  $("metaNote").textContent=`全年花费 ${usd(mSpend)}，带来销售额 ${usd(mSales)}，ROAS ${mSpend?(mSales/mSpend).toFixed(1):"—"}；平时月 ROAS ${S.metaSpend?(r.ch.meta[0]/S.metaSpend).toFixed(1):"—"}，Q4 月 ROAS ${S.metaQ4?(r.ch.meta[0]/S.metaQ4).toFixed(1):"—"}。表头月份按这里换算成自然月。`;
+  const sk=Object.keys(SCEN).find(k=>SCEN[k].every((v,i)=>v===A.d[i]));
+  $("scen").querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.s===sk));
+  $("adNote").textContent=(sk?SC_NOTE[sk]+" ":"自定义。")+`全年联盟销售额 ${usd(r.CT.aff)}，月均 ${usd(r.CT.aff/12)}。`;
+  const covG=sum(S.lines.map((l,i)=>A.cov[i]?l[1]:0));
+  $("bench").innerHTML='<tr><th>对标</th><th class="n">月均销售额</th><th class="n">日均</th><th class="n">佣金率</th><th class="n">BRB 返点</th><th class="n">点击→转化</th><th class="n">客单价</th><th class="n">ROAS（销售额÷净佣金）</th></tr>'
+   +'<tr><td>Seesii（近2月）</td><td class="n">$262,778</td><td class="n">$8,760</td><td class="n">13.9%</td><td class="n">8.3%</td><td class="n">2.3%</td><td class="n">$70</td><td class="n">17.9</td></tr>'
+   +'<tr><td>Vevor（近3月）</td><td class="n">$646,805</td><td class="n">$21,560</td><td class="n">10.0%</td><td class="n">—</td><td class="n">4.9%</td><td class="n">$84</td><td class="n">10.0（未扣返点）</td></tr>'
+   +`<tr class="tot"><td>我们·稳定期目标</td><td class="n">${usd(A.d[2]*30)}</td><td class="n">${usd(A.d[2])}</td><td class="n">${(A.cr).toFixed(1)}%</td><td class="n">${A.brb.toFixed(1)}%</td><td class="n">—</td><td class="n">—</td><td class="n">${(A.cr+A.lev+A.ol-A.brb)>0?(100/(A.cr+A.lev+A.ol-A.brb)).toFixed(1):"—"}</td></tr>`
+   +`<tr><td>稳定期占覆盖品线 GMV</td><td class="n" colspan="7" style="text-align:left">${covG?pct(A.d[2]*30/covG):"未勾选覆盖品线"}（覆盖品线月 GMV ${usd(covG)}）</td></tr>`;
+  const um=A.pre+A.brb-A.cr-A.lev-A.ol, steady=A.d[2]*30, sp=steady*um/100-A.levfix-A.olfix;
+  const us=[["不含广告毛利",A.pre,"s1"],["+ BRB 返点",A.brb,"s3"],["− 联盟客佣金",-A.cr,"s2"],["− Levanta 佣金",-A.lev,"s2"],["− Openlight 佣金",-A.ol,"s2"],["每 $100 联盟销售的变动利润",um,um>=0?"good":"bad"]];
+  let ru=0; const hi=A.pre+A.brb;
+  $("unit").innerHTML='<h3>每 $100 联盟销售额赚多少（$）</h3>'+us.map(([n,v,c],i)=>{let a,b;
+    if(i===0){a=0;b=v;ru=v}else if(i===us.length-1){a=0;b=v}else{a=ru;b=ru+v;ru=b}
+    const L=Math.min(a,b)/hi*100,W=Math.max(.6,Math.abs(b-a)/hi*100);
+    return `<div class="wf-row"><span>${n}</span><div class="wf-bar"><span style="left:${L}%;width:${W}%;background:var(--${c})"></span></div><span class="v">${v>0&&i>0&&i<us.length-1?"+":""}${v.toFixed(1)}</span></div>`}).join("")
+    +`<div class="foot">稳定期每月 ${usd(steady)} 时，扣固定费 ${usd(A.levfix+A.olfix)} 后月利润 ${usd(sp)}（利润率 ${steady?pct(sp/steady):"—"}）。保本日均销售额 ${um>0?usd((A.levfix+A.olfix)/(um/100)/30):"无法保本"}（不含工资），含工资保本日均 ${um>0?usd((A.levfix+A.olfix+S.sal.aff/S.fx/12)/(um/100)/30):"无法保本"}。</div>`;
 
   // channel x month
   let h=mhead("渠道");
@@ -254,7 +340,7 @@ function render(){
   $("kpis").innerHTML=[
     ["四渠道新增销售额",usd(T.inc),`占 6 品线 GMV ${pct(T.inc/T.gmv)}`],
     ["折合人民币年营业额",wan(T.rev),`汇率 ${S.fx}`],
-    [`新增毛利（${S.margin+(S.tacos||0)}%）`,wan(T.gp),S.tacos?`${S.margin}% + 加回 TACOS ${S.tacos}%，未扣渠道费用`:"按扣广告后毛利 15%，未扣渠道费用"],
+    ["新增毛利",wan(T.gp),`ACC/社媒/Meta 按 ${S.margin+(S.tacos||0)}%，联盟按 ${S.aff.pre}%；未扣渠道费用`],
     ["毛利 ÷ 三岗年薪",ratio.toFixed(2)+"×",`年薪合计 ${wan(T.sal)} <span class="pill ${ratio>=1?"good":"bad"}">${ratio>=1?"能覆盖":"覆盖不了"}</span>`],
     ["扣渠道费用和工资后净贡献",wan(T.net),`<span class="pill ${T.net>=0?"good":"bad"}">${T.net>=0?"第一年盈利":"第一年亏损"}</span>`]
   ].map(([a,b,c])=>`<div class="kpi"><span class="lbl">${a}</span><span class="val">${b}</span><span class="note">${c}</span></div>`).join("");
@@ -267,11 +353,11 @@ function render(){
   $("people").innerHTML=h;
 
   const best=PPL.map(p=>({...p,x:r.P[p.id].gp/r.P[p.id].sal})).sort((a,b)=>b.x-a.x);
-  $("verdict").innerHTML=`<b>三个岗位合计新增营业额 ${wan(T.rev)}，毛利 ${wan(T.gp)}，是年薪合计 ${wan(T.sal)} 的 ${ratio.toFixed(2)} 倍；扣掉佣金、达人费、广告花费和测试投入 ${wan(T.cost)} 后，净贡献为 ${wan(T.net)}。</b>
-  <span>按毛利覆盖年薪的倍数排：${best.map(p=>`${p.name} ${p.x.toFixed(2)}×`).join("，")}。每 $1 新增销售额扣完渠道费用后的毛利：${CH.map(c=>`${c.name} ${(S.margin+(S.tacos||0)-S.ch[c.id].c).toFixed(1)} 美分`).join("，")}。${S.ch.meta.c===0?"Meta 广告花费还没填，Meta 这一行的净贡献偏乐观。":""}</span>`;
+  $("verdict").innerHTML=`<b>三个岗位合计新增营业额 ${wan(T.rev)}，毛利 ${wan(T.gp)}，是年薪合计 ${wan(T.sal)} 的 ${ratio.toFixed(2)} 倍；扣掉佣金、达人费、平台和代运营费、广告花费、测试投入 ${wan(T.cost)} 后，净贡献为 ${wan(T.net)}。</b>
+  <span>按毛利覆盖年薪的倍数排：${best.map(p=>`${p.name} ${p.x.toFixed(2)}×`).join("，")}。每 $1 新增销售额扣完渠道费用后的毛利：${CH.map(c=>`${c.name} ${(c.id==="aff"?S.aff.pre+S.aff.brb-S.aff.cr-S.aff.lev-S.aff.ol:S.margin+(S.tacos||0)-S.ch[c.id].c).toFixed(1)} 美分`).join("，")}。</span>`;
 
   // waterfall (team)
-  const steps=[["新增营业额",T.rev,"s1",0],[`新增毛利 ${S.margin+(S.tacos||0)}%`,T.gp,"s1",0],
+  const steps=[["新增营业额",T.rev,"s1",0],["新增毛利",T.gp,"s1",0],
     ...CH.map(c=>["− "+c.cost,-r.CT[c.id+"_cost"],"s2",1]),["− KOL 测试投入",-T.setup,"s2",1],
     ["扣费后贡献",T.contrib,"s3",0],["− 三岗年薪",-T.sal,"ink-3",1],["净贡献",T.net,T.net>=0?"good":"bad",0]];
   const lo=Math.min(0,T.net,T.contrib),span=T.rev-lo,x=v=>(v-lo)/span*100; let run=0;
@@ -283,7 +369,7 @@ function render(){
 
   // RMB monthly
   const rows=[["新增销售额 $","inc",usd],["新增营业额","rev",wan],["新增毛利","gp",wan],["渠道费用 + 测试投入","cost",v=>wan(-v)],["三岗工资","sal",v=>wan(-v)],["当月净贡献","net",wan]];
-  h='<tr><th>项目</th>'+M.map(m=>`<th class="n">${m}月</th>`).join("")+'<th class="n">全年</th></tr>';
+  h='<tr><th>项目</th>'+M.map(m=>`<th class="n">${cal(m)}月</th>`).join("")+'<th class="n">全年</th></tr>';
   rows.forEach(([n,k,f])=>{const vals=r.mon.map(o=>o[k]);h+=`<tr${k==="net"?' class="tot"':""}><td>${n}</td>`+vals.map(v=>`<td class="n">${f(v)}</td>`).join("")+`<td class="n">${f(sum(vals))}</td></tr>`});
   let cum=0; h+='<tr><td>累计净贡献</td>'+r.mon.map(o=>{cum+=o.net;return `<td class="n">${wan(cum)}</td>`}).join("")+'<td></td></tr>';
   $("rmb").innerHTML=h;
@@ -293,7 +379,7 @@ function render(){
 let c1,c2;
 function drawCharts(r){
   if(!window.Chart) return;
-  const ink=css("--ink-2"),grid=css("--line"),labels=M.map(m=>m+"月"),panel=css("--panel");
+  const ink=css("--ink-2"),grid=css("--line"),labels=M.map(m=>cal(m)+"月"),panel=css("--panel");
   Chart.defaults.font.family=css("--f-body"); Chart.defaults.color=ink;
   const tip=f=>({mode:"index",intersect:false,callbacks:{label:c=>`${c.dataset.label}：${f(c.parsed.y)}`}});
   const series=[["现有 ACC 基线",r.base,"--base"],...CH.map(c=>[c.name,r.ch[c.id],c.color])];
