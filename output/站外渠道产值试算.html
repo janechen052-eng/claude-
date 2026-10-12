@@ -1,0 +1,318 @@
+<title>站外渠道产值试算</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: one working column — summary strip, parameter bench, then ① targets and ② RMB check, each a table + one chart */
+:root{
+  --bg:#f4f6f8; --panel:#ffffff; --ink:#14202b; --ink-2:#4a5866; --ink-3:#7a8794;
+  --line:#dfe4ea; --accent:#1f5fa8; --accent-soft:#e6eef8;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --base:#b8c2cc;
+  --good:#0f7a3d; --good-bg:#e5f4ec; --bad:#b42318; --bad-bg:#fbeaea; --input:#fffbe6;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-num:"JetBrains Mono",ui-monospace,"SF Mono",Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161b; --panel:#1a2128; --ink:#e8edf2; --ink-2:#b3bec9; --ink-3:#85919c;
+  --line:#2c3640; --accent:#6ea8ec; --accent-soft:#1d2d40;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --base:#4a5663;
+  --good:#5cc98a; --good-bg:#16301f; --bad:#f08a80; --bad-bg:#3a1c1a; --input:#2a2716; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161b; --panel:#1a2128; --ink:#e8edf2; --ink-2:#b3bec9; --ink-3:#85919c;
+  --line:#2c3640; --accent:#6ea8ec; --accent-soft:#1d2d40;
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --base:#4a5663;
+  --good:#5cc98a; --good-bg:#16301f; --bad:#f08a80; --bad-bg:#3a1c1a; --input:#2a2716; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:28px 56px;display:grid;gap:22px}
+h1{font-size:26px;margin:0;text-wrap:balance;letter-spacing:.01em}
+h2{font-size:18px;margin:0;text-wrap:balance}
+h3{font-size:14px;margin:0;color:var(--ink-2);font-weight:500}
+.sub{color:var(--ink-2);margin:6px 0 0;max-width:72ch}
+.num,td.n,th.n{font-family:var(--f-num);font-variant-numeric:tabular-nums}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:18px;display:grid;gap:14px;min-width:0}
+.sec-head{display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px}
+.tag{font-size:12px;letter-spacing:.06em;color:var(--accent);font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:grid;gap:4px;align-content:start}
+.kpi .lbl{font-size:12px;color:var(--ink-2)}
+.kpi .val{font-family:var(--f-num);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.kpi .note{font-size:12px;color:var(--ink-3)}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 8px;border-radius:99px}
+.pill.good{background:var(--good-bg);color:var(--good)} .pill.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict{border-radius:10px;padding:14px 16px;border:1px solid var(--line);background:var(--accent-soft);display:grid;gap:4px}
+.verdict b{font-size:15px}
+.params{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+fieldset{border:1px solid var(--line);border-radius:8px;margin:0;padding:10px 12px 12px;display:grid;gap:8px;min-width:0}
+legend{font-size:12px;font-weight:700;color:var(--ink-2);padding:0 4px}
+.row{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px}
+.row label{font-size:13px;color:var(--ink-2)}
+.trip{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.trip label{font-size:11px;color:var(--ink-3);display:grid;gap:2px}
+input[type=number]{font-family:var(--f-num);font-size:13px;width:96px;padding:5px 7px;border:1px solid var(--line);border-radius:6px;background:var(--input);color:var(--ink);text-align:right}
+.trip input{width:100%}
+input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.scroll{overflow-x:auto;min-width:0}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:6px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th{font-weight:500;color:var(--ink-2);background:var(--panel);font-size:12px}
+th:first-child,td:first-child{text-align:left;position:sticky;left:0;background:var(--panel);z-index:1}
+tr.tot td{font-weight:700;border-top:2px solid var(--line)}
+tr.ph th{font-size:11px;color:var(--ink-3);padding-block:2px}
+td input{width:84px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{font:inherit;font-size:12px;border:0;background:transparent;color:var(--ink-2);padding:5px 12px;cursor:pointer}
+.seg button[aria-pressed=true],.tabs .btn[aria-pressed=true]{background:var(--accent);color:#fff}
+.btn{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--panel);color:var(--ink-2);border-radius:7px;padding:5px 12px;cursor:pointer}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-size:11px;padding:1px 7px;border-radius:99px;background:var(--bad-bg);color:var(--bad);font-weight:700}
+.chart{position:relative;height:300px;min-width:0}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.wf{display:grid;gap:6px}
+.wf-row{display:grid;grid-template-columns:minmax(120px,190px) 1fr minmax(96px,auto);gap:10px;align-items:center;font-size:13px}
+.wf-bar{height:18px;position:relative;background:transparent}
+.wf-bar span{position:absolute;top:0;bottom:0;border-radius:3px}
+.wf-row .v{font-family:var(--f-num);text-align:right;font-variant-numeric:tabular-nums}
+.foot{font-size:12px;color:var(--ink-3);display:grid;gap:4px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:18px}
+.two>*{min-width:0}
+@media (max-width:520px){.wf-row{grid-template-columns:96px 1fr 84px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header>
+    <h1>站外渠道产值试算</h1>
+    <p class="sub">6 个核心品线（美国站，月均 GMV 合计 $138 万）。四个渠道分别测算新增销售额：ACC 放量、社媒 KOL、联盟营销、Meta 广告。新增销售额按毛利折成人民币后，和三个岗位的年薪对比。黄色格子都可以改，结果实时更新。</p>
+  </header>
+
+  <section class="kpis" id="kpis" aria-label="核心结论"></section>
+  <div class="verdict" id="verdict"></div>
+
+  <section class="panel" aria-labelledby="p-h">
+    <div class="sec-head"><h2 id="p-h">试算参数</h2><button class="btn" id="reset" type="button">恢复默认值</button></div>
+    <h3>渠道占比与费用率（占品线 GMV，单位 %）</h3>
+    <div class="scroll"><table id="chTable"></table></div>
+    <div class="params">
+      <fieldset><legend>岗位年薪（¥）</legend>
+        <div class="row"><label for="sal-kol">KOL 专员（ACC + 社媒）</label><input type="number" step="10000" id="sal-kol"></div>
+        <div class="row"><label for="sal-aff">联盟营销专员</label><input type="number" step="10000" id="sal-aff"></div>
+        <div class="row"><label for="sal-meta">Meta 投放专员</label><input type="number" step="10000" id="sal-meta"></div>
+      </fieldset>
+      <fieldset><legend>通用</legend>
+        <div class="row"><label for="margin">毛利率 %</label><input type="number" step="0.5" id="margin"></div>
+        <div class="row"><label for="tacos">站内广告费率 TACOS %（加回）</label><input type="number" step="0.5" id="tacos"></div>
+        <div class="foot">15% 是扣完站内广告费后的毛利率。站外渠道带来的订单不花站内广告费，所以这部分订单的毛利率是 15% + TACOS。默认填 0，最保守；填入品线实际 TACOS 后看真实贡献。</div>
+        <div class="row"><label for="fx">美元兑人民币</label><input type="number" step="0.05" id="fx"></div>
+        <div class="row"><label for="setup">KOL 搭建期测试投入 $/月（第1–6月）</label><input type="number" step="100" id="setup"></div>
+      </fieldset>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="s1-h">
+    <div class="sec-head"><div><div class="tag">第一部分</div><h2 id="s1-h">核心品线分月销售目标</h2></div></div>
+
+    <h3>品线底数</h3>
+    <div class="scroll"><table id="lines"></table></div>
+    <div class="foot">ACC 目标占比 = 品线 ACC 基线 + 当月放量增量 × 放量系数。放量系数只作用于 ACC，达人资源更好的品线可以调高。</div>
+
+    <h3>各渠道分月新增销售额（6 品线合计，$）</h3>
+    <div class="scroll"><table id="chMonth"></table></div>
+
+    <div class="sec-head">
+      <div class="tabs" role="group" aria-label="选择渠道" id="tabs"></div>
+      <div class="seg" role="group" aria-label="显示口径">
+        <button type="button" id="v-pct" aria-pressed="true">占比</button>
+        <button type="button" id="v-usd" aria-pressed="false">销售额 $</button>
+      </div>
+    </div>
+    <div class="scroll"><table id="lineMonth"></table></div>
+
+    <h3>每月销售额构成（$，6 品线合计）</h3>
+    <div class="legend" id="lg1"></div>
+    <div class="chart"><canvas id="c1" aria-label="每月各渠道新增销售额堆叠柱状图" role="img"></canvas></div>
+  </section>
+
+  <section class="panel" aria-labelledby="s2-h">
+    <div class="sec-head"><div><div class="tag">第二部分</div><h2 id="s2-h">新增销售额的人民币核算，对标岗位年薪</h2></div></div>
+    <h3>按岗位对比（全年，¥）</h3>
+    <div class="scroll"><table id="people"></table></div>
+    <div class="two">
+      <div class="wf" id="wf"></div>
+      <div style="display:grid;gap:8px">
+        <h3>累计新增毛利 vs 累计工资（三岗合计，¥）</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>累计新增毛利</span><span><i style="background:var(--s2)"></i>累计扣渠道费用后贡献</span><span><i style="background:var(--ink-3)"></i>累计工资</span></div>
+        <div class="chart"><canvas id="c2" aria-label="累计新增毛利、扣费后贡献与累计工资折线图" role="img"></canvas></div>
+      </div>
+    </div>
+    <h3>分月人民币明细（三岗合计）</h3>
+    <div class="scroll"><table id="rmb"></table></div>
+    <div class="foot">
+      <div>新增营业额 = 四个渠道的新增销售额 × 汇率。现有 ACC 基线是到岗前就有的，不计入。</div>
+      <div>只算可以直接归因的订单，没有计入站外流量带动的自然排名和自然订单。各渠道之间如有重复归因（例如同一个红人同时挂 ACC 和联盟链接），要去重后再填占比。</div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const DEF={
+  lines:[["油泵",200000,5.25,1],["充气泵",250000,5.25,1],["逆变器",340000,5.25,1],["冲击扳手",260000,5.25,1],["黄油枪",130000,5.25,1],["工作灯",200000,5.25,1]],
+  ch:{acc:{s:[0.5,1,1.5],c:10},kol:{s:[0,1,2],c:12},aff:{s:[3,3,3],c:10},meta:{s:[0.5,0.5,0.5],c:0}},
+  sal:{kol:400000,aff:250000,meta:150000}, margin:15, tacos:0, setup:1000, fx:7.1
+};
+const CH=[
+  {id:"acc",name:"ACC 放量",owner:"kol",cost:"ACC 加码佣金",color:"--s1",note:"先激活已合作红人，第1月起计"},
+  {id:"kol",name:"社媒 KOL",owner:"kol",cost:"达人费",color:"--s2",note:"前3个月搭建，不出单"},
+  {id:"aff",name:"联盟营销",owner:"aff",cost:"联盟佣金",color:"--s3",note:"按 3% 计"},
+  {id:"meta",name:"Meta 广告",owner:"meta",cost:"Meta 广告花费",color:"--s4",note:"按 0.5% 计"}];
+const PPL=[{id:"kol",name:"KOL 专员",chs:"ACC 放量 + 社媒 KOL"},{id:"aff",name:"联盟营销专员",chs:"联盟营销"},{id:"meta",name:"Meta 投放专员",chs:"Meta 广告"}];
+const KEY="ext-channel-trial-v2";
+let S; try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(S&&S.tacos==null) S.tacos=0;
+if(!S||!S.ch) S=JSON.parse(JSON.stringify(DEF));
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+let view="pct", tab="acc";
+const M=[...Array(12)].map((_,i)=>i+1), ph=m=>m<=3?0:m<=6?1:2, PH=["搭建","搭建","搭建","测试放量","测试放量","测试放量","稳定","稳定","稳定","稳定","稳定","稳定"];
+const $=id=>document.getElementById(id);
+const usd=v=>(v<0?"−$":"$")+Math.abs(Math.round(v)).toLocaleString("en-US");
+const wan=v=>(v<0?"−":"")+"¥"+(Math.abs(v)/1e4).toFixed(1)+"万";
+const pct=v=>(v*100).toFixed(2)+"%";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const Z=()=>Array(12).fill(0), sum=a=>a.reduce((x,y)=>x+y,0);
+
+function calc(){
+  const r={gmv:Z(),base:Z(),ch:{},line:{}};
+  CH.forEach(c=>{r.ch[c.id]=Z();r.line[c.id]=S.lines.map(()=>[])});
+  r.accTarget=S.lines.map(()=>[]);
+  S.lines.forEach(([n,g,b,f],li)=>M.forEach((m,i)=>{
+    r.gmv[i]+=g; r.base[i]+=g*b/100;
+    CH.forEach(c=>{const p=S.ch[c.id].s[ph(m)]/100*(c.id==="acc"?f:1);r.ch[c.id][i]+=g*p;r.line[c.id][li].push({p,v:g*p})});
+    const up=S.ch.acc.s[ph(m)]/100*f; r.accTarget[li].push({p:b/100+up,v:g*(b/100+up)});
+  }));
+  const fx=S.fx, mg=(S.margin+(S.tacos||0))/100;
+  // per person per month
+  r.pp={}; PPL.forEach(p=>{
+    const mine=CH.filter(c=>c.owner===p.id);
+    r.pp[p.id]=M.map((m,i)=>{const inc=sum(mine.map(c=>r.ch[c.id][i]));const cost=sum(mine.map(c=>r.ch[c.id][i]*S.ch[c.id].c/100))+(p.id==="kol"&&m<=6?S.setup:0);
+      const o={inc,rev:inc*fx,gp:inc*mg*fx,cost:cost*fx,sal:S.sal[p.id]/12};o.contrib=o.gp-o.cost;o.net=o.contrib-o.sal;return o});
+  });
+  r.mon=M.map((m,i)=>{const o={inc:0,rev:0,gp:0,cost:0,sal:0,contrib:0,net:0};PPL.forEach(p=>{for(const k in o)o[k]+=r.pp[p.id][i][k]});return o});
+  const tot=arr=>{const o={};["inc","rev","gp","cost","sal","contrib","net"].forEach(k=>o[k]=sum(arr.map(x=>x[k])));return o};
+  r.T=tot(r.mon); r.P={}; PPL.forEach(p=>r.P[p.id]=tot(r.pp[p.id]));
+  r.T.gmv=sum(r.gmv); r.CT={}; CH.forEach(c=>{r.CT[c.id]=sum(r.ch[c.id]);r.CT[c.id+"_cost"]=r.CT[c.id]*S.ch[c.id].c/100*fx});
+  r.T.setup=S.setup*6*fx;
+  return r;
+}
+
+function buildInputs(){
+  let h='<tr><th>渠道</th><th>负责人</th><th class="n">第1–3月</th><th class="n">第4–6月</th><th class="n">第7–12月</th><th class="n">费用率</th><th>费用口径</th></tr>';
+  CH.forEach(c=>{const p=PPL.find(x=>x.id===c.owner).name;
+    h+=`<tr><td><i style="display:inline-block;width:10px;height:10px;border-radius:2px;background:var(${c.color});margin-right:6px"></i>${c.name}</td><td style="text-align:left">${p}</td>`+[0,1,2].map(i=>`<td><input type="number" step="0.1" id="s-${c.id}-${i}" aria-label="${c.name}阶段${i+1}占比"></td>`).join("")+`<td><input type="number" step="0.5" id="c-${c.id}" aria-label="${c.name}费用率"></td><td style="text-align:left;color:var(--ink-3)">${c.cost}，占该渠道销售额<span id="w-${c.id}"></span></td></tr>`});
+  $("chTable").innerHTML=h;
+  CH.forEach(c=>{[0,1,2].forEach(i=>{const el=$(`s-${c.id}-${i}`);el.value=S.ch[c.id].s[i];el.oninput=e=>{S.ch[c.id].s[i]=+e.target.value||0;upd()}});
+    const el=$("c-"+c.id);el.value=S.ch[c.id].c;el.oninput=e=>{S.ch[c.id].c=+e.target.value||0;upd()}});
+  PPL.forEach(p=>{const el=$("sal-"+p.id);el.value=S.sal[p.id];el.oninput=e=>{S.sal[p.id]=+e.target.value||0;upd()}});
+  ["margin","tacos","fx","setup"].forEach(k=>{$(k).value=S[k];$(k).oninput=e=>{S[k]=+e.target.value||0;upd()}});
+  h='<tr><th>品线</th><th class="n">月均 GMV $</th><th class="n">ACC 基线 %</th><th class="n">ACC 放量系数</th><th class="n">全年 GMV $</th></tr>';
+  S.lines.forEach((l,i)=>{h+=`<tr><td>${l[0]}</td><td><input type="number" step="10000" id="g${i}" value="${l[1]}" aria-label="${l[0]}月均GMV"></td><td><input type="number" step="0.05" id="b${i}" value="${l[2]}" aria-label="${l[0]}ACC基线"></td><td><input type="number" step="0.1" id="f${i}" value="${l[3]}" aria-label="${l[0]}放量系数"></td><td class="n" id="ga${i}"></td></tr>`});
+  h+='<tr class="tot"><td>合计</td><td class="n" id="gt"></td><td></td><td></td><td class="n" id="gat"></td></tr>';
+  $("lines").innerHTML=h;
+  S.lines.forEach((l,i)=>{[["g",1],["b",2],["f",3]].forEach(([k,j])=>{$(k+i).oninput=e=>{l[j]=+e.target.value||0;upd()}})});
+  $("tabs").innerHTML=[["acc","ACC 目标（含基线）"],["kol","社媒 KOL"],["aff","联盟营销"],["meta","Meta 广告"]].map(([id,n])=>`<button type="button" class="btn" data-t="${id}" aria-pressed="${id===tab}">${n}</button>`).join("");
+  $("tabs").querySelectorAll("button").forEach(b=>b.onclick=()=>{tab=b.dataset.t;$("tabs").querySelectorAll("button").forEach(x=>x.setAttribute("aria-pressed",x===b));render()});
+  $("lg1").innerHTML='<span><i style="background:var(--base)"></i>现有 ACC 基线（不计入岗位产值）</span>'+CH.map(c=>`<span><i style="background:var(${c.color})"></i>${c.name}</span>`).join("");
+}
+const mhead=first=>'<tr class="ph"><th></th>'+PH.map(p=>`<th class="n">${p}</th>`).join("")+'<th class="n"></th></tr><tr><th>'+first+'</th>'+M.map(m=>`<th class="n">${m}月</th>`).join("")+'<th class="n">全年</th></tr>';
+
+function render(){
+  const r=calc(),T=r.T;
+  S.lines.forEach((l,i)=>{$("ga"+i).textContent=usd(l[1]*12)});
+  $("gt").textContent=usd(sum(S.lines.map(l=>l[1]))); $("gat").textContent=usd(T.gmv);
+  CH.forEach(c=>{$("w-"+c.id).innerHTML=(c.id==="meta"&&S.ch.meta.c===0)?' <span class="chip">未填，净贡献偏乐观</span>':""});
+
+  // channel x month
+  let h=mhead("渠道");
+  CH.forEach(c=>{h+=`<tr><td>${c.name}</td>`+r.ch[c.id].map(v=>`<td class="n">${usd(v)}</td>`).join("")+`<td class="n"><b>${usd(r.CT[c.id])}</b></td></tr>`});
+  const tm=M.map((m,i)=>sum(CH.map(c=>r.ch[c.id][i])));
+  h+='<tr class="tot"><td>新增合计</td>'+tm.map(v=>`<td class="n">${usd(v)}</td>`).join("")+`<td class="n">${usd(T.inc)}</td></tr>`;
+  h+='<tr><td>占 GMV</td>'+tm.map((v,i)=>`<td class="n">${pct(v/r.gmv[i])}</td>`).join("")+`<td class="n">${pct(T.inc/T.gmv)}</td></tr>`;
+  $("chMonth").innerHTML=h;
+
+  // per-line x month for selected tab
+  const data=tab==="acc"?r.accTarget:r.line[tab];
+  h=mhead("品线");
+  data.forEach((a,i)=>{const g=S.lines[i][1]*12,yr=sum(a.map(x=>x.v));
+    h+=`<tr><td>${S.lines[i][0]}</td>`+a.map(x=>`<td class="n">${view==="pct"?pct(x.p):usd(x.v)}</td>`).join("")+`<td class="n"><b>${view==="pct"?pct(g?yr/g:0):usd(yr)}</b></td></tr>`});
+  const col=M.map((m,i)=>sum(data.map(a=>a[i].v))), yr=sum(col);
+  h+='<tr class="tot"><td>合计</td>'+col.map((v,i)=>`<td class="n">${view==="pct"?pct(v/r.gmv[i]):usd(v)}</td>`).join("")+`<td class="n">${view==="pct"?pct(yr/T.gmv):usd(yr)}</td></tr>`;
+  if(tab==="acc") h+='<tr><td>其中放量增量</td>'+r.ch.acc.map((v,i)=>`<td class="n">${view==="pct"?pct(v/r.gmv[i]):usd(v)}</td>`).join("")+`<td class="n">${view==="pct"?pct(r.CT.acc/T.gmv):usd(r.CT.acc)}</td></tr>`;
+  $("lineMonth").innerHTML=h;
+
+  // KPIs
+  const ratio=T.gp/T.sal;
+  $("kpis").innerHTML=[
+    ["四渠道新增销售额",usd(T.inc),`占 6 品线 GMV ${pct(T.inc/T.gmv)}`],
+    ["折合人民币年营业额",wan(T.rev),`汇率 ${S.fx}`],
+    [`新增毛利（${S.margin+(S.tacos||0)}%）`,wan(T.gp),S.tacos?`${S.margin}% + 加回 TACOS ${S.tacos}%，未扣渠道费用`:"按扣广告后毛利 15%，未扣渠道费用"],
+    ["毛利 ÷ 三岗年薪",ratio.toFixed(2)+"×",`年薪合计 ${wan(T.sal)} <span class="pill ${ratio>=1?"good":"bad"}">${ratio>=1?"能覆盖":"覆盖不了"}</span>`],
+    ["扣渠道费用和工资后净贡献",wan(T.net),`<span class="pill ${T.net>=0?"good":"bad"}">${T.net>=0?"第一年盈利":"第一年亏损"}</span>`]
+  ].map(([a,b,c])=>`<div class="kpi"><span class="lbl">${a}</span><span class="val">${b}</span><span class="note">${c}</span></div>`).join("");
+
+  // people table
+  h='<tr><th>岗位</th><th style="text-align:left">负责渠道</th><th class="n">新增销售额 $</th><th class="n">营业额</th><th class="n">毛利</th><th class="n">年薪</th><th class="n">毛利÷年薪</th><th class="n">渠道费用</th><th class="n">净贡献</th><th class="n">营业额÷年薪</th></tr>';
+  const prow=(n,chs,P,cls)=>{const x=P.gp/P.sal;return `<tr${cls?` class="${cls}"`:""}><td>${n}</td><td style="text-align:left">${chs}</td><td class="n">${usd(P.inc)}</td><td class="n">${wan(P.rev)}</td><td class="n">${wan(P.gp)}</td><td class="n">${wan(P.sal)}</td><td class="n"><span class="pill ${x>=1?"good":"bad"}">${x.toFixed(2)}×</span></td><td class="n">${wan(-P.cost)}</td><td class="n" style="color:var(--${P.net>=0?"good":"bad"})">${wan(P.net)}</td><td class="n">${(P.rev/P.sal).toFixed(1)}×</td></tr>`};
+  PPL.forEach(p=>h+=prow(p.name,p.chs,r.P[p.id]));
+  h+=prow("合计","四个渠道",T,"tot");
+  $("people").innerHTML=h;
+
+  const best=PPL.map(p=>({...p,x:r.P[p.id].gp/r.P[p.id].sal})).sort((a,b)=>b.x-a.x);
+  $("verdict").innerHTML=`<b>三个岗位合计新增营业额 ${wan(T.rev)}，毛利 ${wan(T.gp)}，是年薪合计 ${wan(T.sal)} 的 ${ratio.toFixed(2)} 倍；扣掉佣金、达人费、广告花费和测试投入 ${wan(T.cost)} 后，净贡献为 ${wan(T.net)}。</b>
+  <span>按毛利覆盖年薪的倍数排：${best.map(p=>`${p.name} ${p.x.toFixed(2)}×`).join("，")}。每 $1 新增销售额扣完渠道费用后的毛利：${CH.map(c=>`${c.name} ${(S.margin+(S.tacos||0)-S.ch[c.id].c).toFixed(1)} 美分`).join("，")}。${S.ch.meta.c===0?"Meta 广告花费还没填，Meta 这一行的净贡献偏乐观。":""}</span>`;
+
+  // waterfall (team)
+  const steps=[["新增营业额",T.rev,"s1",0],[`新增毛利 ${S.margin+(S.tacos||0)}%`,T.gp,"s1",0],
+    ...CH.map(c=>["− "+c.cost,-r.CT[c.id+"_cost"],"s2",1]),["− KOL 测试投入",-T.setup,"s2",1],
+    ["扣费后贡献",T.contrib,"s3",0],["− 三岗年薪",-T.sal,"ink-3",1],["净贡献",T.net,T.net>=0?"good":"bad",0]];
+  const lo=Math.min(0,T.net,T.contrib),span=T.rev-lo,x=v=>(v-lo)/span*100; let run=0;
+  $("wf").innerHTML='<h3>全年人民币核算（三岗合计）</h3>'+steps.map(([n,v,c,d],i)=>{
+    let a,b; if(i<=1){a=0;b=v;run=v} else if(d){a=run+v;b=run;run+=v} else {a=Math.min(0,v);b=Math.max(0,v);run=v}
+    const L=x(Math.min(a,b)),W=Math.max(.6,x(Math.max(a,b))-L);
+    return `<div class="wf-row"><span>${n}</span><div class="wf-bar"><span style="left:${L}%;width:${W}%;background:var(--${c})"></span></div><span class="v">${wan(v)}</span></div>`}).join("")
+    +'<div class="foot">柱条按同一比例尺绘制；扣费后贡献以下是对标工资的部分。</div>';
+
+  // RMB monthly
+  const rows=[["新增销售额 $","inc",usd],["新增营业额","rev",wan],["新增毛利","gp",wan],["渠道费用 + 测试投入","cost",v=>wan(-v)],["三岗工资","sal",v=>wan(-v)],["当月净贡献","net",wan]];
+  h='<tr><th>项目</th>'+M.map(m=>`<th class="n">${m}月</th>`).join("")+'<th class="n">全年</th></tr>';
+  rows.forEach(([n,k,f])=>{const vals=r.mon.map(o=>o[k]);h+=`<tr${k==="net"?' class="tot"':""}><td>${n}</td>`+vals.map(v=>`<td class="n">${f(v)}</td>`).join("")+`<td class="n">${f(sum(vals))}</td></tr>`});
+  let cum=0; h+='<tr><td>累计净贡献</td>'+r.mon.map(o=>{cum+=o.net;return `<td class="n">${wan(cum)}</td>`}).join("")+'<td></td></tr>';
+  $("rmb").innerHTML=h;
+  drawCharts(r);
+}
+
+let c1,c2;
+function drawCharts(r){
+  if(!window.Chart) return;
+  const ink=css("--ink-2"),grid=css("--line"),labels=M.map(m=>m+"月"),panel=css("--panel");
+  Chart.defaults.font.family=css("--f-body"); Chart.defaults.color=ink;
+  const tip=f=>({mode:"index",intersect:false,callbacks:{label:c=>`${c.dataset.label}：${f(c.parsed.y)}`}});
+  const series=[["现有 ACC 基线",r.base,"--base"],...CH.map(c=>[c.name,r.ch[c.id],c.color])];
+  const ds=series.map(([l,d,c],i)=>({label:l,data:d,backgroundColor:css(c),borderColor:panel,borderWidth:{top:2},borderSkipped:"bottom",borderRadius:i===series.length-1?{topLeft:4,topRight:4}:0,maxBarThickness:40}));
+  if(c1) c1.destroy();
+  c1=new Chart($("c1"),{type:"bar",data:{labels,datasets:ds},options:{maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:tip(usd)},
+    scales:{x:{stacked:true,grid:{display:false},ticks:{color:ink}},y:{stacked:true,grid:{color:grid},border:{display:false},ticks:{color:ink,callback:v=>"$"+(v/1000)+"k"}}}}});
+  let a=0,b=0,s=0;const gp=[],ct=[],sal=[];
+  r.mon.forEach(o=>{a+=o.gp;b+=o.contrib;s+=o.sal;gp.push(a);ct.push(b);sal.push(s)});
+  const ln=(l,d,c,dash)=>({label:l,data:d,borderColor:css(c),backgroundColor:css(c),borderWidth:2,pointRadius:3,pointHoverRadius:5,borderDash:dash||[],tension:0});
+  if(c2) c2.destroy();
+  c2=new Chart($("c2"),{type:"line",data:{labels,datasets:[ln("累计新增毛利",gp,"--s1"),ln("累计扣费后贡献",ct,"--s2"),ln("累计工资",sal,"--ink-3",[5,4])]},options:{maintainAspectRatio:false,animation:false,interaction:{mode:"index",intersect:false},plugins:{legend:{display:false},tooltip:tip(wan)},scales:{x:{grid:{display:false},ticks:{color:ink}},y:{grid:{color:grid},border:{display:false},ticks:{color:ink,callback:v=>(v/1e4)+"万"}}}}});
+}
+function upd(){save();render()}
+$("v-pct").onclick=()=>{view="pct";$("v-pct").setAttribute("aria-pressed","true");$("v-usd").setAttribute("aria-pressed","false");render()};
+$("v-usd").onclick=()=>{view="usd";$("v-usd").setAttribute("aria-pressed","true");$("v-pct").setAttribute("aria-pressed","false");render()};
+$("reset").onclick=()=>{S=JSON.parse(JSON.stringify(DEF));save();buildInputs();render()};
+buildInputs();render();
+window.addEventListener("load",()=>render());
+matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>render());
+new MutationObserver(()=>render()).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+</script>
