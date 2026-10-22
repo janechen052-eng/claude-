@@ -1,0 +1,604 @@
+<title>重点品线运营工作台</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600&family=JetBrains+Mono:wght@400;500&family=Noto+Sans+SC:wght@400;500;700&display=swap">
+<style>
+/* Layout: sticky control bar (month + line filter + tabs) over one module at a time; tables scroll inside their own cards. */
+:root{
+  --bg:#F2F4F6; --panel:#FFFFFF; --panel-2:#F7F8FA; --fg:#18212B; --muted:#5B6876; --line:#D8DDE3; --line-soft:#E8EBEF;
+  --accent:#B85A0C; --accent-soft:#FBEBDD; --accent-fg:#FFFFFF;
+  --ok:#23784A; --ok-soft:#E1F2E8; --warn:#9A6410; --warn-soft:#FBF0D9; --bad:#BE2A2A; --bad-soft:#FBE3E1;
+  --s1:#2F6DB5; --s2:#D98A1C; --s3:#1E9583; --s4:#7B5CC4; --s5:#C2476B; --s6:#71862A; --s7:#6B7A8C; --s8:#4FA3D9;
+  --grid:#E6E9ED;
+  --font-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --font-num:"Barlow Condensed","Noto Sans SC",system-ui,sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --r:6px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11161B; --panel:#192027; --panel-2:#1E262E; --fg:#E5EAEF; --muted:#93A1AE; --line:#2C363F; --line-soft:#242D35;
+  --accent:#F09A4A; --accent-soft:#3A2817; --accent-fg:#1A1007;
+  --ok:#5CC48A; --ok-soft:#173326; --warn:#E8B44A; --warn-soft:#352A12; --bad:#FF7A6E; --bad-soft:#3B1C1A;
+  --s1:#6EA2E6; --s2:#F0AE4E; --s3:#4CC7B2; --s4:#A88BEB; --s5:#EC7A9C; --s6:#A6BE57; --s7:#9AA8B8; --s8:#7FC4F0;
+  --grid:#27313A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11161B; --panel:#192027; --panel-2:#1E262E; --fg:#E5EAEF; --muted:#93A1AE; --line:#2C363F; --line-soft:#242D35;
+  --accent:#F09A4A; --accent-soft:#3A2817; --accent-fg:#1A1007;
+  --ok:#5CC48A; --ok-soft:#173326; --warn:#E8B44A; --warn-soft:#352A12; --bad:#FF7A6E; --bad-soft:#3B1C1A;
+  --s1:#6EA2E6; --s2:#F0AE4E; --s3:#4CC7B2; --s4:#A88BEB; --s5:#EC7A9C; --s6:#A6BE57; --s7:#9AA8B8; --s8:#7FC4F0;
+  --grid:#27313A; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font-family:var(--font-body);font-size:14px;line-height:1.55}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--panel)}
+.wrap{max-width:1360px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+header.top{background:var(--panel);border-bottom:1px solid var(--line)}
+header.top .wrap{padding-block:18px 14px;display:flex;flex-wrap:wrap;gap:12px 24px;align-items:flex-end;justify-content:space-between}
+h1{font-size:22px;font-weight:700;margin:0;letter-spacing:.02em;text-wrap:balance}
+.sub{color:var(--muted);font-size:12.5px;margin-top:4px}
+.sample{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--warn);background:var(--warn-soft);border-radius:999px;padding:2px 10px;margin-top:8px}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.ctl{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--muted)}
+select,input,textarea,button{font:inherit;color:var(--fg)}
+select,input[type=number]{background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:5px 8px}
+.chips{display:flex;flex-wrap:wrap;gap:4px}
+.chip{border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:3px 12px;font-size:13px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:8px;height:8px;border-radius:50%}
+.chip[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+nav.tabs .wrap{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+nav.tabs button{border:0;background:none;padding:11px 14px 10px;font-size:14px;color:var(--muted);cursor:pointer;white-space:nowrap;border-bottom:2px solid transparent;display:inline-flex;gap:6px;align-items:center}
+nav.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:500}
+nav.tabs .n{font-family:var(--font-num);font-size:13px;background:var(--bad);color:var(--panel);border-radius:999px;padding:0 7px;line-height:18px}
+button:focus-visible,select:focus-visible,input:focus-visible,textarea:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+main .wrap{padding-block:20px 48px;display:grid;gap:16px}
+section.mod{display:grid;gap:16px}
+.mod-head{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:8px}
+h2{font-size:18px;margin:0;font-weight:700}
+.mod-head p{margin:2px 0 0;color:var(--muted);font-size:13px;max-width:70ch}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px;min-width:0}
+.card h3{font-size:15px;margin:0 0 2px;font-weight:500}
+.card .note{color:var(--muted);font-size:12.5px;margin:0 0 12px}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr))}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,10.5rem),1fr))}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:grid;gap:2px;align-content:start}
+.kpi .k{font-size:12.5px;color:var(--muted)}
+.kpi .v{font-family:var(--font-num);font-size:30px;font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:12px;font-variant-numeric:tabular-nums}
+.up{color:var(--ok)} .down{color:var(--bad)} .flat{color:var(--muted)}
+.tbl-wrap{overflow-x:auto;margin-inline:-4px;padding-inline:4px}
+table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums;font-size:13px}
+th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line-soft);white-space:nowrap}
+th{font-weight:500;color:var(--muted);font-size:12px;background:var(--panel);position:sticky;top:0}
+th.l,td.l{text-align:left}
+tbody tr:hover td{background:var(--panel-2)}
+tr.sub td{background:var(--panel-2);font-weight:500}
+tr.grp td{background:var(--bg);font-weight:700;text-align:left;font-size:13px;padding-top:10px}
+.mono{font-family:var(--font-mono);font-size:12px}
+.muted{color:var(--muted)}
+.bad{color:var(--bad)} .warn{color:var(--warn)} .ok{color:var(--ok)}
+.pill{display:inline-block;border-radius:999px;padding:0 9px;font-size:12px;line-height:20px;white-space:nowrap}
+.pill.high{background:var(--bad-soft);color:var(--bad)}
+.pill.mid{background:var(--warn-soft);color:var(--warn)}
+.pill.okp{background:var(--ok-soft);color:var(--ok)}
+.pill.neutral{background:var(--panel-2);color:var(--muted);border:1px solid var(--line)}
+.lt{display:inline-flex;align-items:center;gap:6px}
+.lt i{width:8px;height:8px;border-radius:2px;display:inline-block}
+.stack{display:flex;height:10px;border-radius:3px;overflow:hidden;min-width:140px;background:var(--line-soft)}
+.stack span{height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--muted);margin:0 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.minis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,15rem),1fr))}
+.mini{border:1px solid var(--line-soft);border-radius:var(--r);padding:10px 12px;background:var(--panel-2)}
+.mini .t{display:flex;justify-content:space-between;font-size:13px;font-weight:500}
+.mini svg{display:block;width:100%;height:auto;margin-top:6px}
+svg text{fill:var(--muted);font-size:11px;font-family:var(--font-body)}
+.cell-rank{display:grid;gap:0;line-height:1.25;text-align:center;border-radius:4px;padding:3px 6px}
+.cell-rank b{font-family:var(--font-num);font-size:16px;font-weight:600}
+.cell-rank small{font-size:11px}
+.cell-rank.hit{background:var(--ok-soft);color:var(--ok)}
+.cell-rank.miss{background:var(--bad-soft);color:var(--bad)}
+.rank-block{border:1px solid var(--line);border-radius:var(--r);background:var(--panel);overflow:hidden}
+.rank-block + .rank-block{margin-top:12px}
+.rank-head{display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line-soft)}
+.rank-head .asin{font-family:var(--font-mono);font-weight:500}
+.tgt{display:flex;gap:16px;flex-wrap:wrap;font-size:12.5px;color:var(--muted)}
+.tgt b{font-family:var(--font-num);font-size:18px;color:var(--fg);font-weight:600;margin-left:4px}
+.rank-body{padding:10px 14px 12px;display:grid;gap:10px}
+.comp-label{font-size:12px;color:var(--muted);margin-top:4px}
+textarea{width:100%;min-width:220px;min-height:52px;resize:vertical;background:var(--panel-2);border:1px solid var(--line);border-radius:var(--r);padding:6px 8px;font-size:13px;line-height:1.45}
+td.wrap-cell{white-space:normal;min-width:240px}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:var(--r);padding:5px 12px;cursor:pointer;font-size:13px}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.who{font-size:12px;color:var(--muted);white-space:normal;min-width:110px}
+.notice{font-size:13px;border-radius:var(--r);padding:8px 12px;background:var(--panel-2);border:1px dashed var(--line);color:var(--muted)}
+.notice.err{border-color:var(--bad);color:var(--bad);background:var(--bad-soft);border-style:solid}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.counts{display:flex;gap:8px;flex-wrap:wrap}
+.toast{position:fixed;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:var(--r);font-size:13px;z-index:20}
+.rules td{white-space:normal;vertical-align:top}
+.rules td input{width:84px;text-align:right}
+.formula{font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+.foot{font-size:12px;color:var(--muted)}
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <div>
+      <h1>重点品线运营工作台</h1>
+      <div class="sub">冲击扳手 · 黄油枪 · 充气泵 · 工作灯　|　美国站　|　金额单位 USD</div>
+      <div class="sample">示例数据：我司 ASIN（B0SMPL 开头）和经营数字为演示用；竞品数据为卖家精灵 2026-10-22 实时抓取</div>
+    </div>
+    <div class="controls">
+      <label class="ctl" for="f-month">月份
+        <select id="f-month"></select>
+      </label>
+      <div class="chips" id="f-line" role="group" aria-label="品线筛选"></div>
+    </div>
+  </div>
+</header>
+<nav class="tabs" aria-label="模块">
+  <div class="wrap" role="tablist" id="tabs"></div>
+</nav>
+<main><div class="wrap" id="view"></div></main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const DATA = {"months":["2026-06","2026-07","2026-08","2026-09"],"asins":[{"asin":"B0SMPLIW01","line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","name":"1/2\" 无刷冲击扳手 双电套装","price":89.99},{"asin":"B0SMPLIW02","line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","name":"1/2\" 无刷冲击扳手 单机","price":59.99},{"asin":"B0SMPLIW03","line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","name":"3/8\" 紧凑冲击扳手 单电","price":69.99},{"asin":"B0SMPLGG01","line":"黄油枪","spu":"GG-20V 电动","name":"20V 电动黄油枪 10000PSI","price":69.99},{"asin":"B0SMPLGG02","line":"黄油枪","spu":"GG-P 手动","name":"手动黄油枪 8000PSI 套装","price":22.99},{"asin":"B0SMPLTI01","line":"充气泵","spu":"TI-W 无线便携","name":"无线充气泵 150PSI 数显","price":32.99},{"asin":"B0SMPLTI02","line":"充气泵","spu":"TI-W 无线便携","name":"双电源充气泵 锂电+12V","price":39.99},{"asin":"B0SMPLWL01","line":"工作灯","spu":"WL-C COB 充电","name":"COB 充电工作灯 2只装","price":19.99},{"asin":"B0SMPLWL02","line":"工作灯","spu":"WL-20 电池兼容","name":"20V 电池兼容 LED 工作灯","price":29.99}],"monthly":[{"asin":"B0SMPLIW01","month":"2026-06","units":2001,"sales":180069.99,"refund":6971.55,"returns":77,"cogs":52652.47,"freight":7203.6,"fba":19709.85,"commission":27010.5,"ad":20184.62,"storage":859.0,"aged_fee":0,"promo":4067.58,"profit":41410.82},{"asin":"B0SMPLIW01","month":"2026-07","units":1887,"sales":169811.13,"refund":6523.76,"returns":72,"cogs":49652.77,"freight":6793.2,"fba":18586.95,"commission":25471.67,"ad":16450.83,"storage":893.87,"aged_fee":0,"promo":2987.12,"profit":42450.96},{"asin":"B0SMPLIW01","month":"2026-08","units":2019,"sales":181689.81,"refund":6659.92,"returns":74,"cogs":53126.1,"freight":7268.4,"fba":19887.15,"commission":27253.47,"ad":20955.04,"storage":883.36,"aged_fee":0,"promo":3188.2,"profit":42468.17},{"asin":"B0SMPLIW01","month":"2026-09","units":2070,"sales":186279.3,"refund":6696.28,"returns":74,"cogs":54468.07,"freight":7452.0,"fba":20389.5,"commission":27941.89,"ad":18601.41,"storage":840.79,"aged_fee":0,"promo":3151.72,"profit":46737.64},{"asin":"B0SMPLIW02","month":"2026-06","units":1067,"sales":64009.33,"refund":3219.2,"returns":53,"cogs":18165.85,"freight":3414.4,"fba":9496.3,"commission":9601.4,"ad":7400.37,"storage":574.68,"aged_fee":0,"promo":1100.11,"profit":11037.02},{"asin":"B0SMPLIW02","month":"2026-07","units":1177,"sales":70608.23,"refund":4172.56,"returns":69,"cogs":20038.62,"freight":3766.4,"fba":10475.3,"commission":10591.23,"ad":9317.86,"storage":509.64,"aged_fee":0,"promo":1419.87,"profit":10316.75},{"asin":"B0SMPLIW02","month":"2026-08","units":1148,"sales":68868.52,"refund":4132.52,"returns":68,"cogs":19544.89,"freight":3673.6,"fba":10217.2,"commission":10330.28,"ad":7624.94,"storage":490.05,"aged_fee":0,"promo":1150.88,"profit":11704.16},{"asin":"B0SMPLIW02","month":"2026-09","units":1313,"sales":78766.87,"refund":5592.45,"returns":93,"cogs":22354.04,"freight":4201.6,"fba":11685.7,"commission":11815.03,"ad":10053.86,"storage":578.72,"aged_fee":0,"promo":1842.47,"profit":10643.0},{"asin":"B0SMPLIW03","month":"2026-06","units":537,"sales":37584.63,"refund":1310.44,"returns":18,"cogs":13898.8,"freight":1825.8,"fba":4940.4,"commission":5637.69,"ad":5375.42,"storage":227.04,"aged_fee":0,"promo":1129.65,"profit":3239.39},{"asin":"B0SMPLIW03","month":"2026-07","units":530,"sales":37094.7,"refund":1359.14,"returns":19,"cogs":13717.62,"freight":1802.0,"fba":4876.0,"commission":5564.2,"ad":5329.97,"storage":324.32,"aged_fee":0,"promo":1103.72,"profit":3017.73},{"asin":"B0SMPLIW03","month":"2026-08","units":567,"sales":39684.33,"refund":1710.69,"returns":24,"cogs":14675.27,"freight":1927.8,"fba":5216.4,"commission":5952.65,"ad":6399.77,"storage":256.26,"aged_fee":0,"promo":1319.71,"profit":2225.78},{"asin":"B0SMPLIW03","month":"2026-09","units":669,"sales":46823.31,"refund":1594.99,"returns":22,"cogs":17315.26,"freight":2274.6,"fba":6154.8,"commission":7023.5,"ad":8374.61,"storage":268.68,"aged_fee":0,"promo":1257.44,"profit":2559.43},{"asin":"B0SMPLGG01","month":"2026-06","units":931,"sales":65160.69,"refund":1840.19,"returns":26,"cogs":20173.75,"freight":3817.1,"fba":9682.4,"commission":9774.1,"ad":6843.16,"storage":646.35,"aged_fee":0,"promo":1070.56,"profit":11313.08},{"asin":"B0SMPLGG01","month":"2026-07","units":1032,"sales":72229.68,"refund":2399.1,"returns":34,"cogs":22362.31,"freight":4231.2,"fba":10732.8,"commission":10834.45,"ad":7623.48,"storage":633.92,"aged_fee":0,"promo":1232.71,"profit":12179.71},{"asin":"B0SMPLGG01","month":"2026-08","units":887,"sales":62081.13,"refund":1908.02,"returns":27,"cogs":19220.32,"freight":3636.7,"fba":9224.8,"commission":9312.17,"ad":6807.26,"storage":526.65,"aged_fee":0,"promo":761.68,"profit":10683.53},{"asin":"B0SMPLGG01","month":"2026-09","units":980,"sales":68590.2,"refund":2066.3,"returns":29,"cogs":21235.53,"freight":4018.0,"fba":10192.0,"commission":10288.53,"ad":6058.93,"storage":624.56,"aged_fee":0,"promo":1012.44,"profit":13093.91},{"asin":"B0SMPLGG02","month":"2026-06","units":2642,"sales":60739.58,"refund":1739.86,"returns":75,"cogs":15670.81,"freight":4227.2,"fba":16116.2,"commission":9110.94,"ad":10712.61,"storage":771.17,"aged_fee":0,"promo":1264.62,"profit":1126.17},{"asin":"B0SMPLGG02","month":"2026-07","units":2859,"sales":65728.41,"refund":1754.17,"returns":76,"cogs":16957.93,"freight":4574.4,"fba":17439.9,"commission":9859.26,"ad":12999.55,"storage":854.38,"aged_fee":0,"promo":1198.9,"profit":89.92},{"asin":"B0SMPLGG02","month":"2026-08","units":2631,"sales":60486.69,"refund":1518.78,"returns":66,"cogs":15605.57,"freight":4209.6,"fba":16049.1,"commission":9073.0,"ad":12123.12,"storage":700.04,"aged_fee":0,"promo":1353.32,"profit":-145.84},{"asin":"B0SMPLGG02","month":"2026-09","units":2765,"sales":63567.35,"refund":1701.08,"returns":73,"cogs":16400.38,"freight":4424.0,"fba":16866.5,"commission":9535.1,"ad":13057.24,"storage":828.5,"aged_fee":0,"promo":1107.66,"profit":-353.11},{"asin":"B0SMPLTI01","month":"2026-06","units":4941,"sales":163003.59,"refund":6877.25,"returns":208,"cogs":43456.76,"freight":6917.4,"fba":27669.6,"commission":24450.54,"ad":14550.02,"storage":698.33,"aged_fee":0,"promo":3908.73,"profit":34474.96},{"asin":"B0SMPLTI01","month":"2026-07","units":4719,"sales":155679.81,"refund":7960.62,"returns":241,"cogs":41504.24,"freight":6606.6,"fba":26426.4,"commission":23351.97,"ad":14481.51,"storage":927.83,"aged_fee":0,"promo":3352.92,"profit":31067.72},{"asin":"B0SMPLTI01","month":"2026-08","units":5106,"sales":168446.94,"refund":8167.63,"returns":247,"cogs":44907.95,"freight":7148.4,"fba":28593.6,"commission":25267.04,"ad":16942.8,"storage":814.84,"aged_fee":0,"promo":3819.57,"profit":32785.11},{"asin":"B0SMPLTI01","month":"2026-09","units":5385,"sales":177651.15,"refund":9068.53,"returns":274,"cogs":47361.8,"freight":7539.0,"fba":30156.0,"commission":26647.67,"ad":16946.1,"storage":789.1,"aged_fee":0,"promo":4159.54,"profit":34983.41},{"asin":"B0SMPLTI02","month":"2026-06","units":2788,"sales":111492.12,"refund":4119.47,"returns":103,"cogs":30682.63,"freight":4460.8,"fba":17006.8,"commission":16723.82,"ad":10218.79,"storage":557.37,"aged_fee":0,"promo":1799.73,"profit":25922.71},{"asin":"B0SMPLTI02","month":"2026-07","units":2860,"sales":114371.4,"refund":4011.2,"returns":100,"cogs":31475.01,"freight":4576.0,"fba":17446.0,"commission":17155.71,"ad":11649.11,"storage":522.11,"aged_fee":0,"promo":2567.86,"profit":24968.4},{"asin":"B0SMPLTI02","month":"2026-08","units":2875,"sales":114971.25,"refund":4746.91,"returns":118,"cogs":31640.09,"freight":4600.0,"fba":17537.5,"commission":17245.69,"ad":12536.87,"storage":476.75,"aged_fee":0,"promo":2513.26,"profit":23674.18},{"asin":"B0SMPLTI02","month":"2026-09","units":3390,"sales":135566.1,"refund":5473.71,"returns":136,"cogs":37307.79,"freight":5424.0,"fba":20679.0,"commission":20334.92,"ad":13164.28,"storage":447.91,"aged_fee":0,"promo":2827.8,"profit":29906.69},{"asin":"B0SMPLWL01","month":"2026-06","units":5109,"sales":102128.91,"refund":2789.85,"returns":139,"cogs":24592.64,"freight":4598.1,"fba":26566.8,"commission":15319.34,"ad":8151.66,"storage":823.33,"aged_fee":0,"promo":1686.54,"profit":17600.65},{"asin":"B0SMPLWL01","month":"2026-07","units":6261,"sales":125157.39,"refund":4238.08,"returns":212,"cogs":30137.9,"freight":5634.9,"fba":32557.2,"commission":18773.61,"ad":9947.73,"storage":987.93,"aged_fee":0,"promo":2405.63,"profit":20474.41},{"asin":"B0SMPLWL01","month":"2026-08","units":6007,"sales":120079.93,"refund":3862.51,"returns":193,"cogs":28915.25,"freight":5406.3,"fba":31236.4,"commission":18011.99,"ad":8885.56,"storage":798.95,"aged_fee":0,"promo":2872.81,"profit":20090.16},{"asin":"B0SMPLWL01","month":"2026-09","units":7128,"sales":142488.72,"refund":4471.7,"returns":223,"cogs":34311.28,"freight":6415.2,"fba":37065.6,"commission":21373.31,"ad":10169.06,"storage":840.6,"aged_fee":0,"promo":2533.99,"profit":25307.98},{"asin":"B0SMPLWL02","month":"2026-06","units":915,"sales":27440.85,"refund":867.83,"returns":28,"cogs":7787.71,"freight":1098.0,"fba":5398.5,"commission":4116.13,"ad":3643.92,"storage":669.24,"aged_fee":180.18,"promo":544.09,"profit":3135.25},{"asin":"B0SMPLWL02","month":"2026-07","units":1019,"sales":30559.81,"refund":928.92,"returns":30,"cogs":8672.87,"freight":1222.8,"fba":6012.1,"commission":4583.97,"ad":4170.41,"storage":669.24,"aged_fee":180.18,"promo":543.66,"profit":3575.66},{"asin":"B0SMPLWL02","month":"2026-08","units":1020,"sales":30589.8,"refund":981.38,"returns":32,"cogs":8681.39,"freight":1224.0,"fba":6018.0,"commission":4588.47,"ad":4775.53,"storage":669.24,"aged_fee":180.18,"promo":614.46,"profit":2857.15},{"asin":"B0SMPLWL02","month":"2026-09","units":1200,"sales":35988.0,"refund":1262.29,"returns":42,"cogs":10213.39,"freight":1440.0,"fba":7080.0,"commission":5398.2,"ad":4518.25,"storage":669.24,"aged_fee":180.18,"promo":740.29,"profit":4486.16}],"ads":[{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SP 自动","spend":6269.73,"impressions":1450791,"clicks":7050,"orders":792,"ad_sales":59392.08},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SP 关键词","spend":8657.28,"impressions":1451594,"clicks":5823,"orders":604,"ad_sales":45293.96},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SP ASIN 定投","spend":3934.57,"impressions":1058583,"clicks":3714,"orders":374,"ad_sales":28046.26},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SB 品牌","spend":2671.9,"impressions":235837,"clicks":1609,"orders":152,"ad_sales":11398.48},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SBV 视频","spend":3754.98,"impressions":458913,"clicks":3262,"orders":266,"ad_sales":19947.34},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-06","type":"SD 展示","spend":2296.53,"impressions":1758553,"clicks":2961,"orders":167,"ad_sales":12523.33},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SP 自动","spend":5209.94,"impressions":1072859,"clicks":5371,"orders":547,"ad_sales":41019.53},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SP 关键词","spend":7270.63,"impressions":1238919,"clicks":5368,"orders":740,"ad_sales":55492.6},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SP ASIN 定投","spend":3945.31,"impressions":1177630,"clicks":3976,"orders":337,"ad_sales":25271.63},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SB 品牌","spend":3642.19,"impressions":406051,"clicks":2329,"orders":175,"ad_sales":13123.25},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SBV 视频","spend":3730.67,"impressions":414849,"clicks":2763,"orders":218,"ad_sales":16347.82},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-07","type":"SD 展示","spend":1969.95,"impressions":1333001,"clicks":2450,"orders":152,"ad_sales":11398.48},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SP 自动","spend":7161.06,"impressions":1733066,"clicks":6910,"orders":709,"ad_sales":53167.91},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SP 关键词","spend":7544.69,"impressions":1470216,"clicks":5477,"orders":702,"ad_sales":52642.98},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SP ASIN 定投","spend":4117.01,"impressions":1398670,"clicks":3852,"orders":325,"ad_sales":24371.75},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SB 品牌","spend":3540.38,"impressions":346009,"clicks":2183,"orders":181,"ad_sales":13573.19},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SBV 视频","spend":4275.6,"impressions":481039,"clicks":3630,"orders":306,"ad_sales":22946.94},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-08","type":"SD 展示","spend":1941.24,"impressions":1507759,"clicks":2518,"orders":166,"ad_sales":12448.34},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SP 自动","spend":6239.98,"impressions":1390236,"clicks":6913,"orders":620,"ad_sales":46493.8},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SP 关键词","spend":8547.22,"impressions":1593799,"clicks":5692,"orders":634,"ad_sales":47543.66},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SP ASIN 定投","spend":3951.99,"impressions":1335747,"clicks":3702,"orders":414,"ad_sales":31045.86},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SB 品牌","spend":3800.96,"impressions":421946,"clicks":2190,"orders":164,"ad_sales":12298.36},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SBV 视频","spend":4217.78,"impressions":436036,"clicks":3202,"orders":272,"ad_sales":20397.28},{"line":"冲击扳手","spu":"IW-12 无刷高扭 1/2\"","month":"2026-09","type":"SD 展示","spend":1897.34,"impressions":1189617,"clicks":2279,"orders":111,"ad_sales":8323.89},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SP 自动","spend":1263.15,"impressions":344896,"clicks":1348,"orders":169,"ad_sales":11828.31},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SP 关键词","spend":1557.42,"impressions":278470,"clicks":1187,"orders":164,"ad_sales":11478.36},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SP ASIN 定投","spend":711.17,"impressions":215836,"clicks":635,"orders":73,"ad_sales":5109.27},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SB 品牌","spend":723.47,"impressions":66229,"clicks":427,"orders":34,"ad_sales":2379.66},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SBV 视频","spend":734.33,"impressions":89241,"clicks":650,"orders":54,"ad_sales":3779.46},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-06","type":"SD 展示","spend":385.88,"impressions":294088,"clicks":506,"orders":26,"ad_sales":1819.74},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SP 自动","spend":1263.7,"impressions":250260,"clicks":1291,"orders":136,"ad_sales":9518.64},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SP 关键词","spend":1571.79,"impressions":317381,"clicks":1162,"orders":125,"ad_sales":8748.75},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SP ASIN 定投","spend":656.56,"impressions":196960,"clicks":676,"orders":57,"ad_sales":3989.43},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SB 品牌","spend":666.08,"impressions":60506,"clicks":400,"orders":26,"ad_sales":1819.74},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SBV 视频","spend":703.64,"impressions":69172,"clicks":543,"orders":54,"ad_sales":3779.46},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-07","type":"SD 展示","spend":468.2,"impressions":403413,"clicks":629,"orders":30,"ad_sales":2099.7},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SP 自动","spend":1226.33,"impressions":243284,"clicks":1198,"orders":143,"ad_sales":10008.57},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SP 关键词","spend":2086.08,"impressions":336775,"clicks":1457,"orders":149,"ad_sales":10428.51},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SP ASIN 定投","spend":780.5,"impressions":239177,"clicks":737,"orders":80,"ad_sales":5599.2},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SB 品牌","spend":828.41,"impressions":94582,"clicks":502,"orders":46,"ad_sales":3219.54},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SBV 视频","spend":995.19,"impressions":120711,"clicks":878,"orders":88,"ad_sales":6159.12},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-08","type":"SD 展示","spend":483.26,"impressions":369143,"clicks":626,"orders":32,"ad_sales":2239.68},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SP 自动","spend":1713.39,"impressions":464677,"clicks":1798,"orders":175,"ad_sales":12248.25},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SP 关键词","spend":2343.62,"impressions":444711,"clicks":1748,"orders":183,"ad_sales":12808.17},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SP ASIN 定投","spend":1332.86,"impressions":342515,"clicks":1233,"orders":126,"ad_sales":8818.74},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SB 品牌","spend":1196.11,"impressions":145605,"clicks":818,"orders":52,"ad_sales":3639.48},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SBV 视频","spend":1122.75,"impressions":126601,"clicks":867,"orders":86,"ad_sales":6019.14},{"line":"冲击扳手","spu":"IW-38 紧凑 3/8\"","month":"2026-09","type":"SD 展示","spend":665.88,"impressions":444506,"clicks":789,"orders":56,"ad_sales":3919.44},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SP 自动","spend":1604.39,"impressions":419173,"clicks":1717,"orders":194,"ad_sales":13578.06},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SP 关键词","spend":1969.13,"impressions":344689,"clicks":1400,"orders":193,"ad_sales":13508.07},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SP ASIN 定投","spend":935.16,"impressions":298759,"clicks":852,"orders":73,"ad_sales":5109.27},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SB 品牌","spend":845.8,"impressions":93230,"clicks":491,"orders":42,"ad_sales":2939.58},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SBV 视频","spend":995.94,"impressions":105709,"clicks":834,"orders":82,"ad_sales":5739.18},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-06","type":"SD 展示","spend":492.74,"impressions":344079,"clicks":649,"orders":34,"ad_sales":2379.66},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SP 自动","spend":1671.13,"impressions":399480,"clicks":1904,"orders":194,"ad_sales":13578.06},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SP 关键词","spend":2194.42,"impressions":399939,"clicks":1529,"orders":166,"ad_sales":11618.34},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SP ASIN 定投","spend":1134.46,"impressions":293037,"clicks":1045,"orders":93,"ad_sales":6509.07},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SB 品牌","spend":988.96,"impressions":103658,"clicks":586,"orders":38,"ad_sales":2659.62},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SBV 视频","spend":1091.56,"impressions":116452,"clicks":856,"orders":70,"ad_sales":4899.3},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-07","type":"SD 展示","spend":542.95,"impressions":387000,"clicks":628,"orders":36,"ad_sales":2519.64},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SP 自动","spend":1440.39,"impressions":339968,"clicks":1423,"orders":179,"ad_sales":12528.21},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SP 关键词","spend":2046.4,"impressions":339434,"clicks":1437,"orders":184,"ad_sales":12878.16},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SP ASIN 定投","spend":944.17,"impressions":278264,"clicks":865,"orders":71,"ad_sales":4969.29},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SB 品牌","spend":875.86,"impressions":77626,"clicks":528,"orders":37,"ad_sales":2589.63},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SBV 视频","spend":1012.66,"impressions":123989,"clicks":876,"orders":91,"ad_sales":6369.09},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-08","type":"SD 展示","spend":487.78,"impressions":367952,"clicks":649,"orders":32,"ad_sales":2239.68},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SP 自动","spend":1313.12,"impressions":336381,"clicks":1489,"orders":144,"ad_sales":10078.56},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SP 关键词","spend":1857.59,"impressions":372832,"clicks":1237,"orders":122,"ad_sales":8538.78},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SP ASIN 定投","spend":841.63,"impressions":233680,"clicks":837,"orders":82,"ad_sales":5739.18},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SB 品牌","spend":746.64,"impressions":73947,"clicks":449,"orders":33,"ad_sales":2309.67},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SBV 视频","spend":846.53,"impressions":85068,"clicks":670,"orders":61,"ad_sales":4269.39},{"line":"黄油枪","spu":"GG-20V 电动","month":"2026-09","type":"SD 展示","spend":453.42,"impressions":348068,"clicks":572,"orders":37,"ad_sales":2589.63},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SP 自动","spend":2281.12,"impressions":783529,"clicks":3797,"orders":286,"ad_sales":6575.14},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SP 关键词","spend":3207.88,"impressions":1044514,"clicks":3570,"orders":376,"ad_sales":8644.24},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SP ASIN 定投","spend":1544.64,"impressions":656048,"clicks":2283,"orders":158,"ad_sales":3632.42},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SB 品牌","spend":1391.65,"impressions":240430,"clicks":1267,"orders":87,"ad_sales":2000.13},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SBV 视频","spend":1540.49,"impressions":244318,"clicks":1745,"orders":134,"ad_sales":3080.66},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-06","type":"SD 展示","spend":746.83,"impressions":742464,"clicks":1286,"orders":48,"ad_sales":1103.52},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SP 自动","spend":3047.03,"impressions":1071283,"clicks":4533,"orders":395,"ad_sales":9081.05},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SP 关键词","spend":4115.78,"impressions":1259618,"clicks":4083,"orders":379,"ad_sales":8713.21},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SP ASIN 定投","spend":1569.39,"impressions":681477,"clicks":2231,"orders":154,"ad_sales":3540.46},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SB 品牌","spend":1320.24,"impressions":250513,"clicks":1305,"orders":68,"ad_sales":1563.32},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SBV 视频","spend":1911.76,"impressions":354497,"clicks":2168,"orders":160,"ad_sales":3678.4},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-07","type":"SD 展示","spend":1035.35,"impressions":948473,"clicks":1779,"orders":89,"ad_sales":2046.11},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SP 自动","spend":2763.63,"impressions":865969,"clicks":3987,"orders":382,"ad_sales":8782.18},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SP 关键词","spend":3926.55,"impressions":1076262,"clicks":3801,"orders":315,"ad_sales":7241.85},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SP ASIN 定投","spend":1539.95,"impressions":591016,"clicks":2095,"orders":128,"ad_sales":2942.72},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SB 品牌","spend":1232.1,"impressions":172693,"clicks":1103,"orders":78,"ad_sales":1793.22},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SBV 视频","spend":1677.32,"impressions":354096,"clicks":2202,"orders":165,"ad_sales":3793.35},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-08","type":"SD 展示","spend":983.57,"impressions":982242,"clicks":1932,"orders":90,"ad_sales":2069.1},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SP 自动","spend":3263.63,"impressions":1173182,"clicks":4679,"orders":429,"ad_sales":9862.71},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SP 关键词","spend":3580.2,"impressions":908377,"clicks":3833,"orders":308,"ad_sales":7080.92},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SP ASIN 定投","spend":2055.64,"impressions":835824,"clicks":2638,"orders":164,"ad_sales":3770.36},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SB 品牌","spend":1336.04,"impressions":240435,"clicks":1334,"orders":66,"ad_sales":1517.34},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SBV 视频","spend":1799.62,"impressions":272287,"clicks":2113,"orders":134,"ad_sales":3080.66},{"line":"黄油枪","spu":"GG-P 手动","month":"2026-09","type":"SD 展示","spend":1022.11,"impressions":885715,"clicks":1752,"orders":89,"ad_sales":2046.11},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SP 自动","spend":5535.59,"impressions":1759937,"clicks":7306,"orders":832,"ad_sales":30359.68},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SP 关键词","spend":7760.34,"impressions":1665902,"clicks":6566,"orders":936,"ad_sales":34154.64},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SP ASIN 定投","spend":3375.81,"impressions":1441269,"clicks":4188,"orders":478,"ad_sales":17442.22},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SB 品牌","spend":2444.88,"impressions":297247,"clicks":1850,"orders":126,"ad_sales":4597.74},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SBV 视频","spend":3757.31,"impressions":470830,"clicks":3634,"orders":357,"ad_sales":13026.93},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-06","type":"SD 展示","spend":1894.88,"impressions":1758138,"clicks":3239,"orders":228,"ad_sales":8319.72},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SP 自动","spend":5402.29,"impressions":1463538,"clicks":7050,"orders":763,"ad_sales":27841.87},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SP 关键词","spend":8295.04,"impressions":2134300,"clicks":8200,"orders":1073,"ad_sales":39153.77},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SP ASIN 定投","spend":3736.07,"impressions":1449598,"clicks":4835,"orders":393,"ad_sales":14340.57},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SB 品牌","spend":3147.49,"impressions":509224,"clicks":2676,"orders":248,"ad_sales":9049.52},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SBV 视频","spend":3507.99,"impressions":549171,"clicks":3731,"orders":370,"ad_sales":13501.3},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-07","type":"SD 展示","spend":2041.74,"impressions":1932968,"clicks":3571,"orders":248,"ad_sales":9049.52},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SP 自动","spend":6336.1,"impressions":1860580,"clicks":9121,"orders":1134,"ad_sales":41379.66},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SP 关键词","spend":9261.35,"impressions":2452717,"clicks":8361,"orders":911,"ad_sales":33242.39},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SP ASIN 定投","spend":4542.2,"impressions":1884122,"clicks":5438,"orders":561,"ad_sales":20470.89},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SB 品牌","spend":3527.22,"impressions":534866,"clicks":2949,"orders":215,"ad_sales":7845.35},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SBV 视频","spend":3767.61,"impressions":579635,"clicks":4030,"orders":376,"ad_sales":13720.24},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-08","type":"SD 展示","spend":2045.19,"impressions":2089399,"clicks":3605,"orders":174,"ad_sales":6349.26},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SP 自动","spend":7339.8,"impressions":2073398,"clicks":8981,"orders":1085,"ad_sales":39591.65},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SP 关键词","spend":9338.38,"impressions":2402257,"clicks":8981,"orders":882,"ad_sales":32184.18},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SP ASIN 定投","spend":3685.87,"impressions":1281250,"clicks":4247,"orders":399,"ad_sales":14559.51},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SB 品牌","spend":3628.28,"impressions":481410,"clicks":2896,"orders":214,"ad_sales":7808.86},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SBV 视频","spend":3516.02,"impressions":513494,"clicks":3891,"orders":306,"ad_sales":11165.94},{"line":"充气泵","spu":"TI-W 无线便携","month":"2026-09","type":"SD 展示","spend":2602.03,"impressions":2289276,"clicks":4091,"orders":281,"ad_sales":10253.69},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SP 自动","spend":1689.15,"impressions":748731,"clicks":2877,"orders":333,"ad_sales":6656.67},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SP 关键词","spend":2106.36,"impressions":618252,"clicks":2495,"orders":248,"ad_sales":4957.52},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SP ASIN 定投","spend":1311.0,"impressions":517126,"clicks":1830,"orders":181,"ad_sales":3618.19},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SB 品牌","spend":1130.78,"impressions":204671,"clicks":1128,"orders":108,"ad_sales":2158.92},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SBV 视频","spend":1185.44,"impressions":187139,"clicks":1465,"orders":127,"ad_sales":2538.73},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-06","type":"SD 展示","spend":728.93,"impressions":757705,"clicks":1391,"orders":90,"ad_sales":1799.1},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SP 自动","spend":2330.72,"impressions":801115,"clicks":3496,"orders":311,"ad_sales":6216.89},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SP 关键词","spend":3023.03,"impressions":750332,"clicks":3037,"orders":294,"ad_sales":5877.06},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SP ASIN 定投","spend":1399.8,"impressions":657808,"clicks":1952,"orders":190,"ad_sales":3798.1},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SB 品牌","spend":1169.47,"impressions":197878,"clicks":1058,"orders":73,"ad_sales":1459.27},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SBV 视频","spend":1300.19,"impressions":297195,"clicks":1770,"orders":177,"ad_sales":3538.23},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-07","type":"SD 展示","spend":724.52,"impressions":678920,"clicks":1316,"orders":79,"ad_sales":1579.21},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SP 自动","spend":1871.44,"impressions":564571,"clicks":2860,"orders":294,"ad_sales":5877.06},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SP 关键词","spend":2704.93,"impressions":891006,"clicks":3052,"orders":373,"ad_sales":7456.27},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SP ASIN 定投","spend":1272.46,"impressions":579672,"clicks":1984,"orders":207,"ad_sales":4137.93},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SB 品牌","spend":1073.37,"impressions":183205,"clicks":1164,"orders":98,"ad_sales":1959.02},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SBV 视频","spend":1242.19,"impressions":220180,"clicks":1657,"orders":122,"ad_sales":2438.78},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-08","type":"SD 展示","spend":721.17,"impressions":787114,"clicks":1366,"orders":84,"ad_sales":1679.16},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SP 自动","spend":2318.12,"impressions":838262,"clicks":4045,"orders":524,"ad_sales":10474.76},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SP 关键词","spend":2875.26,"impressions":763340,"clicks":3119,"orders":309,"ad_sales":6176.91},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SP ASIN 定投","spend":1495.33,"impressions":604535,"clicks":2224,"orders":200,"ad_sales":3998.0},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SB 品牌","spend":1254.27,"impressions":213719,"clicks":1181,"orders":97,"ad_sales":1939.03},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SBV 视频","spend":1470.45,"impressions":284814,"clicks":1760,"orders":188,"ad_sales":3758.12},{"line":"工作灯","spu":"WL-C COB 充电","month":"2026-09","type":"SD 展示","spend":755.63,"impressions":764924,"clicks":1569,"orders":92,"ad_sales":1839.08},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SP 自动","spend":856.63,"impressions":251936,"clicks":1117,"orders":114,"ad_sales":3418.86},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SP 关键词","spend":1045.24,"impressions":252112,"clicks":1066,"orders":136,"ad_sales":4078.64},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SP ASIN 定投","spend":453.78,"impressions":215625,"clicks":626,"orders":75,"ad_sales":2249.25},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SB 品牌","spend":442.26,"impressions":59142,"clicks":400,"orders":36,"ad_sales":1079.64},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SBV 视频","spend":541.46,"impressions":92704,"clicks":602,"orders":51,"ad_sales":1529.49},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-06","type":"SD 展示","spend":304.55,"impressions":239928,"clicks":489,"orders":34,"ad_sales":1019.66},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SP 自动","spend":862.78,"impressions":285873,"clicks":1181,"orders":149,"ad_sales":4468.51},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SP 关键词","spend":1121.92,"impressions":290393,"clicks":1041,"orders":104,"ad_sales":3118.96},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SP ASIN 定投","spend":643.65,"impressions":227169,"clicks":764,"orders":78,"ad_sales":2339.22},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SB 品牌","spend":542.39,"impressions":83132,"clicks":477,"orders":39,"ad_sales":1169.61},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SBV 视频","spend":620.63,"impressions":93861,"clicks":689,"orders":73,"ad_sales":2189.27},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-07","type":"SD 展示","spend":379.04,"impressions":360103,"clicks":599,"orders":34,"ad_sales":1019.66},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SP 自动","spend":1064.69,"impressions":404067,"clicks":1614,"orders":177,"ad_sales":5308.23},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SP 关键词","spend":1432.43,"impressions":438112,"clicks":1456,"orders":159,"ad_sales":4768.41},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SP ASIN 定投","spend":708.57,"impressions":260614,"clicks":933,"orders":102,"ad_sales":3058.98},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SB 品牌","spend":633.87,"impressions":82509,"clicks":534,"orders":39,"ad_sales":1169.61},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SBV 视频","spend":602.02,"impressions":99642,"clicks":634,"orders":65,"ad_sales":1949.35},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-08","type":"SD 展示","spend":333.95,"impressions":290703,"clicks":571,"orders":36,"ad_sales":1079.64},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SP 自动","spend":968.5,"impressions":313481,"clicks":1452,"orders":181,"ad_sales":5428.19},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SP 关键词","spend":1305.45,"impressions":367497,"clicks":1329,"orders":156,"ad_sales":4678.44},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SP ASIN 定投","spend":728.72,"impressions":350364,"clicks":1007,"orders":111,"ad_sales":3328.89},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SB 品牌","spend":509.75,"impressions":78358,"clicks":457,"orders":33,"ad_sales":989.67},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SBV 视频","spend":619.51,"impressions":102990,"clicks":744,"orders":78,"ad_sales":2339.22},{"line":"工作灯","spu":"WL-20 电池兼容","month":"2026-09","type":"SD 展示","spend":386.32,"impressions":375070,"clicks":720,"orders":36,"ad_sales":1079.64}],"inventory":[{"asin":"B0SMPLIW01","fba_available":3200,"reserved":192,"inbound":354,"in_transit":2700,"local":942,"daily_sales":69.0,"age_0_90":2385,"age_91_180":878,"age_181_270":127,"age_271":0,"unit_cost":29.91,"cuft":0.32,"storage_oct":2605.06},{"asin":"B0SMPLIW02","fba_available":2548,"reserved":152,"inbound":530,"in_transit":1146,"local":822,"daily_sales":43.77,"age_0_90":2116,"age_91_180":455,"age_181_270":128,"age_271":0,"unit_cost":20.23,"cuft":0.26,"storage_oct":1684.8},{"asin":"B0SMPLIW03","fba_available":1327,"reserved":79,"inbound":145,"in_transit":762,"local":145,"daily_sales":22.3,"age_0_90":1089,"age_91_180":263,"age_181_270":52,"age_271":0,"unit_cost":29.28,"cuft":0.28,"storage_oct":944.83},{"asin":"B0SMPLGG01","fba_available":4312,"reserved":258,"inbound":0,"in_transit":653,"local":173,"daily_sales":32.67,"age_0_90":2513,"age_91_180":1416,"age_181_270":639,"age_271":0,"unit_cost":25.77,"cuft":0.42,"storage_oct":4606.56},{"asin":"B0SMPLGG02","fba_available":4008,"reserved":240,"inbound":1078,"in_transit":3521,"local":532,"daily_sales":92.17,"age_0_90":3064,"age_91_180":1101,"age_181_270":82,"age_271":0,"unit_cost":7.53,"cuft":0.18,"storage_oct":1835.14},{"asin":"B0SMPLTI01","fba_available":11595,"reserved":695,"inbound":1326,"in_transit":5362,"local":2751,"daily_sales":179.5,"age_0_90":9470,"age_91_180":1916,"age_181_270":903,"age_271":0,"unit_cost":10.2,"cuft":0.1,"storage_oct":2949.6},{"asin":"B0SMPLTI02","fba_available":1921,"reserved":115,"inbound":904,"in_transit":3955,"local":1321,"daily_sales":113.0,"age_0_90":1658,"age_91_180":232,"age_181_270":145,"age_271":0,"unit_cost":12.61,"cuft":0.12,"storage_oct":586.37},{"asin":"B0SMPLWL01","fba_available":16560,"reserved":993,"inbound":2828,"in_transit":8179,"local":1803,"daily_sales":237.6,"age_0_90":13818,"age_91_180":2335,"age_181_270":1398,"age_271":0,"unit_cost":5.71,"cuft":0.09,"storage_oct":3791.45},{"asin":"B0SMPLWL02","fba_available":6720,"reserved":403,"inbound":0,"in_transit":0,"local":763,"daily_sales":40.0,"age_0_90":2706,"age_91_180":1567,"age_181_270":1709,"age_271":1139,"unit_cost":9.71,"cuft":0.15,"storage_oct":2564.28}],"inventory_date":"2026-10-20","weeks":[{"week":"W37","range":"09-07~09-13"},{"week":"W38","range":"09-14~09-20"},{"week":"W39","range":"09-21~09-27"},{"week":"W40","range":"09-28~10-04"},{"week":"W41","range":"10-05~10-11"},{"week":"W42","range":"10-12~10-18"}],"targets":[{"asin":"B0SMPLIW01","subcategory":"Power Impact Wrenches","keyword":"cordless impact wrench","target_rank":3,"target_daily":85,"competitors":["B09ZTVZG2T","B0B9T68W3B"]},{"asin":"B0SMPLIW02","subcategory":"Power Impact Wrenches","keyword":"impact wrench 1/2","target_rank":8,"target_daily":48,"competitors":["B09ZTVZG2T","B0FT2G51YW"]},{"asin":"B0SMPLIW03","subcategory":"Power Impact Wrenches","keyword":"3/8 impact wrench","target_rank":15,"target_daily":25,"competitors":["B09M3TL9BB"]},{"asin":"B0SMPLGG01","subcategory":"Grease Guns","keyword":"electric grease gun","target_rank":3,"target_daily":38,"competitors":["B00G1X2HPG"]},{"asin":"B0SMPLGG02","subcategory":"Grease Guns","keyword":"grease gun","target_rank":5,"target_daily":95,"competitors":["B0D67HJBWW"]},{"asin":"B0SMPLTI01","subcategory":"Wheel & Tire Air Compressors & Inflators","keyword":"tire inflator portable air compressor","target_rank":6,"target_daily":200,"competitors":["B0CS3B7MD8"]},{"asin":"B0SMPLTI02","subcategory":"Portable Air Compressors","keyword":"portable air compressor","target_rank":10,"target_daily":110,"competitors":["B0FDWMP57L"]},{"asin":"B0SMPLWL01","subcategory":"Job Site & Security Lighting","keyword":"rechargeable work light","target_rank":2,"target_daily":230,"competitors":["B07G9X19G1"]},{"asin":"B0SMPLWL02","subcategory":"Job Site & Security Lighting","keyword":"work light for dewalt battery","target_rank":9,"target_daily":42,"competitors":["B00KWRM78E"]}],"weekly":[{"asin":"B0SMPLIW01","week":"W37","range":"09-07~09-13","rank":3,"daily":82.5},{"asin":"B0SMPLIW01","week":"W38","range":"09-14~09-20","rank":3,"daily":88.0},{"asin":"B0SMPLIW01","week":"W39","range":"09-21~09-27","rank":3,"daily":91.0},{"asin":"B0SMPLIW01","week":"W40","range":"09-28~10-04","rank":2,"daily":91.3},{"asin":"B0SMPLIW01","week":"W41","range":"10-05~10-11","rank":2,"daily":93.7},{"asin":"B0SMPLIW01","week":"W42","range":"10-12~10-18","rank":2,"daily":92.5},{"asin":"B0SMPLIW02","week":"W37","range":"09-07~09-13","rank":10,"daily":39.1},{"asin":"B0SMPLIW02","week":"W38","range":"09-14~09-20","rank":10,"daily":43.1},{"asin":"B0SMPLIW02","week":"W39","range":"09-21~09-27","rank":8,"daily":46.4},{"asin":"B0SMPLIW02","week":"W40","range":"09-28~10-04","rank":9,"daily":46.5},{"asin":"B0SMPLIW02","week":"W41","range":"10-05~10-11","rank":10,"daily":44.5},{"asin":"B0SMPLIW02","week":"W42","range":"10-12~10-18","rank":8,"daily":46.5},{"asin":"B0SMPLIW03","week":"W37","range":"09-07~09-13","rank":25,"daily":18.8},{"asin":"B0SMPLIW03","week":"W38","range":"09-14~09-20","rank":21,"daily":19.5},{"asin":"B0SMPLIW03","week":"W39","range":"09-21~09-27","rank":28,"daily":17.4},{"asin":"B0SMPLIW03","week":"W40","range":"09-28~10-04","rank":23,"daily":19.4},{"asin":"B0SMPLIW03","week":"W41","range":"10-05~10-11","rank":19,"daily":20.1},{"asin":"B0SMPLIW03","week":"W42","range":"10-12~10-18","rank":24,"daily":18.1},{"asin":"B0SMPLGG01","week":"W37","range":"09-07~09-13","rank":3,"daily":36.6},{"asin":"B0SMPLGG01","week":"W38","range":"09-14~09-20","rank":3,"daily":34.9},{"asin":"B0SMPLGG01","week":"W39","range":"09-21~09-27","rank":3,"daily":35.2},{"asin":"B0SMPLGG01","week":"W40","range":"09-28~10-04","rank":3,"daily":36.2},{"asin":"B0SMPLGG01","week":"W41","range":"10-05~10-11","rank":3,"daily":37.2},{"asin":"B0SMPLGG01","week":"W42","range":"10-12~10-18","rank":3,"daily":38.8},{"asin":"B0SMPLGG02","week":"W37","range":"09-07~09-13","rank":5,"daily":100.5},{"asin":"B0SMPLGG02","week":"W38","range":"09-14~09-20","rank":4,"daily":100.5},{"asin":"B0SMPLGG02","week":"W39","range":"09-21~09-27","rank":4,"daily":102.7},{"asin":"B0SMPLGG02","week":"W40","range":"09-28~10-04","rank":4,"daily":111.0},{"asin":"B0SMPLGG02","week":"W41","range":"10-05~10-11","rank":4,"daily":114.2},{"asin":"B0SMPLGG02","week":"W42","range":"10-12~10-18","rank":4,"daily":106.3},{"asin":"B0SMPLTI01","week":"W37","range":"09-07~09-13","rank":6,"daily":198.8},{"asin":"B0SMPLTI01","week":"W38","range":"09-14~09-20","rank":5,"daily":230.0},{"asin":"B0SMPLTI01","week":"W39","range":"09-21~09-27","rank":6,"daily":207.1},{"asin":"B0SMPLTI01","week":"W40","range":"09-28~10-04","rank":5,"daily":236.4},{"asin":"B0SMPLTI01","week":"W41","range":"10-05~10-11","rank":5,"daily":232.2},{"asin":"B0SMPLTI01","week":"W42","range":"10-12~10-18","rank":4,"daily":249.9},{"asin":"B0SMPLTI02","week":"W37","range":"09-07~09-13","rank":13,"daily":87.9},{"asin":"B0SMPLTI02","week":"W38","range":"09-14~09-20","rank":15,"daily":83.2},{"asin":"B0SMPLTI02","week":"W39","range":"09-21~09-27","rank":14,"daily":87.1},{"asin":"B0SMPLTI02","week":"W40","range":"09-28~10-04","rank":15,"daily":87.7},{"asin":"B0SMPLTI02","week":"W41","range":"10-05~10-11","rank":16,"daily":85.9},{"asin":"B0SMPLTI02","week":"W42","range":"10-12~10-18","rank":13,"daily":90.1},{"asin":"B0SMPLWL01","week":"W37","range":"09-07~09-13","rank":2,"daily":238.6},{"asin":"B0SMPLWL01","week":"W38","range":"09-14~09-20","rank":2,"daily":243.4},{"asin":"B0SMPLWL01","week":"W39","range":"09-21~09-27","rank":2,"daily":254.6},{"asin":"B0SMPLWL01","week":"W40","range":"09-28~10-04","rank":2,"daily":234.7},{"asin":"B0SMPLWL01","week":"W41","range":"10-05~10-11","rank":2,"daily":227.4},{"asin":"B0SMPLWL01","week":"W42","range":"10-12~10-18","rank":2,"daily":244.3},{"asin":"B0SMPLWL02","week":"W37","range":"09-07~09-13","rank":14,"daily":30.9},{"asin":"B0SMPLWL02","week":"W38","range":"09-14~09-20","rank":13,"daily":34.7},{"asin":"B0SMPLWL02","week":"W39","range":"09-21~09-27","rank":16,"daily":29.4},{"asin":"B0SMPLWL02","week":"W40","range":"09-28~10-04","rank":14,"daily":30.2},{"asin":"B0SMPLWL02","week":"W41","range":"10-05~10-11","rank":13,"daily":34.5},{"asin":"B0SMPLWL02","week":"W42","range":"10-12~10-18","rank":12,"daily":35.6}],"competitors":[{"line":"冲击扳手","asin":"B09ZTVZG2T","brand":"Seesii","title":"Seesii 665 FT-LBS 1/2\" 冲击扳手 21V 2×4.0Ah 套装","price":74.72,"units":4114,"revenue":307398.1,"bsr":1568,"sub":"Power Impact Wrenches","sub_rank":1,"rating":4.5,"ratings":1786,"nation":"CN"},{"line":"冲击扳手","asin":"B0B9T68W3B","brand":"DEWALT","title":"DEWALT 20V MAX 1/2\" 冲击扳手 DCF900B 裸机","price":216.75,"units":3380,"revenue":732615.0,"bsr":3384,"sub":"Power Impact Wrenches","sub_rank":2,"rating":4.8,"ratings":2610,"nation":"US"},{"line":"冲击扳手","asin":"B09M3TL9BB","brand":"DEWALT","title":"DEWALT ATOMIC 20V 1/2\" 冲击扳手 DCF921B 裸机","price":155.0,"units":1447,"revenue":224285.0,"bsr":9577,"sub":"Power Impact Wrenches","sub_rank":7,"rating":4.8,"ratings":1042,"nation":"US"},{"line":"冲击扳手","asin":"B0FT2G51YW","brand":"ARCCAPTAIN","title":"ARCCAPTAIN 1500N.m 1/2\" 冲击扳手","price":129.98,"units":1236,"revenue":160655.28,"bsr":13371,"sub":"Power Impact Wrenches","sub_rank":10,"rating":4.7,"ratings":267,"nation":"CN"},{"line":"黄油枪","asin":"B0D67HJBWW","brand":"KRETLAW","title":"KRETLAW 迷你黄油枪 3000PSI 双 3oz 套装","price":17.99,"units":6341,"revenue":114074.59,"bsr":453,"sub":"Grease Guns","sub_rank":1,"rating":4.2,"ratings":3075,"nation":"CN"},{"line":"黄油枪","asin":"B00G1X2HPG","brand":"DEWALT","title":"DEWALT 20V MAX 电动黄油枪 DCGG571B 10000PSI","price":194.27,"units":3929,"revenue":763286.9,"bsr":2640,"sub":"Grease Guns","sub_rank":4,"rating":4.8,"ratings":6377,"nation":"US"},{"line":"充气泵","asin":"B0CS3B7MD8","brand":"AstroAI","title":"AstroAI L7 无线充气泵 150PSI","price":22.98,"units":54969,"revenue":1263187.6,"bsr":2,"sub":"Wheel & Tire Air Compressors & Inflators","sub_rank":1,"rating":4.3,"ratings":19798,"nation":"US"},{"line":"充气泵","asin":"B0FDWMP57L","brand":"OlarHike","title":"OlarHike 双电源充气泵 3×2000mAh + 12V","price":29.99,"units":45685,"revenue":1370093.1,"bsr":33,"sub":"Portable Air Compressors","sub_rank":1,"rating":4.4,"ratings":6998,"nation":"US"},{"line":"工作灯","asin":"B07G9X19G1","brand":"Coquimbo","title":"Coquimbo 充电工作灯 2只装","price":13.99,"units":11392,"revenue":159374.08,"bsr":411,"sub":"Job Site & Security Lighting","sub_rank":1,"rating":4.3,"ratings":24702,"nation":"CN"},{"line":"工作灯","asin":"B00KWRM78E","brand":"DEWALT","title":"DEWALT 20V MAX LED 工作灯 DCL050 裸机","price":45.0,"units":3695,"revenue":166275.0,"bsr":3111,"sub":"Job Site & Security Lighting","sub_rank":4,"rating":4.8,"ratings":13746,"nation":"US"}],"competitor_date":"2026-10-22"};
+
+/* ---------- constants ---------- */
+const LINES = ["冲击扳手","黄油枪","充气泵","工作灯"];
+const LINE_COLOR = {"冲击扳手":"var(--s1)","黄油枪":"var(--s2)","充气泵":"var(--s3)","工作灯":"var(--s4)"};
+const AD_COLORS = ["var(--s1)","var(--s8)","var(--s3)","var(--s2)","var(--s5)","var(--s7)"];
+const COST_PARTS = [
+  ["cogs","采购成本","var(--s7)"],["freight","头程","var(--s8)"],["fba","FBA配送","var(--s1)"],["commission","佣金","var(--s4)"],
+  ["ad","广告","var(--s2)"],["storage","仓储(含超龄)","var(--s3)"],["refund","退款","var(--s5)"],["promo","促销","var(--s6)"]
+];
+const TABS = [
+  ["overview","整体看板"],["asin","核心ASIN费用"],["ads","广告费用"],["stock","库存与费用"],
+  ["alerts","预警处理"],["rank","竞对与目标排名"],["rules","监控规则"]
+];
+const DEFAULT_RULES = [
+  {id:"margin_low", name:"毛利率过低", metric:"毛利率", op:"<", value:15, unit:"%", level:"high", scope:"月度 · ASIN", formula:"毛利 ÷ 销售额", src:"ASIN 月度费用"},
+  {id:"tacos_high", name:"TACOS 过高", metric:"TACOS", op:">", value:15, unit:"%", level:"high", scope:"月度 · ASIN", formula:"广告花费 ÷ 总销售额", src:"ASIN 月度费用"},
+  {id:"refund_high", name:"退款率过高", metric:"退款率", op:">", value:5, unit:"%", level:"mid", scope:"月度 · ASIN", formula:"退款金额 ÷ 销售额", src:"ASIN 月度费用"},
+  {id:"acos_high", name:"SPU 广告 ACOS 过高", metric:"ACOS", op:">", value:35, unit:"%", level:"mid", scope:"月度 · SPU", formula:"广告花费 ÷ 广告销售额（SPU 汇总）", src:"广告结构"},
+  {id:"stock_low", name:"断货风险", metric:"FBA 可售天数", op:"<", value:30, unit:"天", level:"high", scope:"库存快照 · ASIN", formula:"(FBA 可售 + 预留) ÷ 近 30 天日均", src:"库存快照"},
+  {id:"stock_high", name:"库存积压", metric:"总可售天数", op:">", value:120, unit:"天", level:"mid", scope:"库存快照 · ASIN", formula:"(FBA 可售 + 预留 + 入库中 + 在途 + 本地仓) ÷ 日均", src:"库存快照"},
+  {id:"aged_high", name:"超龄库存占比", metric:"181 天以上库龄占比", op:">", value:15, unit:"%", level:"mid", scope:"库存快照 · ASIN", formula:"库龄 181 天以上件数 ÷ FBA 在库件数", src:"库存快照"},
+  {id:"daily_miss", name:"日销未达成", metric:"周日销完成率", op:"<", value:80, unit:"%", level:"high", scope:"最新一周 · ASIN", formula:"周实际日均销量 ÷ 目标日销", src:"周度排名追踪"},
+  {id:"rank_miss", name:"排名未达成", metric:"连续未达标周数", op:">=", value:2, unit:"周", level:"mid", scope:"最近几周 · ASIN", formula:"小类排名 > 目标排名的连续周数（截至最新周）", src:"周度排名追踪"}
+];
+
+/* ---------- state ---------- */
+const S = {month: DATA.months[DATA.months.length-1], line:"all", tab:"overview", alertFilter:"all",
+  thresholds:{}, alertDocs:{}, drafts:{}, db:null, user:null, canWrite:null, canEdit:false, uid:null, names:{}, dbState:"loading"};
+try{ const t = localStorage.getItem("wb-tab"); if(t && TABS.some(x=>x[0]===t)) S.tab=t; }catch(e){}
+const h = location.hash.slice(1); if(TABS.some(x=>x[0]===h)) S.tab=h;
+
+/* ---------- helpers ---------- */
+const $ = (s,el=document)=>el.querySelector(s);
+const usd0 = new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0});
+const usd2 = new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:2,maximumFractionDigits:2});
+const int = new Intl.NumberFormat("en-US",{maximumFractionDigits:0});
+const compact = new Intl.NumberFormat("en-US",{notation:"compact",maximumFractionDigits:1});
+const pct = (x,d=1)=> (x==null||!isFinite(x)) ? "—" : (x*100).toFixed(d)+"%";
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const asinInfo = Object.fromEntries(DATA.asins.map(a=>[a.asin,a]));
+const compInfo = Object.fromEntries(DATA.competitors.map(c=>[c.asin,c]));
+const inLine = a => S.line==="all" || asinInfo[a].line===S.line;
+const linesShown = () => S.line==="all" ? LINES : [S.line];
+const monthLabel = m => m==="all" ? "6–9 月合计" : (+m.slice(5))+" 月";
+const prevMonth = m => { const i=DATA.months.indexOf(m); return i>0?DATA.months[i-1]:null; };
+const rules = () => DEFAULT_RULES.map(r=>({...r, value: S.thresholds[r.id] ?? r.value}));
+const rule = id => rules().find(r=>r.id===id);
+const lineTag = l => `<span class="lt"><i style="background:${LINE_COLOR[l]}"></i>${esc(l)}</span>`;
+const delta = (cur,prev,goodUp=true,isRate=false)=>{
+  if(prev==null||!isFinite(prev)||prev===0) return `<span class="flat">无上月对比</span>`;
+  const d = isRate ? (cur-prev) : (cur-prev)/Math.abs(prev);
+  const cls = Math.abs(d)<0.0005 ? "flat" : ((d>0)===goodUp ? "up":"down");
+  const txt = isRate ? `${d>=0?"+":""}${(d*100).toFixed(1)} 个百分点` : `${d>=0?"+":""}${(d*100).toFixed(1)}%`;
+  return `<span class="${cls}">${txt}</span> <span class="flat">较上月</span>`;
+};
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.hidden=false; clearTimeout(toast._t); toast._t=setTimeout(()=>t.hidden=true,2200); }
+
+/* ---------- aggregation ---------- */
+const SUM_KEYS = ["units","sales","refund","returns","cogs","freight","fba","commission","ad","storage","aged_fee","promo","profit"];
+function rowsFor(month, filterFn=()=>true){
+  return DATA.monthly.filter(r => (month==="all" || r.month===month) && inLine(r.asin) && filterFn(r));
+}
+function sumRows(rows){
+  const o = Object.fromEntries(SUM_KEYS.map(k=>[k,0]));
+  rows.forEach(r=>SUM_KEYS.forEach(k=>o[k]+=r[k]));
+  return o;
+}
+function byAsin(month){
+  const m = {};
+  rowsFor(month).forEach(r=>{ (m[r.asin] ||= []).push(r); });
+  return Object.fromEntries(Object.entries(m).map(([a,rs])=>[a,sumRows(rs)]));
+}
+function invCalc(i){
+  const fbaQty = i.fba_available + i.reserved;
+  const total = fbaQty + i.inbound + i.in_transit + i.local;
+  const aged = i.age_181_270 + i.age_271;
+  const ageTotal = i.age_0_90+i.age_91_180+i.age_181_270+i.age_271;
+  return {fbaQty,total,fbaDays: fbaQty/i.daily_sales, totalDays: total/i.daily_sales,
+    agedShare: ageTotal? aged/ageTotal : 0, value: total*i.unit_cost, fbaValue: fbaQty*i.unit_cost};
+}
+function adFor(month){
+  return DATA.ads.filter(a => (month==="all"||a.month===month) && (S.line==="all"||a.line===S.line));
+}
+function spuList(){
+  const seen=[]; DATA.asins.forEach(a=>{ if(inLine(a.asin) && !seen.some(s=>s.spu===a.spu)) seen.push({spu:a.spu,line:a.line}); });
+  return seen;
+}
+
+/* ---------- alerts ---------- */
+function test(r, v){ return r.op==="<" ? v < r.value : r.op===">" ? v > r.value : r.op===">=" ? v >= r.value : false; }
+function fmtVal(r, v){ return r.unit==="%" ? (v).toFixed(1)+"%" : r.unit==="天" ? Math.round(v)+" 天" : v+" "+r.unit; }
+function computeAlerts(){
+  const out=[]; const m = S.month==="all" ? DATA.months[DATA.months.length-1] : S.month;
+  const per = byAsin(m);
+  const add=(rid, asin, v, period, extra="")=>{
+    const r=rule(rid); if(!test(r,v)) return;
+    out.push({key:`${period.replace(/-/g,"")}_${asin}_${rid}`, rid, asin, line:asinInfo[asin]?.line, spu:asinInfo[asin]?.spu,
+      rule:r, value:fmtVal(r,v), threshold:`${r.op===">="?"≥":r.op} ${r.value}${r.unit==="%"?"%":" "+r.unit}`, period, extra});
+  };
+  Object.entries(per).forEach(([a,s])=>{
+    const p = monthLabel(m);
+    add("margin_low",a,s.profit/s.sales*100,m);
+    add("tacos_high",a,s.ad/s.sales*100,m);
+    add("refund_high",a,s.refund/s.sales*100,m);
+  });
+  // SPU ACOS -> attached to each ASIN in the SPU (shown once per SPU, first ASIN)
+  const ads = adFor(m);
+  spuList().forEach(({spu})=>{
+    const rows = ads.filter(x=>x.spu===spu); const sp = rows.reduce((t,x)=>t+x.spend,0), as = rows.reduce((t,x)=>t+x.ad_sales,0);
+    const first = DATA.asins.find(a=>a.spu===spu && inLine(a.asin));
+    if(first && as>0) add("acos_high", first.asin, sp/as*100, m, `SPU ${spu}`);
+  });
+  DATA.inventory.filter(i=>inLine(i.asin)).forEach(i=>{
+    const c=invCalc(i), p="INV"+DATA.inventory_date;
+    add("stock_low",i.asin,c.fbaDays,p); add("stock_high",i.asin,c.totalDays,p); add("aged_high",i.asin,c.agedShare*100,p);
+  });
+  const lastW = DATA.weeks[DATA.weeks.length-1].week;
+  DATA.targets.filter(t=>inLine(t.asin)).forEach(t=>{
+    const ws = DATA.weekly.filter(w=>w.asin===t.asin);
+    const last = ws[ws.length-1];
+    add("daily_miss",t.asin,Math.round(last.daily/t.target_daily*1000)/10,lastW);
+    let streak=0; for(let k=ws.length-1;k>=0 && ws[k].rank>t.target_rank;k--) streak++;
+    add("rank_miss",t.asin,streak,lastW, `最新排名 #${last.rank} / 目标 #${t.target_rank}`);
+  });
+  const order={high:0,mid:1};
+  return out.sort((a,b)=>order[a.rule.level]-order[b.rule.level] || LINES.indexOf(a.line)-LINES.indexOf(b.line));
+}
+const statusOf = k => S.alertDocs[k]?.status || "open";
+const STATUS = {open:["未处理","high"],doing:["处理中","mid"],done:["已处理","okp"]};
+
+/* ---------- renderers ---------- */
+function renderOverview(){
+  const m = S.month, pm = m==="all"?null:prevMonth(m);
+  const cur = sumRows(rowsFor(m)), prev = pm ? sumRows(rowsFor(pm)) : null;
+  const inv = DATA.inventory.filter(i=>inLine(i.asin)).reduce((t,i)=>t+invCalc(i).value,0);
+  const alerts = computeAlerts(); const open = alerts.filter(a=>statusOf(a.key)!=="done").length;
+  const kp = (k,v,d)=>`<div class="kpi"><div class="k">${k}</div><div class="v">${v}</div><div class="d">${d}</div></div>`;
+  const tiles = [
+    kp("销售额",usd0.format(cur.sales), prev?delta(cur.sales,prev.sales):""),
+    kp("销量（件）",int.format(cur.units), prev?delta(cur.units,prev.units):""),
+    kp("毛利额",usd0.format(cur.profit), prev?delta(cur.profit,prev.profit):""),
+    kp("毛利率",pct(cur.profit/cur.sales), prev?delta(cur.profit/cur.sales,prev.profit/prev.sales,true,true):""),
+    kp("广告费 · TACOS",`${compact.format(cur.ad)} · ${pct(cur.ad/cur.sales)}`, prev?delta(cur.ad/cur.sales,prev.ad/prev.sales,false,true):""),
+    kp("在库货值（含在途）",usd0.format(inv), `<span class="flat">库存快照 ${DATA.inventory_date}</span>`)
+  ].join("");
+  const per = LINES.filter(l=>S.line==="all"||l===S.line).map(l=>{
+    const f = r=>asinInfo[r.asin].line===l;
+    const c = sumRows(rowsFor(m,f)), p = pm?sumRows(rowsFor(pm,f)):null;
+    const iv = DATA.inventory.filter(i=>asinInfo[i.asin].line===l).reduce((t,i)=>t+invCalc(i).value,0);
+    const al = alerts.filter(a=>a.line===l); const ao = al.filter(a=>statusOf(a.key)!=="done").length;
+    return {l,c,p,iv,al:al.length,ao};
+  });
+  const tr = per.map(({l,c,p,iv,al,ao})=>`<tr>
+    <td class="l">${lineTag(l)}</td><td>${usd0.format(c.sales)}</td>
+    <td>${p?delta(c.sales,p.sales).split(" <span class=\"flat\">")[0]:"—"}</td>
+    <td>${int.format(c.units)}</td><td>${usd0.format(c.profit)}</td>
+    <td class="${c.profit/c.sales*100<rule("margin_low").value?"bad":""}">${pct(c.profit/c.sales)}</td>
+    <td>${usd0.format(c.ad)}</td><td class="${c.ad/c.sales*100>rule("tacos_high").value?"bad":""}">${pct(c.ad/c.sales)}</td>
+    <td>${pct(c.refund/c.sales)}</td><td>${usd0.format(iv)}</td>
+    <td>${al?`<span class="pill ${ao?"high":"okp"}">${ao} 未完成 / ${al}</span>`:`<span class="pill okp">无</span>`}</td></tr>`).join("");
+  // small multiples: monthly sales per line, shared scale
+  const series = linesShown().map(l=>DATA.months.map(mm=>{ const s=sumRows(DATA.monthly.filter(r=>r.month===mm&&asinInfo[r.asin].line===l)); return {m:mm,sales:s.sales,margin:s.profit/s.sales}; }));
+  const maxS = Math.max(...series.flat().map(x=>x.sales));
+  const minis = linesShown().map((l,i)=>miniBars(l,series[i],maxS)).join("");
+  return `<section class="mod" id="overview">
+    <div class="mod-head"><div><h2>整体看板</h2><p>${monthLabel(m)}，${S.line==="all"?"四个重点品线":S.line}的经营概况。毛利已扣除采购、头程、FBA、佣金、广告、仓储、退款和促销。</p></div></div>
+    <div class="kpis">${tiles}</div>
+    <div class="card"><h3>分品线经营数据</h3><p class="note">${monthLabel(m)}；红字为超出监控阈值；预警数含库存和排名类预警。</p>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">品线</th><th>销售额</th><th>环比</th><th>销量</th><th>毛利</th><th>毛利率</th><th>广告费</th><th>TACOS</th><th>退款率</th><th>在库货值</th><th>预警</th></tr></thead><tbody>${tr}</tbody></table></div></div>
+    <div class="card"><h3>月度销售额走势</h3><p class="note">2026 年 6–9 月，四个品线同一纵轴；柱上方为当月毛利率。</p><div class="minis">${minis}</div></div>
+  </section>`;
+}
+function miniBars(l, pts, maxS){
+  const W=260,H=120,pb=18,pt=18,bw=34,gap=(W-pts.length*bw)/(pts.length+1);
+  const y=v=>H-pb-(v/maxS)*(H-pb-pt);
+  const bars = pts.map((p,i)=>{ const x=gap+i*(bw+gap); const sel = p.m===S.month;
+    return `<rect x="${x}" y="${y(p.sales)}" width="${bw}" height="${H-pb-y(p.sales)}" rx="3" fill="${LINE_COLOR[l]}" opacity="${S.month==="all"||sel?1:.45}"></rect>
+    <text x="${x+bw/2}" y="${y(p.sales)-5}" text-anchor="middle">${(p.margin*100).toFixed(1)}%</text>
+    <text x="${x+bw/2}" y="${H-4}" text-anchor="middle">${+p.m.slice(5)}月</text>`; }).join("");
+  const last=pts[pts.length-1];
+  return `<div class="mini"><div class="t">${lineTag(l)}<span class="muted" style="font-weight:400">9 月 ${usd0.format(last.sales)}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(l)}月度销售额"><line x1="0" x2="${W}" y1="${H-pb}" y2="${H-pb}" stroke="var(--line)"></line>${bars}</svg></div>`;
+}
+
+function renderAsin(){
+  const m=S.month; const per=byAsin(m);
+  const legend = COST_PARTS.map(([k,n,c])=>`<span><i style="background:${c}"></i>${n}</span>`).join("")+`<span><i style="background:var(--ok)"></i>毛利</span>`;
+  let body="";
+  linesShown().forEach(l=>{
+    const as = DATA.asins.filter(a=>a.line===l && per[a.asin]);
+    if(!as.length) return;
+    body += `<tr class="grp"><td class="l" colspan="18">${lineTag(l)}</td></tr>`;
+    as.forEach(a=>{ body += asinRow(a, per[a.asin]); });
+    body += asinRow({asin:"",spu:"",name:`${l} 小计`,line:l}, sumRows(as.map(a=>per[a.asin])), true);
+  });
+  return `<section class="mod" id="asin">
+    <div class="mod-head"><div><h2>核心 ASIN 费用明细</h2><p>${monthLabel(m)}。每个核心 ASIN 的收入、各项费用和毛利，用顶部的月份切换；“费用结构”一栏为各项费用占销售额的比例。</p></div></div>
+    <div class="card"><div class="legend">${legend}</div>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">ASIN</th><th class="l">SPU / 品名</th><th>销量</th><th>销售额</th><th>采购成本</th><th>头程</th><th>FBA配送</th><th>佣金</th><th>广告</th><th>仓储</th><th>超龄附加</th><th>退款</th><th>促销</th><th>毛利</th><th>毛利率</th><th>TACOS</th><th>单件毛利</th><th class="l">费用结构</th></tr></thead>
+    <tbody>${body}</tbody></table></div>
+    <p class="foot">仓储 = 月度库存仓储费；超龄附加 = 库龄超 181 天的附加费。毛利 = 销售额 − 全部费用。</p></div>
+  </section>`;
+}
+function asinRow(a,s,isSub=false){
+  const mg = s.profit/s.sales, tc = s.ad/s.sales;
+  const parts = COST_PARTS.map(([k,n,c])=>{ const v = k==="storage" ? s.storage+s.aged_fee : s[k]; return `<span title="${n} ${pct(v/s.sales)}" style="width:${Math.max(0,v/s.sales*100)}%;background:${c}"></span>`; }).join("")
+    + (mg>0?`<span style="width:${mg*100}%;background:var(--ok)"></span>`:"");
+  return `<tr class="${isSub?"sub":""}"><td class="l mono">${esc(a.asin)}</td><td class="l">${isSub?esc(a.name):`<div>${esc(a.name)}</div><div class="muted" style="font-size:12px">${esc(a.spu)}</div>`}</td>
+    <td>${int.format(s.units)}</td><td>${usd0.format(s.sales)}</td><td>${usd0.format(s.cogs)}</td><td>${usd0.format(s.freight)}</td><td>${usd0.format(s.fba)}</td>
+    <td>${usd0.format(s.commission)}</td><td>${usd0.format(s.ad)}</td><td>${usd0.format(s.storage)}</td><td>${s.aged_fee?usd0.format(s.aged_fee):"—"}</td>
+    <td>${usd0.format(s.refund)}</td><td>${usd0.format(s.promo)}</td><td class="${s.profit<0?"bad":""}">${usd0.format(s.profit)}</td>
+    <td class="${mg*100<rule("margin_low").value?"bad":""}">${pct(mg)}</td><td class="${tc*100>rule("tacos_high").value?"bad":""}">${pct(tc)}</td>
+    <td>${usd2.format(s.profit/s.units)}</td><td class="l"><div class="stack" aria-label="费用结构">${parts}</div></td></tr>`;
+}
+
+function renderAds(){
+  const m=S.month; const ads=adFor(m); const types=[...new Set(DATA.ads.map(a=>a.type))];
+  const spus = spuList();
+  const salesBySpu = spu => sumRows(rowsFor(m, r=>asinInfo[r.asin].spu===spu)).sales;
+  const legend = types.map((t,i)=>`<span><i style="background:${AD_COLORS[i]}"></i>${t}</span>`).join("");
+  const maxSpend = Math.max(...spus.map(({spu})=>ads.filter(a=>a.spu===spu).reduce((t,a)=>t+a.spend,0)));
+  const bars = spus.map(({spu,line})=>{
+    const rows = ads.filter(a=>a.spu===spu); const tot = rows.reduce((t,a)=>t+a.spend,0);
+    const seg = types.map((t,i)=>{ const v=rows.filter(r=>r.type===t).reduce((s,r)=>s+r.spend,0); return `<span title="${t} ${usd0.format(v)}" style="width:${v/tot*100}%;background:${AD_COLORS[i]}"></span>`; }).join("");
+    return `<div style="display:grid;grid-template-columns:minmax(7rem,12rem) 1fr auto;gap:10px;align-items:center;font-size:13px">
+      <div>${lineTag(line)} <span class="muted" style="font-size:12px">${esc(spu)}</span></div>
+      <div style="width:${tot/maxSpend*100}%"><div class="stack" style="height:16px;min-width:0">${seg}</div></div>
+      <div style="font-variant-numeric:tabular-nums">${usd0.format(tot)}</div></div>`;
+  }).join("");
+  let body="";
+  spus.forEach(({spu,line})=>{
+    const rows = ads.filter(a=>a.spu===spu); const tot = rows.reduce((t,a)=>t+a.spend,0);
+    body += `<tr class="grp"><td class="l" colspan="12">${lineTag(line)}　${esc(spu)}</td></tr>`;
+    const agg = t => { const rs=rows.filter(r=>r.type===t); return rs.reduce((o,r)=>{["spend","impressions","clicks","orders","ad_sales"].forEach(k=>o[k]+=r[k]);return o;},{spend:0,impressions:0,clicks:0,orders:0,ad_sales:0}); };
+    const line_ = (name,o,cls="",extra="")=>{ const acos=o.ad_sales?o.spend/o.ad_sales:null;
+      return `<tr class="${cls}"><td class="l">${name}</td><td>${usd0.format(o.spend)}</td><td>${pct(o.spend/tot)}</td><td>${int.format(o.impressions)}</td><td>${int.format(o.clicks)}</td>
+      <td>${pct(o.clicks/o.impressions,2)}</td><td>${usd2.format(o.spend/o.clicks)}</td><td>${int.format(o.orders)}</td><td>${pct(o.orders/o.clicks)}</td>
+      <td>${usd0.format(o.ad_sales)}</td><td class="${acos*100>rule("acos_high").value?"bad":""}">${pct(acos)}</td><td>${extra}</td></tr>`; };
+    const total={spend:0,impressions:0,clicks:0,orders:0,ad_sales:0};
+    types.forEach((t,i)=>{ const o=agg(t); Object.keys(total).forEach(k=>total[k]+=o[k]); body += line_(`<span class="lt"><i style="background:${AD_COLORS[i]}"></i>${t}</span>`,o); });
+    const sales = salesBySpu(spu);
+    body += line_("SPU 合计",total,"sub",`TACOS ${pct(total.spend/sales)} · 广告订单占比 ${pct(total.ad_sales/sales)}`);
+  });
+  return `<section class="mod" id="ads">
+    <div class="mod-head"><div><h2>广告费用（按 SPU）</h2><p>${monthLabel(m)}。重点品线各 SPU 在 SP 自动 / 关键词 / ASIN 定投、SB、SBV、SD 上的花费结构和效率。</p></div></div>
+    <div class="card"><h3>各 SPU 广告花费结构</h3><p class="note">条长 = 花费金额，颜色 = 广告类型。</p><div class="legend">${legend}</div><div style="display:grid;gap:8px">${bars}</div></div>
+    <div class="card"><h3>广告结构明细</h3><p class="note">ACOS 超过 ${rule("acos_high").value}% 标红；TACOS 用 SPU 总销售额（含自然单）计算。</p>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">广告类型</th><th>花费</th><th>花费占比</th><th>曝光</th><th>点击</th><th>CTR</th><th>CPC</th><th>广告订单</th><th>CVR</th><th>广告销售额</th><th>ACOS</th><th>SPU 指标</th></tr></thead><tbody>${body}</tbody></table></div></div>
+  </section>`;
+}
+
+function renderStock(){
+  const inv = DATA.inventory.filter(i=>inLine(i.asin));
+  const ageC = ["var(--ok)","var(--s8)","var(--warn)","var(--bad)"];
+  let body="";
+  linesShown().forEach(l=>{
+    const rows = inv.filter(i=>asinInfo[i.asin].line===l); if(!rows.length) return;
+    body += `<tr class="grp"><td class="l" colspan="15">${lineTag(l)}</td></tr>`;
+    rows.forEach(i=>{ const c=invCalc(i); const at=i.age_0_90+i.age_91_180+i.age_181_270+i.age_271;
+      const seg=[i.age_0_90,i.age_91_180,i.age_181_270,i.age_271].map((v,k)=>`<span title="${["0–90","91–180","181–270","270+"][k]} 天 ${int.format(v)} 件" style="width:${v/at*100}%;background:${ageC[k]}"></span>`).join("");
+      body += `<tr><td class="l mono">${i.asin}</td><td class="l">${esc(asinInfo[i.asin].name)}</td>
+      <td>${int.format(i.fba_available)}</td><td>${int.format(i.reserved)}</td><td>${int.format(i.inbound)}</td><td>${int.format(i.in_transit)}</td><td>${int.format(i.local)}</td>
+      <td>${i.daily_sales.toFixed(1)}</td>
+      <td class="${c.fbaDays<rule("stock_low").value?"bad":""}">${Math.round(c.fbaDays)}</td>
+      <td class="${c.totalDays>rule("stock_high").value?"warn":""}">${Math.round(c.totalDays)}</td>
+      <td class="l"><div class="stack">${seg}</div></td><td class="${c.agedShare*100>rule("aged_high").value?"warn":""}">${pct(c.agedShare)}</td>
+      <td>${usd0.format(c.value)}</td><td>${usd0.format(i.storage_oct)}</td><td>${usd2.format(i.storage_oct/c.fbaQty)}</td></tr>`; });
+  });
+  // monthly storage fee trend
+  let fee="";
+  const shown = DATA.asins.filter(a=>inLine(a.asin));
+  shown.forEach(a=>{ const ms = DATA.months.map(mm=>DATA.monthly.find(r=>r.asin===a.asin&&r.month===mm));
+    fee += `<tr><td class="l">${lineTag(a.line)}</td><td class="l mono">${a.asin}</td>${ms.map(r=>`<td>${usd0.format(r.storage)}${r.aged_fee?` <span class="warn">+${usd0.format(r.aged_fee)}</span>`:""}</td>`).join("")}
+      <td>${pct(ms.reduce((t,r)=>t+r.storage+r.aged_fee,0)/ms.reduce((t,r)=>t+r.sales,0),2)}</td></tr>`; });
+  return `<section class="mod" id="stock">
+    <div class="mod-head"><div><h2>库存与费用</h2><p>库存快照截至 ${DATA.inventory_date}，月份筛选不影响快照。可售天数按 9 月日均销量计算；10–12 月旺季仓储费按 $2.40/立方英尺估算。</p></div></div>
+    <div class="card"><h3>库存结构与可售天数</h3><p class="note">红字：FBA 可售天数低于 ${rule("stock_low").value} 天；黄字：总可售天数高于 ${rule("stock_high").value} 天或超龄占比高于 ${rule("aged_high").value}%。</p>
+      <div class="legend"><span><i style="background:var(--ok)"></i>0–90 天</span><span><i style="background:var(--s8)"></i>91–180 天</span><span><i style="background:var(--warn)"></i>181–270 天</span><span><i style="background:var(--bad)"></i>270 天以上</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">ASIN</th><th class="l">品名</th><th>FBA 可售</th><th>预留</th><th>入库中</th><th>海运在途</th><th>本地仓</th><th>日均销量</th><th>FBA 可售天数</th><th>总可售天数</th><th class="l">库龄分布</th><th>181 天以上占比</th><th>库存货值</th><th>10 月预估仓储费</th><th>单件仓储费</th></tr></thead><tbody>${body}</tbody></table></div>
+      <p class="foot">库存货值 = 全部库存件数 × (采购成本 + 头程)。</p></div>
+    <div class="card"><h3>月度仓储费</h3><p class="note">月度库存仓储费，黄字为超龄附加费；最后一列为 6–9 月仓储费合计占销售额比例。</p>
+      <div class="tbl-wrap"><table><thead><tr><th class="l">品线</th><th class="l">ASIN</th>${DATA.months.map(mm=>`<th>${+mm.slice(5)} 月</th>`).join("")}<th>仓储费率</th></tr></thead><tbody>${fee}</tbody></table></div></div>
+  </section>`;
+}
+
+function renderAlerts(){
+  const all = computeAlerts();
+  const list = all.filter(a=> S.alertFilter==="all" || statusOf(a.key)===S.alertFilter);
+  const cnt = k=> all.filter(a=>statusOf(a.key)===k).length;
+  const m = S.month==="all"?DATA.months[DATA.months.length-1]:S.month;
+  const writable = S.db && S.canWrite!==false;
+  let notice="";
+  if(S.dbState==="loading") notice=`<div class="notice">正在连接处理记录…</div>`;
+  else if(!S.db) notice=`<div class="notice err">处理记录暂时无法保存：请登录 claude.ai 后打开这个页面。预警列表本身仍然可以查看。</div>`;
+  else if(S.canWrite===false) notice=`<div class="notice">你当前是只读权限，可以查看处理记录，但不能填写。需要填写请让负责人把你设为“参与者”或“编辑者”。</div>`;
+  const rowsHtml = list.map(a=>{
+    const d = S.alertDocs[a.key]||{}; const st = statusOf(a.key);
+    const note = S.drafts[a.key] ?? d.note ?? "";
+    const who = d.at ? `${esc(S.names[d.by]||"同事")}<br>${new Date(d.at).toLocaleString("zh-CN",{month:"numeric",day:"numeric",hour:"2-digit",minute:"2-digit"})}` : `<span class="muted">—</span>`;
+    const periodTxt = a.period.startsWith("INV") ? "库存快照" : a.period.startsWith("W") ? a.period : monthLabel(a.period);
+    return `<tr data-key="${a.key}">
+      <td class="l"><span class="pill ${a.rule.level==="high"?"high":"mid"}">${a.rule.level==="high"?"高":"中"}</span></td>
+      <td class="l">${lineTag(a.line)}</td>
+      <td class="l"><div class="mono">${a.asin}</div><div class="muted" style="font-size:12px">${esc(asinInfo[a.asin].name)}</div></td>
+      <td class="l">${esc(a.rule.name)}<div class="muted" style="font-size:12px">${periodTxt}${a.extra?" · "+esc(a.extra):""}</div></td>
+      <td class="bad">${a.value}</td><td class="muted">${esc(a.threshold)}</td>
+      <td class="l"><select data-act="status" aria-label="处理状态" ${writable?"":"disabled"}>
+        ${Object.entries(STATUS).map(([k,[n]])=>`<option value="${k}" ${k===st?"selected":""}>${n}</option>`).join("")}</select></td>
+      <td class="l wrap-cell"><textarea data-act="note" aria-label="处理说明" placeholder="原因、已采取的动作、预计恢复时间…" ${writable?"":"disabled"}>${esc(note)}</textarea></td>
+      <td class="l"><button class="btn primary" data-act="save" ${writable?"":"disabled"}>保存</button></td>
+      <td class="l who">${who}</td></tr>`;
+  }).join("");
+  const fbtn = (k,n,c)=>`<button class="chip" data-af="${k}" aria-pressed="${S.alertFilter===k}">${n} <b style="font-family:var(--font-num)">${c}</b></button>`;
+  return `<section class="mod" id="alerts">
+    <div class="mod-head"><div><h2>预警处理</h2><p>按“监控规则”里的阈值自动筛出的问题 ASIN。费用类按 ${monthLabel(m)}，库存类按 ${DATA.inventory_date} 快照，排名类按最新一周 ${DATA.weeks[DATA.weeks.length-1].week}。运营填写处理说明后点保存，所有人看到的是同一份记录。</p></div></div>
+    ${notice}
+    <div class="card">
+      <div class="toolbar" style="margin-bottom:12px"><div class="counts">${fbtn("all","全部",all.length)}${fbtn("open","未处理",cnt("open"))}${fbtn("doing","处理中",cnt("doing"))}${fbtn("done","已处理",cnt("done"))}</div>
+      <span class="foot">处理状态改动会立即保存；处理说明写完点“保存”。</span></div>
+      <div class="tbl-wrap"><table id="alert-table"><thead><tr><th class="l">级别</th><th class="l">品线</th><th class="l">ASIN</th><th class="l">触发规则</th><th>当前值</th><th>阈值</th><th class="l">处理状态</th><th class="l">处理说明</th><th class="l"></th><th class="l">最后更新</th></tr></thead>
+      <tbody>${rowsHtml || `<tr><td class="l muted" colspan="10">当前筛选下没有预警。</td></tr>`}</tbody></table></div>
+    </div>
+  </section>`;
+}
+
+function renderRank(){
+  const weeks = DATA.weeks;
+  const blocks = linesShown().map(l=>{
+    const ts = DATA.targets.filter(t=>asinInfo[t.asin].line===l);
+    const inner = ts.map(t=>{
+      const a = asinInfo[t.asin]; const ws = DATA.weekly.filter(w=>w.asin===t.asin); const last=ws[ws.length-1];
+      const rate = last.daily/t.target_daily;
+      const cells = ws.map(w=>{ const hit = w.rank<=t.target_rank && w.daily>=t.target_daily*rule("daily_miss").value/100;
+        return `<td><div class="cell-rank ${w.rank<=t.target_rank?"hit":"miss"}"><b>#${w.rank}</b><small>${w.daily.toFixed(0)} 单/天 · ${pct(w.daily/t.target_daily,0)}</small></div></td>`; }).join("");
+      const comps = t.competitors.map(cid=>{ const c=compInfo[cid]; const daily=c.units/30;
+        return `<tr><td class="l mono">${c.asin}</td><td class="l">${esc(c.brand)}</td><td class="l" style="white-space:normal;min-width:220px">${esc(c.title)}</td>
+          <td>${usd2.format(c.price)}</td><td class="${a.price<c.price?"ok":"warn"}">${a.price<c.price?"低 ":"高 "}${usd2.format(Math.abs(a.price-c.price))}</td>
+          <td>${int.format(c.units)}</td><td>${daily.toFixed(0)}</td><td>#${c.sub_rank}</td><td>${int.format(c.bsr)}</td><td>${c.rating} · ${int.format(c.ratings)}</td><td>${c.nation}</td>
+          <td>${pct(last.daily/daily,0)}</td></tr>`; }).join("");
+      return `<div class="rank-block">
+        <div class="rank-head"><span class="asin">${t.asin}</span><span>${esc(a.name)}</span><span class="muted">${usd2.format(a.price)}</span>
+          <div class="tgt"><span>目标小类排名<b>#${t.target_rank}</b></span><span>目标日销<b>${t.target_daily}</b></span><span>最新周完成率<b class="${rate<rule("daily_miss").value/100?"bad":"ok"}">${pct(rate,0)}</b></span></div>
+          <span class="muted" style="font-size:12px">小类：${esc(t.subcategory)} · 核心词：${esc(t.keyword)}</span></div>
+        <div class="rank-body">
+          <div class="tbl-wrap"><table><thead><tr>${weeks.map(w=>`<th style="text-align:center">${w.week}<br><span style="font-weight:400">${w.range}</span></th>`).join("")}</tr></thead><tbody><tr>${cells}</tr></tbody></table></div>
+          <div class="comp-label">对标竞品（卖家精灵，近 30 天）</div>
+          <div class="tbl-wrap"><table><thead><tr><th class="l">竞品 ASIN</th><th class="l">品牌</th><th class="l">产品</th><th>售价</th><th>我司价差</th><th>月销量</th><th>日均</th><th>小类排名</th><th>大类 BSR</th><th>评分 · 评论</th><th>卖家</th><th>我司日销 / 竞品</th></tr></thead><tbody>${comps}</tbody></table></div>
+        </div></div>`;
+    }).join("");
+    return `<div><h3 style="font-size:15px;margin:4px 0 8px">${lineTag(l)}</h3>${inner}</div>`;
+  }).join("");
+  return `<section class="mod" id="rank">
+    <div class="mod-head"><div><h2>竞对与目标排名</h2><p>每个核心 ASIN 的目标小类排名、目标日销和每周完成情况（绿色＝排名达标，红色＝未达标；格内为周日均销量和完成率），下方列出对标竞品。竞品数据为卖家精灵 ${DATA.competitor_date} 抓取的美国站近 30 天数据。</p></div></div>
+    ${blocks}
+  </section>`;
+}
+
+function renderRules(){
+  const rs = rules();
+  const ed = S.canEdit && S.db;
+  const body = rs.map(r=>`<tr><td class="l"><b style="font-weight:500">${esc(r.name)}</b><div class="muted" style="font-size:12px">${esc(r.scope)}</div></td>
+    <td class="l">${esc(r.metric)}<div class="formula">${esc(r.formula)}</div></td>
+    <td>${esc(r.op==="<"?"低于":r.op===">"?"高于":"达到")}</td>
+    <td>${ed?`<input type="number" id="th-${r.id}" step="any" value="${r.value}" aria-label="${esc(r.name)}阈值">`:`<b style="font-family:var(--font-num);font-size:17px">${r.value}</b>`} ${esc(r.unit)}</td>
+    <td><span class="pill ${r.level==="high"?"high":"mid"}">${r.level==="high"?"高":"中"}</span></td>
+    <td class="l">${esc(r.src)}</td></tr>`).join("");
+  return `<section class="mod" id="rules">
+    <div class="mod-head"><div><h2>监控规则</h2><p>预警模块按下面的规则自动判定。${ed?"你有编辑权限，可以直接改阈值并保存，所有人的预警列表会一起更新。":"阈值由负责人维护，如需调整请联系工作台负责人。"}</p></div>
+    ${ed?`<button class="btn primary" id="save-rules">保存阈值</button>`:""}</div>
+    <div class="card"><div class="tbl-wrap"><table class="rules"><thead><tr><th class="l">规则</th><th class="l">指标与口径</th><th>条件</th><th>阈值</th><th>级别</th><th class="l">数据来源</th></tr></thead><tbody>${body}</tbody></table></div></div>
+    <div class="card"><h3>数据口径</h3><p class="note" style="margin:0">
+    销售额为含税前订单金额；毛利 = 销售额 − 采购成本 − 头程 − FBA 配送费 − 佣金(15%) − 广告花费 − 月度仓储费 − 超龄附加费 − 退款 − 促销。
+    TACOS = 广告花费 ÷ 总销售额；ACOS = 广告花费 ÷ 广告销售额。可售天数用近 30 天日均。
+    排名为核心词所在小类的 BSR 小类排名，周数据取周日快照，日销为该周日均。竞品月销量、BSR、评分来自卖家精灵。</p></div>
+  </section>`;
+}
+
+/* ---------- shell ---------- */
+function renderControls(){
+  $("#f-month").innerHTML = DATA.months.map(m=>`<option value="${m}">${m.slice(0,4)} 年 ${+m.slice(5)} 月</option>`).join("")+`<option value="all">6–9 月合计</option>`;
+  $("#f-month").value = S.month;
+  $("#f-line").innerHTML = [["all","全部品线"],...LINES.map(l=>[l,l])].map(([k,n])=>`<button class="chip" data-line="${k}" aria-pressed="${S.line===k}">${k!=="all"?`<span class="dot" style="background:${LINE_COLOR[k]}"></span>`:""}${n}</button>`).join("");
+}
+function renderTabs(){
+  const open = computeAlerts().filter(a=>statusOf(a.key)==="open").length;
+  $("#tabs").innerHTML = TABS.map(([id,n])=>`<button role="tab" id="tab-${id}" aria-selected="${S.tab===id}" data-tab="${id}">${n}${id==="alerts"&&open?`<span class="n">${open}</span>`:""}</button>`).join("");
+}
+const R = {overview:renderOverview, asin:renderAsin, ads:renderAds, stock:renderStock, alerts:renderAlerts, rank:renderRank, rules:renderRules};
+function render(){
+  if(S.tab==="alerts" && document.activeElement && document.activeElement.closest && document.activeElement.closest("#alert-table")){ S.pending=true; renderTabs(); return; }
+  S.pending=false;
+  renderTabs(); $("#view").innerHTML = R[S.tab]();
+}
+
+document.addEventListener("click", e=>{
+  const t = e.target.closest("[data-tab],[data-line],[data-af],[data-act=save],#save-rules"); if(!t) return;
+  if(t.dataset.tab){ S.tab=t.dataset.tab; try{localStorage.setItem("wb-tab",S.tab)}catch(_){} render(); window.scrollTo({top:0}); return; }
+  if(t.dataset.line){ S.line=t.dataset.line; renderControls(); render(); return; }
+  if(t.dataset.af){ S.alertFilter=t.dataset.af; render(); return; }
+  if(t.dataset.act==="save"){ const tr=t.closest("tr"); saveAlert(tr.dataset.key, {status: tr.querySelector("[data-act=status]").value, note: tr.querySelector("[data-act=note]").value}, t); return; }
+  if(t.id==="save-rules") saveRules(t);
+});
+$("#f-month").addEventListener("change", e=>{ S.month=e.target.value; render(); });
+document.addEventListener("input", e=>{ if(e.target.dataset.act==="note"){ S.drafts[e.target.closest("tr").dataset.key]=e.target.value; } });
+document.addEventListener("change", e=>{ if(e.target.dataset.act==="status"){ const tr=e.target.closest("tr"); saveAlert(tr.dataset.key,{status:e.target.value, note: tr.querySelector("[data-act=note]").value}); } });
+document.addEventListener("focusout", e=>{ setTimeout(()=>{ if(S.pending && !(document.activeElement && document.activeElement.closest && document.activeElement.closest("#alert-table"))) render(); },0); });
+
+async function saveAlert(key, {status,note}, btn){
+  if(!S.db) return;
+  const a = computeAlerts().find(x=>x.key===key); if(!a) return;
+  if(btn){ btn.disabled=true; btn.textContent="保存中"; }
+  try{
+    await S.db.collection("alerts").doc(key).set({status, note: note.slice(0,2000), by: S.uid, at: new Date().toISOString(),
+      asin:a.asin, line:a.line, rule:a.rid, period:a.period, value:a.value});
+    delete S.drafts[key]; toast("已保存");
+  }catch(err){
+    if(err && err.code==="invalid_argument"){ S.canWrite=false; toast("没有填写权限，已切换为只读"); }
+    else toast("没保存成功，请稍后再试");
+  }finally{ if(btn){ btn.disabled=false; btn.textContent="保存"; } if(document.activeElement===btn) btn.blur(); render(); }
+}
+async function saveRules(btn){
+  const th={}; for(const r of DEFAULT_RULES){ const v=parseFloat($("#th-"+r.id)?.value); if(!isFinite(v)){ toast(`「${r.name}」阈值需要是数字`); return; } th[r.id]=v; }
+  btn.disabled=true;
+  try{ await S.db.doc("settings/rules").set({thresholds:th, by:S.uid, at:new Date().toISOString()}); toast("阈值已保存，预警已按新阈值更新"); }
+  catch(err){ toast(err&&err.code==="invalid_argument" ? "只有编辑者可以修改阈值" : "没保存成功，请稍后再试"); }
+  finally{ btn.disabled=false; }
+}
+
+async function resolveNames(){
+  if(!S.user) return;
+  const ids=[...new Set(Object.values(S.alertDocs).map(d=>d.by).filter(Boolean))].filter(id=>!(id in S.names));
+  if(!ids.length) return;
+  const ps = await S.user.profiles(ids);
+  ids.forEach(id=>{ S.names[id] = (ps[id] && ps[id].name) || "同事"; });
+  render();
+}
+
+async function boot(){
+  renderControls(); render();
+  if(!window.claude || !window.claude.use){ S.dbState="none"; render(); return; }
+  const [db,user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+  S.db=db; S.user=user; S.dbState = db ? "ready" : "none";
+  if(user){ S.uid = await user.id(); S.canWrite = await user.can("data.write"); S.canEdit = await user.canEdit(); }
+  render();
+  if(!db) return;
+  db.collection("alerts").onSnapshot(snap=>{
+    S.alertDocs = Object.fromEntries(snap.docs.map(d=>[d.id,d.data()]));
+    render(); resolveNames();
+  }, ()=>{ S.dbState="none"; S.db=null; render(); });
+  db.doc("settings/rules").onSnapshot(snap=>{
+    S.thresholds = (snap.exists && snap.data().thresholds) || {};
+    render();
+  }, ()=>{});
+}
+boot();
+</script>
