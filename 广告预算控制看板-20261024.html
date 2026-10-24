@@ -14,6 +14,7 @@
   --good:#0ca30c; --warn:#fab219; --serious:#ec835a; --crit:#d03b3b; --neutral:#a9a8a1; --idle:#d6d5ce;
   --good-ink:#006300; --crit-ink:#b42d2d;
   --wash:#f2f1ed; --accent:#2a78d6;
+  --bad-bg:#fbe3e1; --bad-fg:#a82626; --warn-bg:#fdf0cf; --warn-fg:#7a5300; --note-bg:#f3f1e2; --note-fg:#5f5a2c;
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
@@ -22,7 +23,7 @@
     --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
     --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
     --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-    --neutral:#6f6e69; --idle:#3a3a37; --good-ink:#0ca30c; --crit-ink:#e66767; --wash:#222220; --accent:#3987e5;
+    --neutral:#6f6e69; --idle:#3a3a37; --good-ink:#0ca30c; --crit-ink:#e66767; --wash:#222220; --accent:#3987e5; --bad-bg:#4a1f1f; --bad-fg:#ff9b9b; --warn-bg:#40330f; --warn-fg:#f5c55a; --note-bg:#33321f; --note-fg:#d9d39a;
   }
 }
 :root[data-theme="dark"]{
@@ -31,7 +32,7 @@
   --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
   --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
   --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500;
-  --neutral:#6f6e69; --idle:#3a3a37; --good-ink:#0ca30c; --crit-ink:#e66767; --wash:#222220; --accent:#3987e5;
+  --neutral:#6f6e69; --idle:#3a3a37; --good-ink:#0ca30c; --crit-ink:#e66767; --wash:#222220; --accent:#3987e5; --bad-bg:#4a1f1f; --bad-fg:#ff9b9b; --warn-bg:#40330f; --warn-fg:#f5c55a; --note-bg:#33321f; --note-fg:#d9d39a;
 }
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--page);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;font-size:14px;line-height:1.55}
@@ -62,7 +63,9 @@ tbody tr:hover{background:var(--wash)}tr.main td{border-bottom:none;padding-bott
 td.num,th.num{font-variant-numeric:tabular-nums}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:1px 8px;border-radius:999px;font-size:12px;font-weight:600;background:var(--wash);color:var(--ink)}
 .dot{width:9px;height:9px;border-radius:50%;display:inline-block;flex:none}
-.neg{color:var(--crit-ink)}.pos{color:var(--good-ink)}
+.neg{color:var(--crit-ink)}
+.x{display:inline-block;padding:0 6px;border-radius:5px;font-weight:600}.x-bad{background:var(--bad-bg);color:var(--bad-fg)}.x-warn{background:var(--warn-bg);color:var(--warn-fg)}.x-note{background:var(--note-bg);color:var(--note-fg)}
+.flagkey{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12px;color:var(--ink2);margin:0 0 10px}.pos{color:var(--good-ink)}
 .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
 .controls input,.controls select{font:inherit;color:var(--ink);background:var(--surface);border:1px solid var(--axis);border-radius:8px;padding:6px 10px}
 .controls input{min-width:220px;flex:1}
@@ -144,7 +147,7 @@ svg text{fill:var(--muted);font-size:11px;font-family:inherit}
       <input id="badQ" placeholder="搜索分类 / SPU" aria-label="搜索">
       <select id="badF" aria-label="监控标记"><option value="">全部异常</option><option>止损</option><option>压缩</option><option>清理</option><option>观察</option></select>
     </div>
-    <div class="tbl"><table id="badTbl"></table></div>
+    <div class="flagkey-slot"></div><div class="tbl"><table id="badTbl"></table></div>
   </div>
 </section>
 
@@ -158,11 +161,11 @@ svg text{fill:var(--muted);font-size:11px;font-family:inherit}
   <div class="card">
     <h2>建议加投 SPU</h2>
     <p class="sub">净毛利率 ≥20%、广告费率 ≤13%、销售额 ≥$30K、近 30 天环比 &gt;−10%、库存可售 ≥20 天；加投后费率不超过 13% 和上限，单月增幅 ≤30%</p>
-    <div class="tbl"><table id="upTbl"></table></div>
+    <div class="flagkey-slot"></div><div class="tbl"><table id="upTbl"></table></div>
   </div>
   <div class="card">
     <h2>预算削减最多的 20 个 SPU</h2>
-    <div class="tbl"><table id="cutTbl"></table></div>
+    <div class="flagkey-slot"></div><div class="tbl"><table id="cutTbl"></table></div>
   </div>
 </section>
 
@@ -175,7 +178,7 @@ svg text{fill:var(--muted);font-size:11px;font-family:inherit}
       <select id="allF" aria-label="监控标记"><option value="">全部标记</option></select>
       <select id="allS" aria-label="阶段"><option value="">全部阶段</option><option>成熟</option><option>新品期</option><option>清货</option></select>
     </div>
-    <div class="tbl" style="max-height:640px;overflow:auto"><table id="allTbl"></table></div>
+    <div class="flagkey-slot"></div><div class="tbl" style="max-height:640px;overflow:auto"><table id="allTbl"></table></div>
   </div>
 </section>
 
@@ -185,7 +188,7 @@ svg text{fill:var(--muted);font-size:11px;font-family:inherit}
     <p class="sub">品线 · 广告状态 · 销售额 · 占公司比例 · 毛利额 · 毛利额占比 · 广告花费 · 广告占公司比例 · 广告费率</p>
     <div class="rules" id="stateCards" style="margin-bottom:12px"></div>
     <div class="controls"><select id="catF" aria-label="广告状态"><option value="">全部状态</option><option>收缩</option><option>观察</option><option>维稳</option><option>加投</option></select></div>
-    <div class="tbl" style="max-height:640px;overflow:auto"><table id="catTbl"></table></div>
+    <div class="flagkey-slot"></div><div class="tbl" style="max-height:640px;overflow:auto"><table id="catTbl"></table></div>
     <p class="note">状态判定（按顺序，命中即停）：① 收缩：净毛利率 &lt;13%（红线），或止损/压缩/清理 SPU 占该分类广告 ≥30%，或按上限测算预算需降 ≥20%；② 观察：净毛利率 13–15%（预警），或广告费率 &gt;13%，或止损/压缩 SPU 占广告 ≥15%，或近 30 天销售环比 ≤−20%；③ 加投：净毛利率 ≥20%、广告费率 ≤13%、近 30 天环比 &gt;−10%，且建议预算高于当前；④ 其余为维稳（15–18% 的分类须按 SPU 上限逐步降费率）。广告花费 &lt;$2,000 的小分类一律维稳。</p>
   </div>
 </section>
@@ -333,6 +336,11 @@ const ST={'收缩':{c:'var(--crit)',t:'净毛利低于红线或异常 SPU 多：
 const spill=s=>`<span class="pill"><span class="dot" style="background:${ST[s].c}"></span>${s}</span>`;
 const TR={'达标':'var(--good)','关注':'var(--s1)','预警':'var(--warn)','红线':'var(--crit)','—':'var(--idle)'};
 const tpill=x=>`<span class="pill"><span class="dot" style="background:${TR[x]||'var(--idle)'}"></span>${x||'—'}</span>`;
+const capOf=st=>st==='清货'?0.10:st==='新品期'?0.25:0.15;
+function tacF(v,r){if(v==null)return '—';const c=capOf(r&&r.st),s=pct(v);if(v>c)return `<span class="x x-bad" title="超过${r&&r.st==='清货'?'清货':r&&r.st==='新品期'?'新品':'成熟品'}上限 ${pct(c,0)}">${s}</span>`;if(v>0.13&&!(r&&r.st==='新品期'))return `<span class="x x-warn" title="超过 13% 预警线">${s}</span>`;return s}
+function gmF(v){if(v==null)return '—';const s=pct(v);if(v<0.13)return `<span class="x x-bad" title="低于 13% 红线">${s}</span>`;if(v<0.15)return `<span class="x x-warn" title="13–15% 预警">${s}</span>`;if(v<0.18)return `<span class="x x-note" title="未达 18%">${s}</span>`;return s}
+function issues(gm,tac,st){const a=[];if(gm<0.13)a.push('净毛利低于13%红线');else if(gm<0.15)a.push('净毛利13–15%预警');else if(gm<0.18)a.push('净毛利未达18%');const c=capOf(st);if(tac>c)a.push(`广告费率超${pct(c,0)}上限`);else if(tac>0.13)a.push('广告费率超13%预警');return a.length?a.join('；'):'<span style="color:var(--good-ink)">达标</span>'}
+const FLAGKEY='<div class="flagkey"><span><span class="x x-bad">红</span> 净毛利 &lt;13% 或 广告费率超上限（成熟 15% / 清货 10%）</span><span><span class="x x-warn">黄</span> 净毛利 13–15% 或 广告费率 &gt;13%</span><span><span class="x x-note">浅</span> 净毛利 15–18%，未达标</span></div>';
 const pill=f=>`<span class="pill"><span class="dot" style="background:${FL[f].c}"></span>${f}</span>`;
 const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const tip=$('#tip');
@@ -354,14 +362,16 @@ const kp=[['1–10 月销售额',kmoney(T['销售额']),'全公司'],['广告花
 ['止损 SPU',stop.n+' 个','累计广告 '+kmoney(stop.ad)+'，净亏 '+kmoney(stop.gp)],['当前月广告（估）',kmoney(D.cur),'近30天销售 '+kmoney(D.l30)],['建议月预算',kmoney(D.bud),'调整 '+kmoney(D.bud-D.cur)+'（'+pct((D.bud-D.cur)/D.cur)+'）']];
 $('#kpis').innerHTML=kp.map(k=>`<div class="kpi"><div class="l">${k[0]}</div><div class="v">${k[1]}</div><div class="n">${k[2]}</div></div>`).join('');
 
+document.querySelectorAll('.flagkey-slot').forEach(e=>e.outerHTML=FLAGKEY);
 /* product lines */
 (function(){
   const L=D.lines,rs=L.rows,sum=k=>rs.reduce((s,r)=>s+r[k],0);
   const tot={l:'七品线合计',sale:sum('sale'),gp:sum('gp'),ad:sum('ad')},co={l:'公司合计',sale:T['销售额'],gp:T['毛利额'],ad:T['广告花费']};
-  const row=(r,b)=>`<tr${b?' style="font-weight:650;background:var(--wash)"':''}><td class="l">${esc(r.l)}</td><td class="num">${money(r.sale)}</td><td class="num">${pct(r.sale/co.sale,2)}</td><td class="num ${r.gp<0?'neg':''}">${money(r.gp)}</td><td class="num">${pct(r.gp/co.gp,2)}</td><td class="num">${money(r.ad)}</td><td class="num">${pct(r.ad/co.ad,2)}</td><td class="num">${pct(r.ad/r.sale,1)}</td></tr>`;
-  $('#lineTbl').innerHTML='<thead><tr><th class="l">品线</th><th>销售额</th><th>占公司比例</th><th>毛利额</th><th>毛利额占比</th><th>广告花费</th><th>广告占公司比例</th><th>广告费率</th></tr></thead><tbody>'+
+  const row=(r,b)=>{const gm=r.gp/r.sale,tac=r.ad/r.sale;return `<tr${b?' style="font-weight:650;background:var(--wash)"':''}><td class="l">${esc(r.l)}</td><td class="num">${money(r.sale)}</td><td class="num">${pct(r.sale/co.sale,2)}</td><td class="num ${r.gp<0?'neg':''}">${money(r.gp)}</td><td class="num">${pct(r.gp/co.gp,2)}</td><td class="num">${money(r.ad)}</td><td class="num">${pct(r.ad/co.ad,2)}</td><td class="num">${tacF(tac,{st:'成熟'})}</td><td class="num">${gmF(gm)}</td><td class="l" style="font-weight:400;font-size:12.5px;color:var(--ink2)">${issues(gm,tac,'成熟')}</td></tr>`};
+  $('#lineTbl').insertAdjacentHTML('beforebegin',FLAGKEY);
+  $('#lineTbl').innerHTML='<thead><tr><th class="l">品线</th><th>销售额</th><th>占公司比例</th><th>毛利额</th><th>毛利额占比</th><th>广告花费</th><th>广告占公司比例</th><th>广告费率</th><th>净毛利率</th><th class="l">超标项</th></tr></thead><tbody>'+
     rs.map(r=>row(r)).join('')+row(tot,1)+
-    `<tr><td class="l" colspan="8" style="padding-top:14px;color:var(--ink2);font-weight:600">其他产品线 · 广告花费 TOP 10</td></tr>`+
+    `<tr><td class="l" colspan="10" style="padding-top:14px;color:var(--ink2);font-weight:600">其他产品线 · 广告花费 TOP 10</td></tr>`+
     L.top.map(r=>row(r)).join('')+row(L.rest)+row(L.other,1)+row(co,1)+'</tbody>';
 })();
 
@@ -425,7 +435,7 @@ const chg=v=>`<span class="${v<0?'neg':v>0?'pos':''}">${v>0?'+':''}${money(v)}</
 
 /* bad list */
 const badRows=()=>{const q=$('#badQ').value.trim(),f=$('#badF').value;return D.spus.filter(r=>['止损','压缩','清理','观察'].includes(r.fl)&&(!f||r.fl===f)&&(!q||(r.c+r.s).includes(q)))};
-const badR=table($('#badTbl'),[{k:'fl',h:'标记',cls:'l',f:v=>pill(v)},{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'st',h:'阶段',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'ad',h:'广告花费',f:money},{k:'tac',h:'广告费率',f:v=>pct(v)},{k:'gm',h:'净毛利率',f:sg},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'mom',h:'近30天环比',f:v=>pct(v,0)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'chg',h:'月预算调整',f:chg},],badRows,'ad',true,r=>`<b>${esc(r.why)}</b> → ${esc(r.adv)}`);
+const badR=table($('#badTbl'),[{k:'fl',h:'标记',cls:'l',f:v=>pill(v)},{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'st',h:'阶段',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'ad',h:'广告花费',f:money},{k:'tac',h:'广告费率',f:tacF},{k:'gm',h:'净毛利率',f:gmF},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'mom',h:'近30天环比',f:v=>pct(v,0)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'chg',h:'月预算调整',f:chg},],badRows,'ad',true,r=>`<b>${esc(r.why)}</b> → ${esc(r.adv)}`);
 $('#badQ').oninput=badR;$('#badF').onchange=badR;
 
 /* budget */
@@ -435,7 +445,7 @@ $('#badQ').oninput=badR;$('#badF').onchange=badR;
   const rows=ORDER.map(f=>D.flags.find(x=>x.fl===f)).filter(Boolean);
   $('#budFlag').innerHTML='<thead><tr><th class="l">标记</th><th>SPU 数</th><th>当前月广告（估）</th><th>建议月预算</th><th>调整</th><th>调整幅度</th></tr></thead><tbody>'+rows.map(r=>`<tr><td>${pill(r.fl)}</td><td class="num">${r.n}</td><td class="num">${money(r.cur)}</td><td class="num">${money(r.bud)}</td><td class="num">${chg(r.bud-r.cur)}</td><td class="num">${r.cur?pct((r.bud-r.cur)/r.cur):'—'}</td></tr>`).join('')+
   `<tr><td><b>合计</b></td><td class="num">${rows.reduce((s,r)=>s+r.n,0)}</td><td class="num"><b>${money(D.cur)}</b></td><td class="num"><b>${money(D.bud)}</b></td><td class="num">${chg(D.bud-D.cur)}</td><td class="num">${pct((D.bud-D.cur)/D.cur)}</td></tr></tbody>`;
-  const bc=[{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'gm',h:'净毛利率',f:sg},{k:'tac',h:'当前费率',f:v=>pct(v)},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'l30',h:'近30天销售',f:money},{k:'doc',h:'可售天数',f:v=>v==null?'—':Math.round(v)},{k:'cur',h:'当前月广告',f:money},{k:'bud',h:'建议月预算',f:money},{k:'chg',h:'调整',f:chg}];
+  const bc=[{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'gm',h:'净毛利率',f:gmF},{k:'tac',h:'当前费率',f:tacF},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'l30',h:'近30天销售',f:money},{k:'doc',h:'可售天数',f:v=>v==null?'—':Math.round(v)},{k:'cur',h:'当前月广告',f:money},{k:'bud',h:'建议月预算',f:money},{k:'chg',h:'调整',f:chg}];
   table($('#upTbl'),bc,()=>D.spus.filter(r=>r.fl==='加投'),'chg');
   table($('#cutTbl'),[{k:'fl',h:'标记',cls:'l',f:v=>pill(v)}].concat(bc),()=>D.spus.filter(r=>r.chg<0).sort((a,b)=>a.chg-b.chg).slice(0,20),'chg',false);
 })();
@@ -443,11 +453,11 @@ $('#badQ').oninput=badR;$('#badF').onchange=badR;
 /* all */
 ORDER.forEach(f=>{const o=document.createElement('option');o.textContent=f;$('#allF').appendChild(o)});
 const allRows=()=>{const q=$('#allQ').value.trim(),f=$('#allF').value,s=$('#allS').value;return D.spus.filter(r=>(!f||r.fl===f)&&(!s||r.st===s)&&(!q||(r.c+r.s).includes(q)))};
-const allR=table($('#allTbl'),[{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'fl',h:'标记',cls:'l',f:v=>pill(v)},{k:'st',h:'阶段',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'ss',h:'占公司比例',f:v=>pct(v,2)},{k:'gp',h:'毛利额',f:v=>`<span class="${v<0?'neg':''}">${money(v)}</span>`},{k:'gs',h:'毛利额占比',f:v=>pct(v,2)},{k:'ad',h:'广告花费',f:money},{k:'as_',h:'广告占公司比例',f:v=>pct(v,2)},{k:'tac',h:'广告费率',f:v=>pct(v)},{k:'gm',h:'净毛利率',f:sg},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'l30',h:'近30天销售',f:money},{k:'mom',h:'环比',f:v=>pct(v,0)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'bud',h:'建议月预算',f:money},{k:'chg',h:'调整',f:chg}],allRows,'ad');
+const allR=table($('#allTbl'),[{k:'c',h:'分类',cls:'l'},{k:'s',h:'SPU',cls:'l'},{k:'fl',h:'标记',cls:'l',f:v=>pill(v)},{k:'st',h:'阶段',cls:'l'},{k:'sale',h:'销售额',f:money},{k:'ss',h:'占公司比例',f:v=>pct(v,2)},{k:'gp',h:'毛利额',f:v=>`<span class="${v<0?'neg':''}">${money(v)}</span>`},{k:'gs',h:'毛利额占比',f:v=>pct(v,2)},{k:'ad',h:'广告花费',f:money},{k:'as_',h:'广告占公司比例',f:v=>pct(v,2)},{k:'tac',h:'广告费率',f:tacF},{k:'gm',h:'净毛利率',f:gmF},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'cap',h:'费率上限',f:v=>pct(v)},{k:'l30',h:'近30天销售',f:money},{k:'mom',h:'环比',f:v=>pct(v,0)},{k:'stac',h:'建议费率',f:v=>pct(v)},{k:'bud',h:'建议月预算',f:money},{k:'chg',h:'调整',f:chg}],allRows,'ad');
 $('#allQ').oninput=allR;$('#allF').onchange=allR;$('#allS').onchange=allR;
 
 /* categories */
-const catR=table($('#catTbl'),[{k:'c',h:'品线（分类）',cls:'l'},{k:'state',h:'广告状态',cls:'l',f:v=>spill(v)},{k:'sale',h:'销售额',f:money},{k:'ss',h:'占公司比例',f:v=>pct(v,2)},{k:'gp',h:'毛利额',f:v=>`<span class="${v<0?'neg':''}">${money(v)}</span>`},{k:'gs',h:'毛利额占比',f:v=>pct(v,2)},{k:'ad',h:'广告花费',f:money},{k:'as_',h:'广告占公司比例',f:v=>pct(v,2)},{k:'tac',h:'广告费率',f:v=>pct(v)},{k:'gm',h:'净毛利率',f:sg},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'n',h:'SPU 数'},{k:'bad',h:'异常 SPU'},{k:'up',h:'加投 SPU'},{k:'cur',h:'当前月广告（估）',f:money},{k:'bud',h:'建议月预算',f:money},{k:'swhy',h:'状态依据',cls:'l',f:v=>`<span style="color:var(--ink2)">${esc(v)}</span>`}],()=>D.cats.filter(c=>!$('#catF').value||c.state===$('#catF').value),'ad');
+const catR=table($('#catTbl'),[{k:'c',h:'品线（分类）',cls:'l'},{k:'state',h:'广告状态',cls:'l',f:v=>spill(v)},{k:'sale',h:'销售额',f:money},{k:'ss',h:'占公司比例',f:v=>pct(v,2)},{k:'gp',h:'毛利额',f:v=>`<span class="${v<0?'neg':''}">${money(v)}</span>`},{k:'gs',h:'毛利额占比',f:v=>pct(v,2)},{k:'ad',h:'广告花费',f:money},{k:'as_',h:'广告占公司比例',f:v=>pct(v,2)},{k:'tac',h:'广告费率',f:tacF},{k:'gm',h:'净毛利率',f:gmF},{k:'tr',h:'毛利档位',cls:'l',f:tpill},{k:'n',h:'SPU 数'},{k:'bad',h:'异常 SPU'},{k:'up',h:'加投 SPU'},{k:'cur',h:'当前月广告（估）',f:money},{k:'bud',h:'建议月预算',f:money},{k:'swhy',h:'状态依据',cls:'l',f:v=>`<span style="color:var(--ink2)">${esc(v)}</span>`}],()=>D.cats.filter(c=>!$('#catF').value||c.state===$('#catF').value),'ad');
 
 $('#catF').onchange=catR;
 $('#stateCards').innerHTML=['收缩','观察','维稳','加投'].map(s=>{const cs=D.cats.filter(c=>c.state===s),ad=cs.reduce((x,c)=>x+c.ad,0),cur=cs.reduce((x,c)=>x+c.cur,0),bud=cs.reduce((x,c)=>x+c.bud,0);return `<div class="rule"><h3><span class="dot" style="background:${ST[s].c}"></span>${s} · ${cs.length} 个分类</h3><p>1–10 月广告 ${kmoney(ad)}（占 ${pct(ad/T['广告花费'])}）；月预算 ${kmoney(cur)} → ${kmoney(bud)}</p><p style="margin-top:4px">${ST[s].t}</p></div>`}).join('');
