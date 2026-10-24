@@ -367,11 +367,11 @@ document.querySelectorAll('.flagkey-slot').forEach(e=>e.outerHTML=FLAGKEY);
 (function(){
   const L=D.lines,rs=L.rows,sum=k=>rs.reduce((s,r)=>s+r[k],0);
   const tot={l:'七品线合计',sale:sum('sale'),gp:sum('gp'),ad:sum('ad')},co={l:'公司合计',sale:T['销售额'],gp:T['毛利额'],ad:T['广告花费']};
-  const row=(r,b)=>{const gm=r.gp/r.sale,tac=r.ad/r.sale;return `<tr${b?' style="font-weight:650;background:var(--wash)"':''}><td class="l">${esc(r.l)}</td><td class="num">${money(r.sale)}</td><td class="num">${pct(r.sale/co.sale,2)}</td><td class="num ${r.gp<0?'neg':''}">${money(r.gp)}</td><td class="num">${pct(r.gp/co.gp,2)}</td><td class="num">${money(r.ad)}</td><td class="num">${pct(r.ad/co.ad,2)}</td><td class="num">${tacF(tac,{st:'成熟'})}</td><td class="num">${gmF(gm)}</td><td class="l" style="font-weight:400;font-size:12.5px;color:var(--ink2)">${issues(gm,tac,'成熟')}</td></tr>`};
+  const row=(r,b)=>{const gm=r.gp/r.sale,tac=r.ad/r.sale;return `<tr${b?' style="font-weight:650;background:var(--wash)"':''}><td class="l">${esc(r.l)}</td><td class="num">${money(r.sale)}</td><td class="num">${pct(r.sale/co.sale,2)}</td><td class="num ${r.gp<0?'neg':''}">${money(r.gp)}</td><td class="num">${pct(r.gp/co.gp,2)}</td><td class="num">${money(r.ad)}</td><td class="num">${pct(r.ad/co.ad,2)}</td><td class="num">${tacF(tac,{st:'成熟'})}</td><td class="num">${gmF(gm)}</td></tr>`};
   $('#lineTbl').insertAdjacentHTML('beforebegin',FLAGKEY);
-  $('#lineTbl').innerHTML='<thead><tr><th class="l">品线</th><th>销售额</th><th>占公司比例</th><th>毛利额</th><th>毛利额占比</th><th>广告花费</th><th>广告占公司比例</th><th>广告费率</th><th>净毛利率</th><th class="l">超标项</th></tr></thead><tbody>'+
+  $('#lineTbl').innerHTML='<thead><tr><th class="l">品线</th><th>销售额</th><th>占公司比例</th><th>毛利额</th><th>毛利额占比</th><th>广告花费</th><th>广告占公司比例</th><th>广告费率</th><th>净毛利率</th></tr></thead><tbody>'+
     rs.map(r=>row(r)).join('')+row(tot,1)+
-    `<tr><td class="l" colspan="10" style="padding-top:14px;color:var(--ink2);font-weight:600">其他产品线 · 广告花费 TOP 10</td></tr>`+
+    `<tr><td class="l" colspan="9" style="padding-top:14px;color:var(--ink2);font-weight:600">其他产品线 · 广告花费 TOP 10</td></tr>`+
     L.top.map(r=>row(r)).join('')+row(L.rest)+row(L.other,1)+row(co,1)+'</tbody>';
 })();
 
