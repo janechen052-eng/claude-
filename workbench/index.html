@@ -365,7 +365,7 @@ function renderOverview(){
   };
   const rows = ls.map(l=> lineRow(l,lineTag(l)) + (l===PARENT_LINE ? SUBS.map(s=>lineRow(subKey(s),`<span class="lt" style="padding-left:16px;color:var(--muted)"><i style="background:${SUB_COLOR[s]}"></i>└ ${s}</span>`,"subline")).join("") : "")).join("");
   const minis = ls.map(l=>yoyChart(l)).join("");
-  const weekly = weeklyCard(ls);
+  const weekly = weeklyFeedback(ls) + weeklyCard(ls);
   return `<section class="mod" id="overview">
     <div class="mod-head"><div><h2>整体看板</h2><p>${monthLabel(m)}，${S.line==="all"?"七个重点品线":S.line}的美国站经营数据。${m===END_MONTH?"本月未结束，环比和同比按日均计算。":"环比、同比按日均计算，消除天数差异。"}</p></div></div>
     <div class="kpis">${tiles}</div>
@@ -380,59 +380,87 @@ function renderOverview(){
 /* 周维度：近 4 个完整周 */
 const lwIdx = {}; DATA.line_weekly.forEach(r=>{ lwIdx[r.line+"|"+r.week]=r; });
 const lxW = {}; DATA.lx.line_week.forEach(r=>{ lxW[r.line+"|"+r.week]=r; });
+// [key, 名称, 上升为好, 类型, 字段]：ex=日销量导出数量；lx=领星金额；ratio=领星比率 [分子, 分母]
 const WK_METRICS = [
-  ["sales","销售额",true,false],["units","销量",true,false],["orders","订单",true,false],
-  ["margin","订单毛利率",true,true],["tacos","TACOS",false,true],["acos","ACOS",false,true]];
-function wkVal(key,w,metric){
-  if(metric==="sales"||metric==="units"||metric==="orders"){ const r=lwIdx[key+"|"+w]; return r ? r[metric] : null; }
-  const x=lxW[key+"|"+w]; if(!x || !x.sales) return null;
-  return metric==="margin" ? x.profit/x.sales : metric==="tacos" ? x.ad/x.sales : (x.ad_sales ? x.ad/x.ad_sales : null);
+  ["sales","销售额",true,"ex","sales"],["units","销量",true,"ex","units"],["orders","订单",true,"ex","orders"],
+  ["profit","订单毛利",true,"lx","profit"],["margin","毛利率",true,"ratio",["profit","sales"]],
+  ["ad","广告费",false,"lx","ad"],["tacos","TACOS",false,"ratio",["ad","sales"]],["acos","ACOS",false,"ratio",["ad","ad_sales"]],
+  ["ret","退货率",false,"ratio",["returns","units"]]];
+const wkDef = k => WK_METRICS.find(m=>m[0]===k);
+function wkAgg(keys, weeks, k){
+  const [, , , kind, f]=wkDef(k); let n=0, d=0, seen=false;
+  keys.forEach(key=>weeks.forEach(w=>{
+    if(kind==="ex"){ const r=lwIdx[key+"|"+w]; if(r){ seen=true; n+=r[f]; } return; }
+    const x=lxW[key+"|"+w]; if(!x) return; seen=true;
+    if(kind==="lx") n+=x[f]; else { n+=x[f[0]]; d+=x[f[1]]; }
+  }));
+  if(!seen) return null;
+  return kind==="ratio" ? (d ? n/d : null) : n;
 }
-function wkSum(key,ws,metric){
-  if(metric==="sales"||metric==="units"||metric==="orders") return ws.reduce((t,w)=>t+(wkVal(key,w,metric)||0),0);
-  const t={sales:0,profit:0,ad:0,ad_sales:0}; ws.forEach(w=>{ const x=lxW[key+"|"+w]; if(x) for(const k in t) t[k]+=x[k]; });
-  if(!t.sales) return null;
-  return metric==="margin" ? t.profit/t.sales : metric==="tacos" ? t.ad/t.sales : (t.ad_sales ? t.ad/t.ad_sales : null);
-}
-function wkFmt(metric,v){ if(v==null||!isFinite(v)) return "—"; return metric==="sales" ? usd0.format(v) : (metric==="units"||metric==="orders") ? int.format(v) : pct(v); }
-function wkChg(metric,cur,prev,upGood,isRate){
+const wkIsRate = k => wkDef(k)[3]==="ratio";
+function wkFmt(k,v){ if(v==null||!isFinite(v)) return "—"; const kind=wkDef(k)[3];
+  return kind==="ratio" ? pct(v) : (k==="units"||k==="orders") ? int.format(v) : usd0.format(v); }
+function wkChg(k,cur,prev){
+  const [, , upGood]=wkDef(k), isRate=wkIsRate(k);
   if(cur==null||prev==null||!isFinite(cur)||!isFinite(prev)||(!isRate&&!prev)) return `<span class="flat">—</span>`;
-  const d = isRate ? cur-prev : cur/prev-1; const cls = Math.abs(d)<0.0005 ? "flat" : ((d>0)===upGood ? "up" : "down");
+  const d = isRate ? cur-prev : (cur-prev)/Math.abs(prev); const cls = Math.abs(d)<0.0005 ? "flat" : ((d>0)===upGood ? "up" : "down");
   return `<span class="${cls}">${d>=0?"+":""}${(d*100).toFixed(1)}${isRate?"pp":"%"}</span>`;
 }
-function wkCls(metric,key,v){
+function wkCls(k,key,v){
   if(v==null) return "";
-  if(metric==="margin") return v*100<thr("margin_low",key)?"bad":"";
-  if(metric==="tacos") return v*100>rule("tacos_high").value?"bad":"";
-  if(metric==="acos") return v*100>rule("acos_high").value?"bad":"";
+  if(k==="margin") return v*100<thr("margin_low",key)?"bad":"";
+  if(k==="profit") return v<0?"bad":"";
+  if(k==="tacos") return v*100>rule("tacos_high").value?"bad":"";
+  if(k==="acos") return v*100>rule("acos_high").value?"bad":"";
+  if(k==="ret") return v*100>rule("refund_high").value?"bad":"";
   return "";
 }
+const WK_ALL = DATA.weeks.map(w=>w.week), WK4 = WK_ALL.slice(-4), WK_PREV4 = WK_ALL.slice(-8,-4);
+const wkInfo = Object.fromEntries(DATA.weeks.map(w=>[w.week,w.range]));
 function weeklyCard(ls){
-  const all=DATA.weeks.map(w=>w.week), ws=all.slice(-4), prevW=all[all.length-5];
-  const [metric,label,upGood,isRate]=WK_METRICS.find(m=>m[0]===S.wkMetric);
-  const keys=[]; ls.forEach(l=>{ keys.push([l,lineTag(l),""]); if(l===PARENT_LINE) SUBS.forEach(s=>keys.push([subKey(s),`<span class="lt" style="padding-left:16px;color:var(--muted)"><i style="background:${SUB_COLOR[s]}"></i>└ ${s}</span>`,"subline"])); });
-  const row=(key,lbl,cls)=>{ let prev=wkVal(key,prevW,metric);
-    const cells=ws.map(w=>{ const v=wkVal(key,w,metric); const c=wkChg(metric,v,prev,upGood,isRate); prev=v;
-      return `<td class="${wkCls(metric,key,v)}">${wkFmt(metric,v)}<div style="font-size:11px">${c}</div></td>`; }).join("");
-    const tot=wkSum(key,ws,metric), prevTot=wkSum(key,all.slice(-8,-4),metric);
-    return `<tr class="${cls}"><td class="l">${lbl}</td>${cells}<td class="${wkCls(metric,key,tot)}"><b style="font-weight:500">${wkFmt(metric,tot)}</b><div style="font-size:11px">${wkChg(metric,tot,prevTot,upGood,isRate)} <span class="flat">较前 4 周</span></div></td></tr>`; };
-  // 合计：数量类直接加总；比率类按领星合计重算
-  const totRow=()=>{ const sumW=w=>{ if(!isRate) return ls.reduce((t,l)=>t+(wkVal(l,w,metric)||0),0);
-      const t={sales:0,profit:0,ad:0,ad_sales:0}; ls.forEach(l=>{ const x=lxW[l+"|"+w]; if(x) for(const k in t) t[k]+=x[k]; });
-      if(!t.sales) return null; return metric==="margin"?t.profit/t.sales:metric==="tacos"?t.ad/t.sales:(t.ad_sales?t.ad/t.ad_sales:null); };
-    let prev=sumW(prevW);
-    const cells=ws.map(w=>{ const v=sumW(w); const c=wkChg(metric,v,prev,upGood,isRate); prev=v; return `<td>${wkFmt(metric,v)}<div style="font-size:11px">${c}</div></td>`; }).join("");
-    const sumN=arr=>{ if(!isRate) return arr.reduce((t,w)=>t+sumW(w),0); const t={sales:0,profit:0,ad:0,ad_sales:0}; arr.forEach(w=>ls.forEach(l=>{ const x=lxW[l+"|"+w]; if(x) for(const k in t) t[k]+=x[k]; }));
-      return !t.sales?null:metric==="margin"?t.profit/t.sales:metric==="tacos"?t.ad/t.sales:(t.ad_sales?t.ad/t.ad_sales:null); };
-    const tot=sumN(ws), pt=sumN(all.slice(-8,-4));
-    return `<tr class="sub"><td class="l">合计</td>${cells}<td><b style="font-weight:500">${wkFmt(metric,tot)}</b><div style="font-size:11px">${wkChg(metric,tot,pt,upGood,isRate)} <span class="flat">较前 4 周</span></div></td></tr>`; };
-  const wkInfo=Object.fromEntries(DATA.weeks.map(w=>[w.week,w.range]));
-  const chips=WK_METRICS.map(([k,n])=>`<button class="chip" data-wk="${k}" aria-pressed="${S.wkMetric===k}">${n}</button>`).join("");
-  const src = isRate ? "领星产品表现" : "ASIN 日销量导出（品线全部 ASIN）";
+  const k=S.wkMetric, isRate=wkIsRate(k), kind=wkDef(k)[3], prevW=WK_ALL[WK_ALL.length-5];
+  const keys=[]; ls.forEach(l=>{ keys.push([[l],lineTag(l),"",l]); if(l===PARENT_LINE) SUBS.forEach(s=>keys.push([[subKey(s)],`<span class="lt" style="padding-left:16px;color:var(--muted)"><i style="background:${SUB_COLOR[s]}"></i>└ ${s}</span>`,"subline",subKey(s)])); });
+  if(ls.length>1) keys.push([ls,"合计","sub",null]);
+  const row=([ks,lbl,cls,key])=>{ let prev=wkAgg(ks,[prevW],k);
+    const cells=WK4.map(w=>{ const v=wkAgg(ks,[w],k); const c=wkChg(k,v,prev); prev=v;
+      return `<td class="${key?wkCls(k,key,v):""}">${wkFmt(k,v)}<div style="font-size:11px">${c}</div></td>`; }).join("");
+    const tot=wkAgg(ks,WK4,k), pt=wkAgg(ks,WK_PREV4,k);
+    return `<tr class="${cls}"><td class="l">${lbl}</td>${cells}<td class="${key?wkCls(k,key,tot):""}"><b style="font-weight:500">${wkFmt(k,tot)}</b><div style="font-size:11px">${wkChg(k,tot,pt)} <span class="flat">较前 4 周</span></div></td></tr>`; };
+  const chips=WK_METRICS.map(([m,n])=>`<button class="chip" data-wk="${m}" aria-pressed="${S.wkMetric===m}">${n}</button>`).join("");
+  const src = kind==="ex" ? "ASIN 日销量导出（品线全部 ASIN）" : "领星产品表现（数据自 9 月 1 日起，“较前 4 周”实际不足 4 周）";
+  const retNote = k==="ret" ? `<b style="font-weight:500">退货率 = 退货量 ÷ 销量。退货通常在下单后几周才发生，越近的周退货越少，最近 1–2 周偏低不代表质量变好。</b>` : "";
   return `<div class="card" id="weekly"><div class="toolbar" style="margin-bottom:4px"><h3>近 4 周（周维度）</h3><div class="chips">${chips}</div></div>
-    <p class="note">${ws[0]}–${ws[3]}（${wkInfo[ws[0]].slice(0,5)} 至 ${wkInfo[ws[3]].slice(-5)}），周一至周日；格内小字为较上周变化${isRate?"（百分点）":""}，最后一列为 4 周合计${isRate?"（按 4 周合计重算）":""}及较前 4 周变化。数据来源：${src}。${END.slice(5)} 所在的本周未结束，不计入。</p>
-    <div class="tbl-wrap"><table><thead><tr><th class="l">品线</th>${ws.map(w=>`<th>${w}<br><span style="font-weight:400">${wkInfo[w]}</span></th>`).join("")}<th>4 周${isRate?"":"合计"}</th></tr></thead>
-    <tbody>${keys.map(k=>row(...k)).join("")}${ls.length>1?totRow():""}</tbody></table></div></div>`;
+    <p class="note">${WK4[0]}–${WK4[3]}（${wkInfo[WK4[0]].slice(0,5)} 至 ${wkInfo[WK4[3]].slice(-5)}），周一至周日；格内小字为较上周变化${isRate?"（百分点）":""}，最后一列为 4 周${isRate?"合计重算":"合计"}及较前 4 周变化；红字为超出监控阈值。数据来源：${src}。本周（${END.slice(5)} 所在周）未结束，不计入。${retNote}</p>
+    <div class="tbl-wrap"><table><thead><tr><th class="l">品线</th>${WK4.map(w=>`<th>${w}<br><span style="font-weight:400">${wkInfo[w]}</span></th>`).join("")}<th>4 周</th></tr></thead>
+    <tbody>${keys.map(row).join("")}</tbody></table></div></div>`;
+}
+/* 近 4 周反馈：按数据自动生成的要点 */
+function weeklyFeedback(ls){
+  const last=WK4[3], prev=WK4[2], f=(v,d=1)=>(v>=0?"+":"")+(v*100).toFixed(d);
+  const A=(ks,ws,k)=>wkAgg(ks,ws,k);
+  const s4=A(ls,WK4,"sales"), sP=A(ls,WK_PREV4,"sales"), p4=A(ls,WK4,"profit"), m4=A(ls,WK4,"margin"), ad4=A(ls,WK4,"ad"), t4=A(ls,WK4,"tacos");
+  const sL=A(ls,[last],"sales"), sPr=A(ls,[prev],"sales"), mL=A(ls,[last],"margin"), mPr=A(ls,[prev],"margin"), tL=A(ls,[last],"tacos"), tPr=A(ls,[prev],"tacos");
+  const peak=WK4.reduce((b,w)=>A(ls,[w],"sales")>A(ls,[b],"sales")?w:b,WK4[0]);
+  const head=`<li><b>整体</b>：近 4 周销售额 ${usd0.format(s4)}（较前 4 周 ${f(s4/sP-1)}%），销量 ${int.format(A(ls,WK4,"units"))} 件；订单毛利 ${usd0.format(p4)}，毛利率 ${pct(m4)}；广告费 ${usd0.format(ad4)}，TACOS ${pct(t4)}。销售额峰值在 ${peak}（${usd0.format(A(ls,[peak],"sales"))}），最新周 ${last} 较上周 ${f(sL/sPr-1)}%，毛利率 ${f(mL-mPr)}pp，TACOS ${f(tL-tPr)}pp。</li>`;
+  const items=[];
+  const keys=[]; ls.forEach(l=>{ if(l===PARENT_LINE) SUBS.forEach(s=>keys.push([subKey(s),`黄油枪·${s}`])); else keys.push([l,l]); });
+  keys.forEach(([key,name])=>{
+    const s=A([key],WK4,"sales"); if(!s) return;
+    const m=A([key],WK4,"margin"), mLast=A([key],[last],"margin"), th=thr("margin_low",key)/100;
+    const acosW=WK4.map(w=>A([key],[w],"acos")), acosHigh=acosW.every(v=>v!=null&&v*100>rule("acos_high").value);
+    const sl=A([key],[last],"sales"), sp=A([key],[prev],"sales"), t=A([key],WK4,"tacos");
+    const flags=[];
+    if(mLast!=null && mLast<0) flags.push(`最新周亏损（毛利率 ${pct(mLast)}）`);
+    else if(m!=null && m<th) flags.push(`4 周毛利率 ${pct(m)}，低于 ${(th*100).toFixed(0)}% 阈值`);
+    if(acosHigh) flags.push(`ACOS 连续 4 周高于 ${rule("acos_high").value}%（最新 ${pct(acosW[3])}）`);
+    if(t!=null && t*100>rule("tacos_high").value) flags.push(`TACOS ${pct(t)}`);
+    if(sp && Math.abs(sl/sp-1)>=0.3) flags.push(`最新周销售额 ${f(sl/sp-1)}%`);
+    const good = m!=null && m>=th && !acosHigh && !(t*100>rule("tacos_high").value);
+    items.push([flags.length, `<li><b>${esc(name)}</b>：4 周销售额 ${usd0.format(s)}，毛利率 ${pct(m)}，TACOS ${pct(t)}。${flags.length?`<span class="bad">${flags.join("；")}</span>`:(good?`<span class="ok">各项在阈值内</span>`:"")}</li>`]);
+  });
+  items.sort((a,b)=>b[0]-a[0]);
+  return `<div class="card" id="weekly-feedback"><h3>近 4 周反馈</h3><p class="note">${WK4[0]}–${WK4[3]}，按数据自动生成；毛利、广告、比率来自领星，销售额和销量来自日销量导出。问题多的品线排在前面。退货有滞后，近期退货率偏低不作为结论。</p>
+    <ul style="margin:0;padding-left:18px;display:grid;gap:6px;max-width:110ch">${head}${items.map(x=>x[1]).join("")}</ul></div>`;
 }
 function yoyChart(l){
   const W=480,H=210,pl=4,pr=44,pb=20,pt=12,slot=(W-pl-pr)/12,bw=Math.min(12,slot/2-2), base=H-pb;
