@@ -1,0 +1,625 @@
+<meta name="dash-one-writer">
+<style>
+.op { font-family: var(--font-anthropic-sans); display: grid; gap: var(--cds-gap-xl); }
+.op-head { display: grid; gap: var(--cds-gap-xs); }
+.op-head h1 { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); margin: 0; text-wrap: balance; }
+.op-take { margin: 0; color: var(--color-fg); font-size: var(--cds-font-size-body); max-width: 72ch; line-height: 1.6; }
+.op-take b, .op-tile b, .op-note b { font-weight: var(--cds-font-weight-medium); font-variant-numeric: tabular-nums; }
+.op-meta { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.op-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr)); gap: var(--cds-gap-md); }
+.op-tile { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md) var(--cds-pad-lg); display: grid; gap: var(--cds-gap-xs); align-content: start; min-width: 0; }
+.op-tile .lab { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.op-tile .big { font-family: var(--font-anthropic-serif); font-weight: 400; font-size: var(--cds-font-size-title); font-variant-numeric: tabular-nums; line-height: 1.15; }
+.op-tile .sub { color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.op-tile.bad .big { color: var(--color-bad); }
+.op-tile.warn .big { color: var(--color-warn); }
+.op-sec { display: grid; gap: var(--cds-gap-md); }
+.op-sec > h2 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.op-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr)); gap: var(--cds-gap-md); }
+.op-card { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-lg); display: grid; gap: var(--cds-gap-sm); align-content: start; min-width: 0; }
+.op-card h3 { margin: 0; font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.op-note { margin: 0; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); line-height: 1.5; }
+.op-chart { position: relative; min-height: 260px; }
+.op-chart.short { min-height: 200px; }
+.op-chart svg { display: block; overflow: visible; }
+.op-chart text { font-family: var(--font-anthropic-sans); }
+.op-legend { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-md); font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); margin: 0; padding: 0; list-style: none; }
+.op-legend li { display: inline-flex; align-items: center; gap: var(--cds-gap-xs); }
+.op-sw { width: 10px; height: 10px; border-radius: 2px; display: inline-block; background: var(--cds-chart-muted); }
+.op-sw.line { height: 2px; width: 14px; border-radius: 1px; }
+.op-sw.ref { height: 0; width: 14px; border-top: 1.5px dashed var(--cds-chart-reference); background: none; border-radius: 0; }
+.op-tip { position: absolute; pointer-events: none; background: var(--cds-surface-popover); border: 1px solid var(--cds-border); border-radius: var(--cds-radius); box-shadow: var(--cds-shadow-popover); padding: var(--cds-pad-xs) var(--cds-pad-sm); font-size: var(--cds-font-size-caption); white-space: nowrap; z-index: 2; display: grid; gap: 2px; }
+.op-tip .h { color: var(--cds-text-secondary); }
+.op-tip .r { display: flex; align-items: center; gap: var(--cds-gap-xs); font-variant-numeric: tabular-nums; }
+.op-tablewrap { overflow-x: auto; }
+.op-table { width: 100%; border-collapse: collapse; font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.op-table th { text-align: right; font-weight: var(--cds-font-weight-medium); color: var(--color-fg-muted); padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.op-table td { text-align: right; padding: var(--cds-pad-xs) var(--cds-pad-sm); border-bottom: 1px solid var(--color-border-line); white-space: nowrap; }
+.op-table th:nth-child(-n+2), .op-table td:nth-child(-n+2) { text-align: left; }
+.op-table td.bad { color: var(--color-bad); }
+.op-table td.ok { color: var(--color-ok); }
+.op-steps { margin: 0; padding-left: 1.2em; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-body); line-height: 1.55; }
+.op-steps li { max-width: 72ch; }
+.op-steps li strong { font-weight: var(--cds-font-weight-medium); }
+[data-dash-source-state=empty] { color: transparent; }
+[data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
+.op-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
+.op-fail i { width: .375rem; height: .375rem; border-radius: 50%; background: var(--color-bad); display: inline-block; }
+</style>
+
+<div class="op">
+  <header class="op-head" id="top">
+    <h1>油泵清货看板</h1>
+    <p class="op-take">亚马逊 3 个核心 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。亚马逊、TikTok、TEMU 三个平台全力推进，最多能清 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，还差 <b data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</b> 件，缺口主要在 B0FW9V5S3W，需要 1 月用 B2B 或整批清算补上。</p>
+    <p class="op-meta">清货期 2026-11-03 至 2027-01-31，共 <span data-draw="c" data-k="days">—</span> 天 · 库存为领星 11 月 1–2 日 HK11-US 店铺可用库存 · 各渠道可清量为测算假设</p>
+  </header>
+
+  <section class="op-tiles" aria-label="核心指标">
+    <div class="op-tile">
+      <span class="lab">待清库存（3 个 ASIN）</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="total_inventory" data-fmt="int">—</span>
+      <span class="sub">件 · HK11-US 可用库存</span>
+    </div>
+    <div class="op-tile">
+      <span class="lab">清货目标</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="target_units" data-fmt="int">—</span>
+      <span class="sub">件 · 库存的 <span data-draw="c" data-k="target">—</span></span>
+    </div>
+    <div class="op-tile warn">
+      <span class="lab">每天需要卖</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="needed_daily" data-fmt="int0">—</span>
+      <span class="sub">件/天 · 当前 <span data-draw="n" data-source="kpi" data-field="current_daily" data-fmt="d1">—</span>，需提升 <span data-draw="n" data-source="kpi" data-field="multiple" data-fmt="x">—</span></span>
+    </div>
+    <div class="op-tile">
+      <span class="lab">三平台激进方案可清</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="platforms_units" data-fmt="int">—</span>
+      <span class="sub">件 · 占库存 <span data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</span></span>
+    </div>
+    <div class="op-tile bad">
+      <span class="lab">距目标缺口</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</span>
+      <span class="sub">件 · 加 B2B 后清货率 <span data-draw="n" data-source="kpi" data-field="final_rate" data-fmt="pct">—</span></span>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-feas">
+    <h2 id="h-feas">能不能清到目标</h2>
+    <div class="op-grid">
+      <div class="op-card">
+        <h3 id="h-water">各渠道可清量累计（激进方案）</h3>
+        <p class="op-note">每根柱子是该渠道新增的可清量，依次累加。虚线是清货目标和总库存。</p>
+        <div class="op-chart dash-skeleton" id="c-water" data-draw="water" data-source="waterfall kpi"></div>
+      </div>
+      <div class="op-card">
+        <h3 id="h-asin">分 ASIN 清货进度（激进方案）</h3>
+        <p class="op-note">灰色底条是当前库存，彩色是各渠道可清量，竖线是该 ASIN 的清货目标线。右侧是三平台清货率 → 加 B2B 后清货率。</p>
+        <ul class="op-legend" aria-label="图例">
+          <li><span class="op-sw" data-ch="0"></span>亚马逊</li>
+          <li><span class="op-sw" data-ch="1"></span>TikTok</li>
+          <li><span class="op-sw" data-ch="2"></span>TEMU</li>
+          <li><span class="op-sw" data-ch="3"></span>B2B/整批清算</li>
+        </ul>
+        <div class="op-chart short dash-skeleton" id="c-asin" data-draw="asinbars" data-source="by_asin"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-econ">
+    <h2 id="h-econ">现在每卖一件亏多少</h2>
+    <div class="op-grid">
+      <div class="op-card">
+        <h3 id="h-econchart">每件广告费与每件毛利（近 30 天，全站点）</h3>
+        <p class="op-note">2026-09-23 至 10-22，来自油泵品线看板的领星结算数据。三款都已经是负毛利，B0HG9L16S7 每卖一件的广告费接近客单价的一半，靠加广告冲量会越清越亏。</p>
+        <ul class="op-legend" aria-label="图例">
+          <li><span class="op-sw" data-ch="0"></span>每件广告费</li>
+          <li><span class="op-sw" data-ch="bad"></span>每件毛利（结算后）</li>
+        </ul>
+        <div class="op-chart short dash-skeleton" id="c-econ" data-draw="econ" data-source="unit_econ"></div>
+      </div>
+      <div class="op-card">
+        <h3 id="h-econtable">广告与利润明细（近 30 天）</h3>
+        <p class="op-note">CPA = 广告费 ÷ 广告订单；TACOS = 广告费 ÷ 总销售额；毛利率 = 领星结算毛利润 ÷ 销售额。</p>
+        <div class="op-tablewrap">
+          <table class="op-table" data-source="unit_econ" data-row-key="asin">
+            <thead><tr>
+              <th data-field="asin">ASIN</th>
+              <th data-field="units">销量</th>
+              <th data-field="aov">客单价</th>
+              <th data-field="cpa">CPA</th>
+              <th data-field="tacos">TACOS</th>
+              <th data-field="margin">毛利率</th>
+              <th data-field="profit_per_unit">每件毛利</th>
+            </tr></thead>
+            <tbody data-draw="econTable"></tbody>
+          </table>
+        </div>
+        <p class="op-note">B0HG9L16S7 库龄（10/24 快照，美国站）：0–90 天 <b data-draw="n" data-source="inventory_age" data-field="age_0_90" data-fmt="int">—</b> 件，91–120 天 <b data-draw="n" data-source="inventory_age" data-field="age_91_120" data-fmt="int">—</b> 件，超过 120 天 <b data-draw="n" data-source="inventory_age" data-field="age_over_120" data-fmt="int">—</b> 件。大部分货还比较新，但拖到 1 月以后会成批进入长库龄。</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-plan">
+    <h2 id="h-plan">月度节奏和检查点</h2>
+    <div class="op-card">
+      <h3 id="h-planchart">每月清货量与累计清货率</h3>
+      <p class="op-note">柱子是各渠道当月计划清货量，折线是累计清货率。菱形是每月月底的累计检查点，绿色为达到、红色为未达到。哪个点没达到，就加大降价或提前启动 B2B。</p>
+      <ul class="op-legend" aria-label="图例">
+        <li><span class="op-sw" data-ch="0"></span>亚马逊</li>
+        <li><span class="op-sw" data-ch="1"></span>TikTok</li>
+        <li><span class="op-sw" data-ch="2"></span>TEMU</li>
+        <li><span class="op-sw" data-ch="3"></span>B2B/整批清算</li>
+        <li><span class="op-sw line" data-ch="4"></span>累计清货率</li>
+      </ul>
+      <div class="op-chart dash-skeleton" id="c-plan" data-draw="plan" data-source="plan_cum"></div>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-hist">
+    <h2 id="h-hist">历史销售：判断能拉到多少量的依据</h2>
+    <div class="op-grid">
+      <div class="op-card">
+        <h3 id="h-amzq">亚马逊月销量（2026 年 1–10 月）</h3>
+        <p class="op-note">B0GLXXSDXD 是 B0HG9L16S7 的同 SKU 老链接，3 月和 6 月月销过 2,000，说明这款产品在亚马逊有冲量空间。B0FW9V5S3W 从 1 月起持续下滑。</p>
+        <div class="op-chart dash-skeleton" id="c-amzq" data-draw="amzq" data-source="amazon_monthly"></div>
+      </div>
+      <div class="op-card">
+        <h3 id="h-amzp">亚马逊月均成交价（美元）</h3>
+        <p class="op-note">销售额 ÷ 销量。三款都已经降到 $40–55，继续降价需要配合秒杀和站外 Deal。</p>
+        <div class="op-chart dash-skeleton" id="c-amzp" data-draw="amzp" data-source="amazon_asp"></div>
+      </div>
+      <div class="op-card">
+        <h3 id="h-tktm">TikTok / TEMU 同款月销量（Ecarke 品牌）</h3>
+        <p class="op-note">RYBZ071H0A1 对应 B0HG9L16S7，RYBZ051H0A1 对应 B0GQYW1R46，RYBZ111H0A1 是 B0FW9V5S3W 的近似款。TikTok 是第二大渠道，TEMU 量最小。</p>
+        <div class="op-chart dash-skeleton" id="c-tktm" data-draw="tktm" data-source="tiktok_temu_monthly"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-table">
+    <h2 id="h-table">分 ASIN 明细</h2>
+    <div class="op-card">
+      <p class="op-note">近 30 天为 10/04–11/02。可售天数 = 库存 ÷ 近 30 天日均。三平台可清量为激进方案假设。</p>
+      <div class="op-tablewrap">
+        <table class="op-table" data-source="by_asin" data-row-key="asin">
+          <thead><tr>
+            <th data-field="asin">ASIN</th>
+            <th data-field="name">品名</th>
+            <th data-field="inventory">库存</th>
+            <th data-field="daily_30d">近30天日均</th>
+            <th data-field="asp_30d">近30天均价</th>
+            <th data-field="days_supply">可售天数</th>
+            <th data-field="target_units">80%目标</th>
+            <th data-field="platforms_units">三平台可清</th>
+            <th data-field="platforms_rate">三平台清货率</th>
+            <th data-field="gap_units">缺口</th>
+            <th data-field="final_rate">加B2B后</th>
+          </tr></thead>
+          <tbody data-draw="asinTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="op-sec" aria-labelledby="h-do">
+    <h2 id="h-do">怎么做</h2>
+    <div class="op-card">
+      <ol class="op-steps">
+        <li><strong>亚马逊（主力）：</strong>HG9 定价 $39.99，FW9 定价 $34.99，GQY 定价 $44.99。报黑五（11/27）和网一（11/30）秒杀，加 coupon、站外 Deal。广告不要整体翻倍：HG9 的 CPA 已接近客单价的一半，只保留高转化词，省下的预算转给秒杀和站外 Deal，用价格换量。</li>
+        <li><strong>TikTok：</strong>用 Amazon MCF 直接从 FBA 发货，不用移库。定价 $49.99 左右，靠达人寄样、直播和 Flash Sale 拉量。这批货是 DIYTOOLIFZ 品牌，TikTok 店卖的是 Ecarke，需要单独建链接，并先确认 Ecarke 自己的库存，避免互相抢量。</li>
+        <li><strong>TEMU：</strong>从 FW9 和 GQY 移 300–500 件到海外仓或第三方仓，走半托管，报低价和秒杀。</li>
+        <li><strong>补足最后的缺口：</strong>12/15 复盘，没达标就启动 B2B、批发商或整批清算，重点处理 B0FW9V5S3W。</li>
+      </ol>
+    </div>
+  </section>
+</div>
+
+<script>
+// 用户设定的目标与周期（常量）
+window.OP = { TARGET: 0.8, DAYS: 90, CHECKPOINTS: [{ month: '2026-11', rate: 0.25 }, { month: '2026-12', rate: 0.5 }, { month: '2027-01', rate: 0.8 }] };
+
+dash.calc('kpi', {
+  title: '清货核心指标',
+  description: '3 个 ASIN 的库存合计、80% 目标、所需日均、三平台可清量和缺口（目标 80%，周期 90 天）。',
+  inputs: ['core_inventory', 'clearance_scenarios'],
+  fn: (core_inventory, clearance_scenarios) => {
+    const sum = (rows, f) => rows.reduce((s, r) => s + f(r), 0);
+    const inv = sum(core_inventory, (r) => Number(r.inventory));
+    const q30 = sum(core_inventory, (r) => Number(r.qty_30d));
+    const plat = sum(clearance_scenarios, (r) => Number(r.amazon_aggressive) + Number(r.tiktok) + Number(r.temu));
+    const b2b = sum(clearance_scenarios, (r) => Number(r.b2b));
+    const target = inv * 0.8;
+    return [{ total_inventory: inv, target_units: target, current_daily: q30 / 30, needed_daily: target / 90,
+      multiple: (target / 90) / (q30 / 30), platforms_units: plat, platforms_rate: plat / inv,
+      gap_units: target - plat, b2b_units: b2b, final_rate: (plat + b2b) / inv }];
+  }
+});
+
+dash.calc('waterfall', {
+  title: '各渠道可清量',
+  description: '激进方案下亚马逊、TikTok、TEMU、B2B 各自的可清量合计。',
+  inputs: ['clearance_scenarios'],
+  fn: (clearance_scenarios) => {
+    const sum = (f) => clearance_scenarios.reduce((s, r) => s + Number(r[f]), 0);
+    return [
+      { step: '亚马逊', units: sum('amazon_aggressive') },
+      { step: 'TikTok', units: sum('tiktok') },
+      { step: 'TEMU', units: sum('temu') },
+      { step: 'B2B/清算', units: sum('b2b') }
+    ];
+  }
+});
+
+dash.calc('by_asin', {
+  title: '分 ASIN 清货测算',
+  description: '每个 ASIN 的库存、近 30 天动销、80% 目标、三平台可清量、缺口和加 B2B 后清货率。',
+  inputs: ['core_inventory', 'clearance_scenarios'],
+  fn: (core_inventory, clearance_scenarios) => core_inventory.map((c) => {
+    const s = clearance_scenarios.find((r) => r.asin === c.asin) || {};
+    const inv = Number(c.inventory), q = Number(c.qty_30d);
+    const amazon = Number(s.amazon_aggressive), tiktok = Number(s.tiktok), temu = Number(s.temu), b2b = Number(s.b2b);
+    const plat = amazon + tiktok + temu;
+    return { asin: c.asin, name: c.name, inventory: inv, daily_30d: q / 30, asp_30d: Number(c.sales_30d) / q,
+      days_supply: inv / (q / 30), target_units: inv * 0.8, amazon, tiktok, temu, b2b,
+      platforms_units: plat, platforms_rate: plat / inv, gap_units: Math.max(0, inv * 0.8 - plat), final_rate: (plat + b2b) / inv };
+  })
+});
+
+dash.calc('plan_cum', {
+  title: '月度计划累计',
+  description: '每月各渠道计划清货量、当月合计、累计件数和累计清货率（÷ 3 个 ASIN 库存合计）。',
+  inputs: ['monthly_plan', 'core_inventory'],
+  fn: (monthly_plan, core_inventory) => {
+    const inv = core_inventory.reduce((s, r) => s + Number(r.inventory), 0);
+    let cum = 0;
+    return monthly_plan.map((m) => {
+      const total = Number(m.amazon) + Number(m.tiktok) + Number(m.temu) + Number(m.b2b);
+      cum += total;
+      return { month: m.month, amazon: Number(m.amazon), tiktok: Number(m.tiktok), temu: Number(m.temu), b2b: Number(m.b2b), total, cumulative: cum, cumulative_rate: cum / inv };
+    });
+  }
+});
+
+dash.calc('unit_econ', {
+  title: '单件广告费与毛利',
+  description: '近 30 天每个 ASIN 的客单价、CPA、TACOS、毛利率、每件广告费和每件毛利。',
+  inputs: ['unit_economics'],
+  fn: (unit_economics) => unit_economics.map((r) => {
+    const u = Number(r.units), s = Number(r.sales), ad = Number(r.ad_spend), gp = Number(r.gross_profit);
+    return { asin: r.asin, units: u, aov: s / u, cpa: ad / Number(r.ad_orders), tacos: ad / s, margin: gp / s, ad_per_unit: ad / u, profit_per_unit: gp / u };
+  })
+});
+
+dash.calc('amazon_asp', {
+  title: '亚马逊月均成交价',
+  description: '每个 ASIN 每月的销售额 ÷ 销量。',
+  inputs: ['amazon_monthly'],
+  fn: (amazon_monthly) => amazon_monthly.map((r) => ({ month: r.month, asin: r.asin, qty: Number(r.qty), asp: Number(r.sales) / Number(r.qty) }))
+});
+
+// 图例颜色（只设置 style）
+const chColors = () => [dash.colors[0], dash.colors[1], dash.colors[2], dash.colors[3], dash.colors[4]];
+dash.onData(() => {
+  document.querySelectorAll('.op-sw[data-ch]').forEach((el) => {
+    el.style.background = el.dataset.ch === 'bad' ? 'var(--cds-chart-status-critical)' : chColors()[Number(el.dataset.ch)];
+  });
+});
+</script>
+
+<script>
+// 公共工具
+window.OPF = {
+  int: d3.format(','),
+  int0: (v) => d3.format(',')(Math.round(v)),
+  pct: d3.format('.1%'),
+  pct0: d3.format('.0%'),
+  d1: d3.format(',.1f'),
+  x: (v) => d3.format('.1f')(v) + 'x',
+  usd: (v) => '$' + d3.format(',.2f')(v),
+  usd0: (v) => '$' + d3.format(',.0f')(v)
+};
+window.OPfail = (el, st) => {
+  if (st === 'error') {
+    const d = document.createElement('div'); d.className = 'op-fail';
+    const i = document.createElement('i'); const s = document.createElement('span'); s.textContent = 'Failed to load';
+    d.append(i, s); el.replaceChildren(d);
+  } else el.replaceChildren();
+};
+window.OPtip = (box) => {
+  const tip = document.createElement('div'); tip.className = 'op-tip'; tip.hidden = true; box.appendChild(tip);
+  return {
+    show(x, y, head, rows) {
+      const h = document.createElement('div'); h.className = 'h'; h.textContent = head;
+      const lines = rows.map((r) => {
+        const d = document.createElement('div'); d.className = 'r';
+        if (r.color) { const sw = document.createElement('span'); sw.className = 'op-sw'; sw.style.background = r.color; d.appendChild(sw); }
+        const t = document.createElement('span'); t.textContent = r.name ? r.name + '  ' + r.value : r.value; d.appendChild(t); return d;
+      });
+      tip.replaceChildren(h, ...lines); tip.hidden = false;
+      const bw = box.clientWidth, tw = tip.offsetWidth, th = tip.offsetHeight;
+      let left = x + 12; if (left + tw > bw) left = Math.max(0, x - tw - 12);
+      let top = y - th - 8; if (top < 0) top = y + 12;
+      tip.style.left = left + 'px'; tip.style.top = top + 'px';
+    },
+    hide() { tip.hidden = true; }
+  };
+};
+window.OPsvg = (el, h) => {
+  const w = Math.max(280, el.clientWidth);
+  el.replaceChildren();
+  const svg = d3.select(el).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`).attr('height', h);
+  return { svg, w, h };
+};
+window.OPaxis = (g) => g.attr('font-size', null).attr('font-family', null).call((s) => s.selectAll('text').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)')).call((s) => s.selectAll('.domain').attr('stroke', 'var(--cds-chart-axis)')).call((s) => s.selectAll('.tick line').attr('stroke', 'var(--cds-chart-grid)'));
+window.OPtextW = (svg, str) => { const t = svg.append('text').style('font-size', 'var(--cds-font-size-caption)').text(str); const w = t.node().getComputedTextLength(); t.remove(); return w; };
+
+// 多序列折线图
+window.OPline = (el, rows, opt) => {
+  const parse = d3.utcParse('%Y-%m');
+  const data = rows.map((r) => ({ d: parse(r[opt.x]), s: opt.series(r), v: Number(r[opt.y]) })).filter((r) => r.d && isFinite(r.v));
+  const keys = opt.keys.filter((k) => data.some((r) => r.s === k));
+  const { svg, w, h } = OPsvg(el, 260);
+  const yMax = d3.max(data, (r) => r.v) || 1;
+  const y0 = d3.scaleLinear([opt.yMin ?? 0, yMax * 1.08], [h - 28, 12]).nice();
+  const tickW = d3.max(y0.ticks(5).map((t) => OPtextW(svg, opt.fmt(t)))) || 20;
+  const labelW = d3.max(keys.map((k) => OPtextW(svg, opt.label(k)))) || 40;
+  const m = { l: tickW + 10, r: Math.min(labelW + 12, w * 0.4), t: 12, b: 28 };
+  const x = d3.scaleUtc(d3.extent(data, (r) => r.d), [m.l, w - m.r]);
+  const y = y0.range([h - m.b, m.t]);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(w - m.l - m.r)).tickFormat(opt.fmt)).call(OPaxis).call((g) => g.select('.domain').remove());
+  const months = d3.utcMonth.range(x.domain()[0], d3.utcMonth.offset(x.domain()[1], 1));
+  const step = Math.ceil(months.length / Math.max(2, Math.floor((w - m.l - m.r) / 44)));
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`).call(d3.axisBottom(x).tickValues(months.filter((_, i) => i % step === 0)).tickFormat((d) => (d.getUTCMonth() + 1) + '月').tickSizeOuter(0)).call(OPaxis).call((g) => g.selectAll('.tick line').remove());
+  const color = (k) => opt.color(k, keys);
+  const line = d3.line().x((r) => x(r.d)).y((r) => y(r.v));
+  const ends = [];
+  keys.forEach((k) => {
+    const pts = data.filter((r) => r.s === k).sort((a, b) => a.d - b.d);
+    svg.append('path').datum(pts).attr('fill', 'none').attr('stroke', color(k)).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('stroke-dasharray', opt.dash && opt.dash(k) ? '5 3' : null).attr('d', line);
+    svg.append('g').selectAll('circle').data(pts).join('circle').attr('cx', (r) => x(r.d)).attr('cy', (r) => y(r.v)).attr('r', 2.5).attr('fill', color(k));
+    const last = pts[pts.length - 1]; if (last) ends.push({ k, y: y(last.v), x: x(last.d) });
+  });
+  ends.sort((a, b) => a.y - b.y);
+  for (let i = 1; i < ends.length; i++) if (ends[i].y - ends[i - 1].y < 13) ends[i].y = ends[i - 1].y + 13;
+  ends.forEach((e) => svg.append('text').attr('x', e.x + 6).attr('y', e.y).attr('dy', '0.32em').attr('fill', color(e.k)).style('font-size', 'var(--cds-font-size-caption)').text(opt.label(e.k)));
+  const tip = OPtip(el);
+  const rule = svg.append('line').attr('y1', m.t).attr('y2', h - m.b).attr('stroke', 'var(--cds-chart-axis)').attr('opacity', 0);
+  const dates = Array.from(new Set(data.map((r) => +r.d))).sort((a, b) => a - b);
+  svg.append('rect').attr('x', m.l).attr('y', m.t).attr('width', Math.max(0, w - m.l - m.r)).attr('height', h - m.t - m.b).attr('fill', 'transparent')
+    .on('pointermove', (ev) => {
+      const [px, py] = d3.pointer(ev, el);
+      const t = x.invert(d3.pointer(ev)[0]); const di = d3.minIndex(dates, (d) => Math.abs(d - t)); const d = dates[di];
+      rule.attr('x1', x(d)).attr('x2', x(d)).attr('opacity', 1);
+      const rs = keys.map((k) => { const r = data.find((q) => q.s === k && +q.d === d); return r ? { color: color(k), name: opt.label(k), value: opt.fmt(r.v) } : null; }).filter(Boolean);
+      const dd = new Date(d);
+      tip.show(px, py, `${dd.getUTCFullYear()}年${dd.getUTCMonth() + 1}月`, rs);
+    })
+    .on('pointerleave', () => { tip.hide(); rule.attr('opacity', 0); });
+};
+</script>
+
+<script>
+// 数字与常量
+dash.draw('n', (el) => {
+  const r = dash.data(el.dataset.source);
+  el.classList.remove('dash-skeleton');
+  if (r.status !== 'ok' || !r.data.length) { el.textContent = '—'; return; }
+  let row;
+  if (el.dataset.where) { const [k, v] = el.dataset.where.split('='); row = r.data.find((d) => String(d[k]) === decodeURIComponent(v)); }
+  else row = r.data[Number(el.dataset.row || 0)];
+  const v = row ? row[el.dataset.field] : null;
+  el.textContent = v == null ? '—' : (OPF[el.dataset.fmt] || String)(Number(v));
+});
+dash.draw('c', (el) => {
+  const k = el.dataset.k;
+  el.textContent = k === 'target' ? OPF.pct0(OP.TARGET) : k === 'days' ? String(OP.DAYS) : '—';
+});
+
+// 瀑布图
+dash.draw('water', (el) => {
+  const a = dash.data('waterfall'), b = dash.data('kpi');
+  if (a.status !== 'ok' || b.status !== 'ok' || !b.data.length) { OPfail(el, a.status === 'error' || b.status === 'error' ? 'error' : ''); return; }
+  el.classList.remove('dash-skeleton');
+  const k = b.data[0];
+  const steps = []; let cum = 0;
+  a.data.forEach((r, i) => { steps.push({ name: r.step, start: cum, end: cum + r.units, units: r.units, color: dash.colors[i] }); cum += r.units; });
+  steps.push({ name: '合计', start: 0, end: cum, units: cum, color: 'var(--cds-chart-muted)', total: true });
+  const { svg, w, h } = OPsvg(el, 260);
+  const yMax = Math.max(k.total_inventory, cum) * 1.06;
+  const y0 = d3.scaleLinear([0, yMax], [h - 28, 14]);
+  const tickW = d3.max(y0.ticks(5).map((t) => OPtextW(svg, OPF.int(t))));
+  const refLabels = [`总库存 ${OPF.int(k.total_inventory)}`, `目标 ${OPF.int(Math.round(k.target_units))}`];
+  const refW = d3.max(refLabels.map((s) => OPtextW(svg, s)));
+  const m = { l: tickW + 10, r: Math.min(refW + 8, w * 0.35), t: 14, b: 28 };
+  const y = y0.range([h - m.b, m.t]);
+  const x = d3.scaleBand(steps.map((s) => s.name), [m.l, w - m.r]).padding(0.28);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(y).ticks(5).tickSize(-(w - m.l - m.r)).tickFormat(OPF.int)).call(OPaxis).call((g) => g.select('.domain').remove());
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`).call(d3.axisBottom(x).tickSizeOuter(0)).call(OPaxis).call((g) => g.selectAll('.tick line').remove());
+  const bw = Math.min(x.bandwidth(), 56);
+  const tip = OPtip(el);
+  steps.forEach((s, i) => {
+    const cx = x(s.name) + x.bandwidth() / 2;
+    svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', y(s.end)).attr('height', Math.max(1, y(s.start) - y(s.end))).attr('rx', 3).attr('fill', s.color)
+      .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(px, py, s.name, [{ value: `${OPF.int(s.units)} 件 · 占库存 ${OPF.pct(s.units / k.total_inventory)}` }]); })
+      .on('pointerleave', () => tip.hide());
+    svg.append('text').attr('x', cx).attr('y', y(s.end) - 5).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(s.total ? OPF.pct(s.units / k.total_inventory) : '+' + OPF.int(s.units));
+    if (!s.total && i < steps.length - 1) {
+      const nx = x(steps[i + 1].name) + x.bandwidth() / 2 - bw / 2;
+      svg.append('line').attr('x1', cx + bw / 2).attr('x2', nx).attr('y1', y(s.end)).attr('y2', y(s.end)).attr('stroke', 'var(--cds-chart-axis)').attr('stroke-width', 1);
+    }
+  });
+  [[k.total_inventory, refLabels[0]], [k.target_units, refLabels[1]]].forEach(([v, lab]) => {
+    svg.append('line').attr('x1', m.l).attr('x2', w - m.r).attr('y1', y(v)).attr('y2', y(v)).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-dasharray', '4 3').attr('stroke-width', 1.5);
+    svg.append('text').attr('x', w - m.r + 6).attr('y', y(v)).attr('dy', '0.32em').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').text(lab);
+  });
+});
+
+// 分 ASIN 进度条
+dash.draw('asinbars', (el) => {
+  const r = dash.data('by_asin');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  const rows = r.data;
+  const rowH = 58, top = 8;
+  const { svg, w } = OPsvg(el, top + rows.length * rowH + 4);
+  const rightLabs = rows.map((d) => `${OPF.pct0(d.platforms_rate)} → ${OPF.pct0(d.final_rate)}`);
+  const rw = d3.max(rightLabs.map((s) => OPtextW(svg, s))) + 10;
+  const l = 0, rEdge = w - rw;
+  const x = d3.scaleLinear([0, d3.max(rows, (d) => d.inventory)], [l, rEdge]);
+  const tip = OPtip(el);
+  const chans = [['amazon', '亚马逊'], ['tiktok', 'TikTok'], ['temu', 'TEMU'], ['b2b', 'B2B/清算']];
+  rows.forEach((d, i) => {
+    const y0 = top + i * rowH;
+    svg.append('text').attr('x', l).attr('y', y0 + 10).attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(`${d.asin} · ${d.name} · 库存 ${OPF.int(d.inventory)}`);
+    const by = y0 + 18, bh = 22;
+    svg.append('rect').attr('x', x(0)).attr('y', by).attr('width', x(d.inventory) - x(0)).attr('height', bh).attr('rx', 3).attr('fill', 'var(--cds-chart-grid)');
+    let cum = 0;
+    chans.forEach(([f, name], ci) => {
+      const v = d[f]; if (!v) return;
+      svg.append('rect').attr('x', x(cum)).attr('y', by).attr('width', Math.max(0, x(cum + v) - x(cum))).attr('height', bh).attr('fill', dash.colors[ci])
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(px, py, d.asin, [{ color: dash.colors[ci], name, value: `${OPF.int(v)} 件` }]); })
+        .on('pointerleave', () => tip.hide());
+      cum += v;
+    });
+    const tx = x(d.inventory * OP.TARGET);
+    svg.append('line').attr('x1', tx).attr('x2', tx).attr('y1', by - 4).attr('y2', by + bh + 4).attr('stroke', 'var(--color-fg)').attr('stroke-width', 2);
+    svg.append('text').attr('x', rEdge + 8).attr('y', by + bh / 2).attr('dy', '0.32em').attr('fill', d.platforms_rate < OP.TARGET ? 'var(--color-bad)' : 'var(--color-ok)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(rightLabs[i]);
+  });
+});
+
+// 月度计划
+dash.draw('plan', (el) => {
+  const r = dash.data('plan_cum');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  const rows = r.data;
+  const keys = [['amazon', '亚马逊'], ['tiktok', 'TikTok'], ['temu', 'TEMU'], ['b2b', 'B2B/清算']];
+  const label = (m) => { const [yy, mm] = m.split('-'); return `${yy.slice(2)}年${Number(mm)}月`; };
+  const { svg, w, h } = OPsvg(el, 260);
+  const yL0 = d3.scaleLinear([0, d3.max(rows, (d) => d.total) * 1.15], [h - 28, 14]).nice();
+  const tickW = d3.max(yL0.ticks(5).map((t) => OPtextW(svg, OPF.int(t))));
+  const m = { l: tickW + 10, r: 40, t: 14, b: 28 };
+  const yL = yL0.range([h - m.b, m.t]);
+  const yR = d3.scaleLinear([0, 1], [h - m.b, m.t]);
+  const x = d3.scaleBand(rows.map((d) => d.month), [m.l, w - m.r]).padding(0.4);
+  svg.append('g').attr('transform', `translate(${m.l},0)`).call(d3.axisLeft(yL).ticks(5).tickSize(-(w - m.l - m.r)).tickFormat(OPF.int)).call(OPaxis).call((g) => g.select('.domain').remove());
+  svg.append('g').attr('transform', `translate(${w - m.r},0)`).call(d3.axisRight(yR).ticks(4).tickFormat(OPF.pct0).tickSize(0)).call(OPaxis).call((g) => g.select('.domain').remove());
+  svg.append('g').attr('transform', `translate(0,${h - m.b})`).call(d3.axisBottom(x).tickFormat(label).tickSizeOuter(0)).call(OPaxis).call((g) => g.selectAll('.tick line').remove());
+  const bw = Math.min(x.bandwidth(), 64);
+  const tip = OPtip(el);
+  rows.forEach((d) => {
+    const cx = x(d.month) + x.bandwidth() / 2; let cum = 0;
+    keys.forEach(([f], i) => {
+      const v = d[f]; if (!v) return;
+      svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', yL(cum + v)).attr('height', yL(cum) - yL(cum + v)).attr('fill', dash.colors[i]);
+      cum += v;
+    });
+    svg.append('rect').attr('x', cx - bw / 2).attr('width', bw).attr('y', yL(d.total)).attr('height', yL(0) - yL(d.total)).attr('fill', 'transparent')
+      .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(px, py, label(d.month), [...keys.map(([f, n], i) => ({ color: dash.colors[i], name: n, value: OPF.int(d[f]) })), { name: '当月合计', value: OPF.int(d.total) }, { name: '累计清货率', value: OPF.pct(d.cumulative_rate) }]); })
+      .on('pointerleave', () => tip.hide());
+    svg.append('text').attr('x', cx).attr('y', yL(d.total) - 5).attr('text-anchor', 'middle').attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(OPF.int(d.total));
+  });
+  const lc = dash.colors[4];
+  const pts = rows.map((d) => [x(d.month) + x.bandwidth() / 2, yR(d.cumulative_rate)]);
+  svg.append('path').attr('d', d3.line()(pts)).attr('fill', 'none').attr('stroke', lc).attr('stroke-width', 2).attr('stroke-linecap', 'round').attr('stroke-linejoin', 'round').attr('pointer-events', 'none');
+  rows.forEach((d, i) => {
+    svg.append('circle').attr('cx', pts[i][0]).attr('cy', pts[i][1]).attr('r', 3.5).attr('fill', lc).attr('pointer-events', 'none');
+    svg.append('text').attr('x', pts[i][0] + bw / 2 + 4).attr('y', pts[i][1]).attr('dy', '0.32em').attr('fill', lc).style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').attr('pointer-events', 'none').text(OPF.pct(d.cumulative_rate));
+    const cp = OP.CHECKPOINTS.find((c) => c.month === d.month);
+    if (cp) {
+      const cy = yR(cp.rate), cx = pts[i][0];
+      svg.append('path').attr('d', `M${cx},${cy - 5}L${cx + 5},${cy}L${cx},${cy + 5}L${cx - 5},${cy}Z`).attr('fill', 'none').attr('stroke', d.cumulative_rate >= cp.rate ? 'var(--color-ok)' : 'var(--color-bad)').attr('stroke-width', 1.5).attr('pointer-events', 'none');
+    }
+  });
+});
+
+// 亚马逊历史
+const AMZ_KEYS = ['B0HG9L16S7', 'B0FW9V5S3W', 'B0GQYW1R46', 'B0GLXXSDXD'];
+const amzColor = (k) => k === 'B0GLXXSDXD' ? 'var(--cds-chart-muted)' : dash.colors[AMZ_KEYS.indexOf(k)];
+const amzLabel = (k) => k === 'B0GLXXSDXD' ? 'B0GLXX(老链接)' : k;
+dash.draw('amzq', (el) => {
+  const r = dash.data('amazon_monthly');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  OPline(el, r.data, { x: 'month', y: 'qty', series: (d) => d.asin, keys: AMZ_KEYS, color: amzColor, label: amzLabel, fmt: OPF.int, dash: (k) => k === 'B0GLXXSDXD' });
+});
+dash.draw('amzp', (el) => {
+  const r = dash.data('amazon_asp');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  OPline(el, r.data.filter((d) => d.qty >= 5), { x: 'month', y: 'asp', series: (d) => d.asin, keys: AMZ_KEYS, color: amzColor, label: amzLabel, fmt: OPF.usd0, yMin: 30, dash: (k) => k === 'B0GLXXSDXD' });
+});
+dash.draw('tktm', (el) => {
+  const r = dash.data('tiktok_temu_monthly');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  const skus = ['RYBZ071H0A1', 'RYBZ051H0A1', 'RYBZ111H0A1'];
+  const keys = ['TikTok|RYBZ071H0A1', 'TikTok|RYBZ111H0A1', 'TEMU|RYBZ071H0A1', 'TEMU|RYBZ051H0A1', 'TEMU|RYBZ111H0A1'];
+  OPline(el, r.data, { x: 'month', y: 'qty', series: (d) => d.platform + '|' + d.sku, keys,
+    color: (k) => dash.colors[skus.indexOf(k.split('|')[1])],
+    dash: (k) => k.startsWith('TEMU'),
+    label: (k) => (k.startsWith('TEMU') ? 'TM ' : 'TK ') + k.split('|')[1].replace('RYBZ', '').replace('H0A1', ''), fmt: OPF.int });
+});
+
+// 单件经济性：横向分组条，零线居中
+dash.draw('econ', (el) => {
+  const r = dash.data('unit_econ');
+  if (r.status !== 'ok') { OPfail(el, r.status); return; }
+  el.classList.remove('dash-skeleton');
+  const rows = r.data, rowH = 52, top = 6;
+  const { svg, w } = OPsvg(el, top + rows.length * rowH + 22);
+  const lw = d3.max(rows.map((d) => OPtextW(svg, d.asin))) + 12;
+  const vals = rows.flatMap((d) => [d.ad_per_unit, d.profit_per_unit]);
+  const ext = [Math.min(0, d3.min(vals)), Math.max(0, d3.max(vals))];
+  const valW = OPtextW(svg, '-$00.00') + 8;
+  const x = d3.scaleLinear(ext, [lw + valW, w - valW]).nice();
+  const tip = OPtip(el);
+  svg.append('g').attr('transform', `translate(0,${top + rows.length * rowH})`).call(d3.axisBottom(x).ticks(5).tickFormat(OPF.usd0).tickSizeOuter(0)).call(OPaxis).call((g) => g.select('.domain').remove());
+  svg.append('line').attr('x1', x(0)).attr('x2', x(0)).attr('y1', top).attr('y2', top + rows.length * rowH).attr('stroke', 'var(--cds-chart-axis)');
+  rows.forEach((d, i) => {
+    const y0 = top + i * rowH;
+    svg.append('text').attr('x', 0).attr('y', y0 + rowH / 2 - 4).attr('dy', '0.32em').attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(d.asin);
+    [['ad_per_unit', '每件广告费', dash.colors[0]], ['profit_per_unit', '每件毛利', 'var(--cds-chart-status-critical)']].forEach(([f, name, c], j) => {
+      const v = d[f], by = y0 + 6 + j * 18, bh = 14;
+      const x1 = Math.min(x(0), x(v)), bw = Math.abs(x(v) - x(0));
+      svg.append('rect').attr('x', x1).attr('y', by).attr('width', Math.max(1, bw)).attr('height', bh).attr('rx', 3).attr('fill', c)
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(px, py, d.asin, [{ color: c, name, value: OPF.usd(v) }]); })
+        .on('pointerleave', () => tip.hide());
+      svg.append('text').attr('x', v < 0 ? x(v) - 4 : x(v) + 4).attr('y', by + bh / 2).attr('dy', '0.32em').attr('text-anchor', v < 0 ? 'end' : 'start').attr('fill', 'var(--color-fg-muted)').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums').text(OPF.usd(v));
+    });
+  });
+});
+dash.draw('econTable', (tb) => {
+  const r = dash.data('unit_econ');
+  tb.replaceChildren();
+  if (r.status !== 'ok') return;
+  const cols = [['asin', String], ['units', OPF.int], ['aov', OPF.usd], ['cpa', OPF.usd], ['tacos', OPF.pct], ['margin', OPF.pct], ['profit_per_unit', OPF.usd]];
+  r.data.forEach((d) => {
+    const tr = document.createElement('tr');
+    cols.forEach(([f, fmt]) => {
+      const td = document.createElement('td'); td.textContent = fmt(d[f]);
+      if ((f === 'margin' || f === 'profit_per_unit') && d[f] < 0) td.className = 'bad';
+      if (f === 'tacos' && d[f] > 0.15) td.className = 'bad';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+});
+
+// 明细表
+dash.draw('asinTable', (tb) => {
+  const r = dash.data('by_asin');
+  tb.replaceChildren();
+  if (r.status !== 'ok') return;
+  const cols = [['asin', String], ['name', String], ['inventory', OPF.int], ['daily_30d', OPF.d1], ['asp_30d', OPF.usd], ['days_supply', OPF.int0], ['target_units', OPF.int0], ['platforms_units', OPF.int], ['platforms_rate', OPF.pct], ['gap_units', OPF.int0], ['final_rate', OPF.pct]];
+  r.data.forEach((d) => {
+    const tr = document.createElement('tr');
+    cols.forEach(([f, fmt]) => {
+      const td = document.createElement('td'); td.textContent = fmt(d[f]);
+      if (f === 'platforms_rate' || f === 'final_rate') td.className = d[f] >= OP.TARGET ? 'ok' : 'bad';
+      if (f === 'days_supply' && d[f] > 180) td.className = 'bad';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+});
+</script>
