@@ -58,6 +58,22 @@
 .op-prod .full { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; overflow-wrap: anywhere; }
 .op-prod .st { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .op-thumb { width: 28px; height: 28px; object-fit: contain; background: #fff; border-radius: 4px; vertical-align: middle; margin-right: 6px; border: 1px solid var(--color-border-line); }
+.op-tabs { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs); }
+.op-tab { font: inherit; font-size: var(--cds-font-size-caption); padding: var(--cds-pad-xs) var(--cds-pad-md); border: 1px solid var(--color-border-line); border-radius: 999px; background: var(--color-panel); color: var(--color-fg-muted); cursor: pointer; }
+.op-tab[aria-selected="true"] { color: var(--color-fg); border-color: var(--color-fg); font-weight: var(--cds-font-weight-medium); }
+.op-tab:focus-visible, .op-in:focus-visible, .op-btn:focus-visible { outline: 2px solid var(--color-fg); outline-offset: 2px; }
+.op-cons { display: grid; gap: var(--cds-gap-lg); }
+.op-cons h4 { margin: 0; font-size: var(--cds-font-size-body); font-weight: var(--cds-font-weight-medium); }
+.op-cons .bar { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--cds-gap-sm); }
+.op-cons .ttl { font-size: var(--cds-font-size-heading); font-weight: var(--cds-font-weight-medium); }
+.op-in { width: 5.6em; font: inherit; font-variant-numeric: tabular-nums; text-align: right; padding: 2px 6px; border: 1px solid var(--cds-border); border-radius: 4px; background: var(--color-bg); color: var(--color-fg); }
+.op-in.edited { border-color: var(--color-warn); }
+.op-btn { font: inherit; font-size: var(--cds-font-size-caption); padding: 2px var(--cds-pad-sm); border: 1px solid var(--color-border-line); border-radius: 4px; background: var(--color-panel); color: var(--color-fg); cursor: pointer; }
+.op-table tr.ext td { color: var(--color-fg-muted); }
+.op-table tr.done td { font-weight: var(--cds-font-weight-medium); }
+.op-table tfoot td { font-weight: var(--cds-font-weight-medium); border-top: 1px solid var(--color-fg-muted); }
+.op-sum { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-lg); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.op-sum b { font-weight: var(--cds-font-weight-medium); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 .op-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
@@ -230,6 +246,30 @@
     </div>
   </section>
 
+  <section class="op-sec" aria-labelledby="h-cons">
+    <h2 id="h-cons">库存消化、广告放量与月度盈亏测算</h2>
+    <p class="op-note">11 月–1 月按最终方案逐月、逐渠道填入；2 月起按"稳定期"月销量延伸到清完，最后一个月按日均折算卖完日期。蓝框数字都可以改，改完三张表一起重算。修改只在你当前的浏览器里生效，刷新后恢复计划值；要固定下来，告诉我改计划文件。</p>
+    <div class="op-tabs" role="tablist" aria-label="选择产品">
+      <button type="button" class="op-tab" role="tab" data-asin="B0HG9L16S7" aria-selected="true">B0HG9L16S7 · 5GPM 手动款</button>
+      <button type="button" class="op-tab" role="tab" data-asin="B0FW9V5S3W" aria-selected="false">B0FW9V5S3W · 感应自停 3.8GPM</button>
+      <button type="button" class="op-tab" role="tab" data-asin="B0GQYW1R46" aria-selected="false">B0GQYW1R46 · 5GPM 自动停款</button>
+      <button type="button" class="op-tab" role="tab" data-asin="B0GY8SCGC3" aria-selected="false">B0GY8SCGC3 · 3.8GPM 自动停款（低配）</button>
+    </div>
+    <div class="op-card op-conscard" data-asin="B0HG9L16S7" role="tabpanel">
+      <div data-draw="cons" data-asin="B0HG9L16S7" data-source="consumption_plan core_inventory channel_prices cost_inputs"></div>
+    </div>
+    <div class="op-card op-conscard" data-asin="B0FW9V5S3W" role="tabpanel" hidden>
+      <div data-draw="cons" data-asin="B0FW9V5S3W" data-source="consumption_plan core_inventory channel_prices cost_inputs"></div>
+    </div>
+    <div class="op-card op-conscard" data-asin="B0GQYW1R46" role="tabpanel" hidden>
+      <div data-draw="cons" data-asin="B0GQYW1R46" data-source="consumption_plan core_inventory channel_prices cost_inputs"></div>
+    </div>
+    <div class="op-card op-conscard" data-asin="B0GY8SCGC3" role="tabpanel" hidden>
+      <div data-draw="cons" data-asin="B0GY8SCGC3" data-source="consumption_plan core_inventory channel_prices cost_inputs"></div>
+    </div>
+    <p class="op-note">广告放量的默认 CPC 和广告 CVR：B0HG9L16S7、B0GQYW1R46、B0GY8SCGC3 取运营方案的近 30 天实际值；B0FW9V5S3W 运营方案没有，按 CPC $1.80、CVR 6.0% 暂估。广告订单占比默认取刚好落在 TACOS 上限内的水平。TikTok、TEMU 不计亚马逊广告，单件毛利按"每个渠道每件能收回多少"里的同一套费率。</p>
+  </section>
+
   <section class="op-sec" aria-labelledby="h-hist">
     <h2 id="h-hist">历史销售：判断能拉到多少量的依据</h2>
     <div class="op-grid">
@@ -344,15 +384,18 @@ dash.calc('by_asin', {
 
 dash.calc('plan_cum', {
   title: '月度计划累计',
-  description: '每月各渠道计划清货量、当月合计、累计件数和累计清货率（÷ 4 个 ASIN 库存合计）。',
-  inputs: ['monthly_plan', 'core_inventory'],
-  fn: (monthly_plan, core_inventory) => {
+  description: '11 月–1 月各渠道计划清货量（按 ASIN 汇总）、当月合计、累计件数和累计清货率（÷ 4 个 ASIN 库存合计）。',
+  inputs: ['consumption_plan', 'core_inventory'],
+  fn: (consumption_plan, core_inventory) => {
     const inv = core_inventory.reduce((s, r) => s + Number(r.inventory), 0);
+    const months = Array.from(new Set(consumption_plan.filter((r) => r.month !== '稳定期').map((r) => r.month))).sort();
     let cum = 0;
-    return monthly_plan.map((m) => {
-      const total = Number(m.amazon) + Number(m.tiktok) + Number(m.temu) + Number(m.b2b);
+    return months.map((m) => {
+      const rows = consumption_plan.filter((r) => r.month === m);
+      const s = (f) => rows.reduce((x, r) => x + Number(r[f]), 0);
+      const amazon = s('amazon'), tiktok = s('tiktok'), temu = s('temu'), total = amazon + tiktok + temu;
       cum += total;
-      return { month: m.month, amazon: Number(m.amazon), tiktok: Number(m.tiktok), temu: Number(m.temu), b2b: Number(m.b2b), total, cumulative: cum, cumulative_rate: cum / inv };
+      return { month: m, amazon, tiktok, temu, b2b: 0, total, cumulative: cum, cumulative_rate: cum / inv };
     });
   }
 });
@@ -795,4 +838,186 @@ dash.draw('asinTable', (tb) => {
     tb.appendChild(tr);
   });
 });
+</script>
+
+<script>
+// 库存消化 / 广告放量 / 月度盈亏（页内可改，修改不保存）
+window.OP_EDIT = window.OP_EDIT || {};
+// 广告放量默认假设（CPC、CVR 来自运营方案近 30 天实际；FW9 为暂估）
+const OP_AD = {
+  B0HG9L16S7: { share: 18, cvr: 7.0, cpc: 2.85 },
+  B0FW9V5S3W: { share: 13, cvr: 6.0, cpc: 1.80 },
+  B0GQYW1R46: { share: 30, cvr: 6.3, cpc: 1.59 },
+  B0GY8SCGC3: { share: 12, cvr: 6.85, cpc: 2.73 }
+};
+const ymAdd = (ym, k) => { let [y, m] = ym.split('-').map(Number); m += k; y += Math.floor((m - 1) / 12); m = ((m - 1) % 12 + 12) % 12 + 1; return `${y}-${String(m).padStart(2, '0')}`; };
+const ymDays = (ym) => { const [y, m] = ym.split('-').map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); };
+const ymLabel = (ym) => { const [y, m] = ym.split('-'); return `${y}/${Number(m)}`; };
+const money = (v) => (v < 0 ? '-$' : '$') + d3.format(',.2f')(Math.abs(v));
+const money0 = (v) => (v < 0 ? '-$' : '$') + d3.format(',.0f')(Math.abs(v));
+const CHS = [['amazon', '亚马逊'], ['tiktok', 'TikTok'], ['temu', 'TEMU']];
+
+function mkInput(val, step, edited, onSet) {
+  const i = document.createElement('input');
+  i.type = 'number'; i.className = 'op-in' + (edited ? ' edited' : ''); i.step = step; i.min = '0';
+  i.value = String(Math.round(val * 100) / 100);
+  i.addEventListener('change', () => onSet(i.value === '' ? null : Number(i.value)));
+  return i;
+}
+function cell(tr, content, cls) {
+  const td = document.createElement('td');
+  if (content instanceof Node) td.appendChild(content); else td.textContent = content;
+  if (cls) td.className = cls;
+  tr.appendChild(td); return td;
+}
+function table(heads) {
+  const wrap = document.createElement('div'); wrap.className = 'op-tablewrap';
+  const tb = document.createElement('table'); tb.className = 'op-table';
+  const th = document.createElement('thead'); const tr = document.createElement('tr');
+  heads.forEach((h) => { const e = document.createElement('th'); e.textContent = h; tr.appendChild(e); });
+  th.appendChild(tr); tb.appendChild(th);
+  const body = document.createElement('tbody'); const foot = document.createElement('tfoot');
+  tb.append(body, foot); wrap.appendChild(tb);
+  return { wrap, body, foot };
+}
+
+dash.draw('cons', (el) => {
+  const a = el.dataset.asin;
+  const P = dash.data('consumption_plan'), I = dash.data('core_inventory'), CP = dash.data('channel_prices'), CI = dash.data('cost_inputs');
+  const all = [P, I, CP, CI];
+  if (all.some((x) => x.status !== 'ok')) { OPfail(el, all.some((x) => x.status === 'error') ? 'error' : ''); if (!el.firstChild) el.textContent = '—'; return; }
+  const inv0 = Number((I.data.find((r) => r.asin === a) || {}).inventory || 0);
+  const nm = (I.data.find((r) => r.asin === a) || {}).name || '';
+  const rows = P.data.filter((r) => r.asin === a);
+  const base = rows.filter((r) => r.month !== '稳定期').sort((x, y) => x.month.localeCompare(y.month));
+  const steady = rows.find((r) => r.month === '稳定期') || { amazon: 0, tiktok: 0, temu: 0 };
+  const cost = CI.data.find((r) => r.asin === a) || {};
+  const pr = (ch) => CP.data.find((r) => r.asin === a && r.channel === ch) || {};
+  const amz = pr('亚马逊'), tk = pr('TikTok'), tm = pr('TEMU');
+  const rf = Number(cost.refund_rate), landed = Number(cost.landed_cost), fba = Number(cost.fba_fee), stor = Number(cost.storage_per_unit);
+  const ed = (window.OP_EDIT[a] = window.OP_EDIT[a] || { q: {}, px: {}, ad: {} });
+
+  const render = () => {
+    // —— 1. 逐月消化 ——
+    const months = []; let rem = inv0, cum = 0, k = 0, cleared = null;
+    const startMonth = base.length ? base[0].month : '2026-11';
+    while (rem > 0 && k < 36) {
+      const m = ymAdd(startMonth, k); const b = base.find((r) => r.month === m);
+      const plan = {}; let tot = 0;
+      CHS.forEach(([c]) => { const def = Number((b || steady)[c]) || 0; const v = ed.q[m] && ed.q[m][c] != null ? ed.q[m][c] : def; plan[c] = v; tot += v; });
+      if (tot <= 0) { k++; if (k > 12 && !months.some((x) => x.total > 0)) break; months.push({ m, plan, act: { amazon: 0, tiktok: 0, temu: 0 }, total: 0, planTotal: 0, ext: !b, cum, rem }); continue; }
+      const actTot = Math.min(tot, rem); const act = {};
+      let left = actTot;
+      CHS.forEach(([c], i) => { act[c] = i === CHS.length - 1 ? left : Math.round(plan[c] * actTot / tot); left -= i === CHS.length - 1 ? 0 : act[c]; });
+      cum += actTot; rem -= actTot;
+      const row = { m, plan, act, total: actTot, planTotal: tot, ext: !b, cum, rem };
+      if (rem <= 0) { const day = Math.max(1, Math.ceil(actTot / (tot / ymDays(m)))); cleared = `${ymLabel(m)}/${Math.min(day, ymDays(m))}`; row.done = true; }
+      months.push(row); k++;
+    }
+    // —— 2. 单件毛利 ——
+    const amzUnit = (p, t) => p * (1 - 0.15 - rf - 0.02) - fba - p * t - landed - stor;
+    const tkUnit = Number(tk.price) * (1 - 0.08 - 0.20 - rf) - 10.5 - landed;
+    const tmUnit = Number(tm.price) * (1 - rf * 0.6) - 2 - 9 - landed;
+    const pxOf = (m) => ({ price: ed.px[m] && ed.px[m].price != null ? ed.px[m].price : Number(amz.price), tacos: ed.px[m] && ed.px[m].tacos != null ? ed.px[m].tacos : Number(amz.tacos) * 100 });
+
+    const box = document.createElement('div'); box.className = 'op-cons';
+    const bar = document.createElement('div'); bar.className = 'bar';
+    const ttl = document.createElement('div'); ttl.className = 'ttl'; ttl.textContent = `${a} · ${nm}`;
+    const reset = document.createElement('button'); reset.type = 'button'; reset.className = 'op-btn'; reset.textContent = '恢复计划值';
+    reset.addEventListener('click', () => { window.OP_EDIT[a] = { q: {}, px: {}, ad: {} }; dash.draw('cons'); });
+    bar.append(ttl, reset); box.appendChild(bar);
+
+    // 表 1
+    const h1 = document.createElement('h4'); h1.textContent = '① 库存消化测算（逐月推算到清完）';
+    const t1 = table(['月份', '亚马逊', 'TikTok', 'TEMU', '月合计', '日均', '累计已售', '月末库存余额']);
+    months.forEach((r) => {
+      const tr = document.createElement('tr'); if (r.ext) tr.className = 'ext'; if (r.done) tr.classList.add('done');
+      cell(tr, ymLabel(r.m));
+      CHS.forEach(([c]) => cell(tr, mkInput(r.plan[c], 10, !!(ed.q[r.m] && ed.q[r.m][c] != null), (v) => { ed.q[r.m] = ed.q[r.m] || {}; ed.q[r.m][c] = v; render(); })));
+      cell(tr, OPF.int(r.total) + ' 件');
+      cell(tr, d3.format(',.1f')(r.total / ymDays(r.m)) + ' 件/日');
+      cell(tr, OPF.int(r.cum) + ' 件');
+      cell(tr, r.done ? '0 件 ✓清完' : OPF.int(r.rem) + ' 件', r.done ? 'ok' : '');
+      t1.body.appendChild(tr);
+    });
+    const ftr = document.createElement('tr');
+    cell(ftr, '稳定期');
+    CHS.forEach(([c]) => cell(ftr, mkInput(ed.q.steady && ed.q.steady[c] != null ? ed.q.steady[c] : Number(steady[c]), 10, !!(ed.q.steady && ed.q.steady[c] != null), (v) => {
+      ed.q.steady = ed.q.steady || {}; ed.q.steady[c] = v;
+      months.filter((r) => r.ext).forEach((r) => { ed.q[r.m] = ed.q[r.m] || {}; ed.q[r.m][c] = v; });
+      render();
+    })));
+    const sold3 = months.filter((r) => r.m <= '2027-01').reduce((s, r) => s + r.total, 0);
+    const span = cell(ftr, ''); span.colSpan = 4; span.style.textAlign = 'left';
+    span.textContent = '件/月：2 月起每个延伸月的默认值，改这里会覆盖所有延伸月';
+    t1.foot.appendChild(ftr);
+    const sum1 = document.createElement('div'); sum1.className = 'op-sum';
+    const s = (label, val) => { const e = document.createElement('span'); e.textContent = label + ' '; const b = document.createElement('b'); b.textContent = val; e.appendChild(b); return e; };
+    const sold = months.reduce((x, r) => x + r.total, 0);
+    sum1.append(s('库存', OPF.int(inv0) + ' 件'), s('1/31 前清货', `${OPF.int(sold3)} 件（${OPF.pct(sold3 / inv0)}）`),
+      s('库存周转', `${months.filter((r) => r.total > 0).length} 个月 · 月均 ${OPF.int(Math.round(sold / Math.max(1, months.filter((r) => r.total > 0).length)))} 件`),
+      s('预估卖完', cleared || '36 个月内卖不完'));
+    box.append(h1, t1.wrap, sum1);
+
+    // 表 2：广告放量
+    const h2 = document.createElement('h4'); h2.textContent = '② 亚马逊广告放量测算：预算 ÷ CPC → 点击 → 订单';
+    const janAmz = (months.find((r) => r.m === '2027-01') || months[months.length - 1] || { plan: { amazon: 0 } }).plan.amazon;
+    const adDef = { orders: janAmz, share: OP_AD[a].share, cvr: OP_AD[a].cvr, cpc: OP_AD[a].cpc, price: Number(amz.price) };
+    const adv = (key) => (ed.ad[key] != null ? ed.ad[key] : adDef[key]);
+    const t2 = table(['目标月订单', '广告订单占比%', '广告CVR%', 'CPC$', '成交价$', '广告订单', '需点击', '月广告费', 'ACOS', 'TACOS']);
+    const tr2 = document.createElement('tr');
+    [['orders', 10], ['share', 1], ['cvr', 0.1], ['cpc', 0.05], ['price', 0.5]].forEach(([key, step]) => cell(tr2, mkInput(adv(key), step, ed.ad[key] != null, (v) => { ed.ad[key] = v; render(); })));
+    const adOrders = adv('orders') * adv('share') / 100, clicks = adv('cvr') > 0 ? adOrders / (adv('cvr') / 100) : 0, spend = clicks * adv('cpc');
+    const acos = adOrders > 0 ? spend / (adOrders * adv('price')) : 0, tacos = adv('orders') > 0 ? spend / (adv('orders') * adv('price')) : 0;
+    const capT = Number(amz.tacos);
+    cell(tr2, OPF.int(Math.round(adOrders)) + ' 单'); cell(tr2, OPF.int(Math.round(clicks)) + ' 次'); cell(tr2, money0(spend));
+    cell(tr2, OPF.pct(acos)); cell(tr2, OPF.pct(tacos), tacos > capT + 1e-9 ? 'bad' : 'ok');
+    t2.body.appendChild(tr2);
+    const n2 = document.createElement('p'); n2.className = 'op-note';
+    n2.textContent = `广告订单 = 目标月订单 × 占比；需点击 = 广告订单 ÷ CVR；月广告费 = 点击 × CPC。本款 TACOS 上限 ${OPF.pct0(capT)}，超过显示红色。按现在的 CPC 和 CVR，每个广告订单成本约 ${money(adv('cvr') > 0 ? adv('cpc') / (adv('cvr') / 100) : 0)}，所以广告只能带一小部分量，其余要靠秒杀、Coupon 和站外。`;
+    box.append(h2, t2.wrap, n2);
+
+    // 表 3：月度盈亏
+    const h3 = document.createElement('h4'); h3.textContent = '③ 月度盈亏（亚马逊成交价和 TACOS 可逐月改，已延伸到卖完）';
+    const t3 = table(['月份', '亚马逊成交价$', 'TACOS%', '广告费/件', '亚马逊单件毛利', 'TikTok单件毛利', 'TEMU单件毛利', '当月广告费', '当月盈亏', '累计盈亏']);
+    let cumP = 0, p3 = 0, ad3 = 0, adAll = 0;
+    months.filter((r) => r.total > 0).forEach((r) => {
+      const px = pxOf(r.m); const t = px.tacos / 100;
+      const au = amzUnit(px.price, t);
+      const adm = r.act.amazon * px.price * t;
+      const pm = r.act.amazon * au + r.act.tiktok * tkUnit + r.act.temu * tmUnit;
+      cumP += pm; adAll += adm; if (r.m <= '2027-01') { p3 += pm; ad3 += adm; }
+      const tr = document.createElement('tr'); if (r.ext) tr.className = 'ext';
+      cell(tr, ymLabel(r.m));
+      cell(tr, mkInput(px.price, 0.5, !!(ed.px[r.m] && ed.px[r.m].price != null), (v) => { ed.px[r.m] = ed.px[r.m] || {}; ed.px[r.m].price = v; render(); }));
+      cell(tr, mkInput(px.tacos, 1, !!(ed.px[r.m] && ed.px[r.m].tacos != null), (v) => { ed.px[r.m] = ed.px[r.m] || {}; ed.px[r.m].tacos = v; render(); }));
+      cell(tr, money(px.price * t));
+      cell(tr, money(au), au < 0 ? 'bad' : 'ok');
+      cell(tr, r.act.tiktok > 0 ? money(tkUnit) : '—', r.act.tiktok > 0 ? (tkUnit < 0 ? 'bad' : 'ok') : '');
+      cell(tr, r.act.temu > 0 ? money(tmUnit) : '—', r.act.temu > 0 ? (tmUnit < 0 ? 'bad' : 'ok') : '');
+      cell(tr, money0(adm));
+      cell(tr, money(pm), pm < 0 ? 'bad' : 'ok');
+      cell(tr, money(cumP), cumP < 0 ? 'bad' : 'ok');
+      t3.body.appendChild(tr);
+    });
+    [['11–1 月合计（3 个月）', ad3, p3], ['全清合计（含延伸月）', adAll, cumP]].forEach(([lab, adv_, pv]) => {
+      const tr = document.createElement('tr'); const c0 = cell(tr, lab); c0.colSpan = 7; c0.style.textAlign = 'left';
+      cell(tr, money0(adv_)); cell(tr, money(pv), pv < 0 ? 'bad' : 'ok'); cell(tr, '');
+      t3.foot.appendChild(tr);
+    });
+    const n3 = document.createElement('p'); n3.className = 'op-note';
+    n3.textContent = `单件毛利 = 成交价 − 平台佣金 − 退款 − 推广 − 配送 − 广告 − 货本头程（${money(landed)}）−（亚马逊）仓租，成本按运营方案口径。延伸月默认沿用计划价和 TACOS 上限。`;
+    box.append(h3, t3.wrap, n3);
+
+    el.replaceChildren(box);
+  };
+  render();
+});
+
+// 页签
+document.querySelectorAll('.op-tab').forEach((btn) => btn.addEventListener('click', () => {
+  const a = btn.dataset.asin;
+  document.querySelectorAll('.op-tab').forEach((b) => b.setAttribute('aria-selected', b.dataset.asin === a ? 'true' : 'false'));
+  document.querySelectorAll('.op-conscard').forEach((c) => { c.hidden = c.dataset.asin !== a; });
+}));
 </script>
