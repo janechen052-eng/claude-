@@ -41,6 +41,12 @@
 .op-steps { margin: 0; padding-left: 1.2em; display: grid; gap: var(--cds-gap-xs); font-size: var(--cds-font-size-body); line-height: 1.55; }
 .op-steps li { max-width: 72ch; }
 .op-steps li strong { font-weight: var(--cds-font-weight-medium); }
+.op-verdict { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--cds-gap-sm); font-size: var(--cds-font-size-body); line-height: 1.55; }
+.op-verdict li { display: grid; grid-template-columns: 5.5em 1fr; gap: var(--cds-gap-sm); align-items: baseline; }
+.op-verdict li > span:last-child { min-width: 0; max-width: 80ch; }
+.op-verdict strong { font-weight: var(--cds-font-weight-medium); }
+.op-chip { font-size: var(--cds-font-size-caption); border: 1px solid currentColor; border-radius: 999px; padding: 0 var(--cds-pad-sm); text-align: center; white-space: nowrap; }
+.op-chip.ok { color: var(--color-ok); } .op-chip.warn { color: var(--color-warn); } .op-chip.bad { color: var(--color-bad); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 .op-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
@@ -50,13 +56,13 @@
 <div class="op">
   <header class="op-head" id="top">
     <h1>油泵清货看板</h1>
-    <p class="op-take">亚马逊 3 个核心 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。亚马逊、TikTok、TEMU 三个平台全力推进，最多能清 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，还差 <b data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</b> 件，缺口主要在 B0FW9V5S3W，需要 1 月用 B2B 或整批清算补上。</p>
+    <p class="op-take">4 个 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。运营原方案 3 个月只能清 <b data-draw="n" data-source="scenario_compare" data-where="scenario=%E8%BF%90%E8%90%A5%E5%8E%9F%E6%96%B9%E6%A1%88" data-field="clear_rate" data-fmt="pct">—</b>。最终方案按每件回款给渠道排序：亚马逊、TikTok、TEMU 零售清 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，B0HG9L16S7 和 B0FW9V5S3W 从 12 月起批发 <b data-draw="n" data-source="kpi" data-field="b2b_units" data-fmt="int">—</b> 件，合计清到 <b data-draw="n" data-source="kpi" data-field="final_rate" data-fmt="pct">—</b>。</p>
     <p class="op-meta">清货期 2026-11-03 至 2027-01-31，共 <span data-draw="c" data-k="days">—</span> 天 · 库存为领星 11 月 1–2 日 HK11-US 店铺可用库存 · 各渠道可清量为测算假设</p>
   </header>
 
   <section class="op-tiles" aria-label="核心指标">
     <div class="op-tile">
-      <span class="lab">待清库存（3 个 ASIN）</span>
+      <span class="lab">待清库存（4 个 ASIN）</span>
       <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="total_inventory" data-fmt="int">—</span>
       <span class="sub">件 · HK11-US 可用库存</span>
     </div>
@@ -71,7 +77,7 @@
       <span class="sub">件/天 · 当前 <span data-draw="n" data-source="kpi" data-field="current_daily" data-fmt="d1">—</span>，需提升 <span data-draw="n" data-source="kpi" data-field="multiple" data-fmt="x">—</span></span>
     </div>
     <div class="op-tile">
-      <span class="lab">三平台激进方案可清</span>
+      <span class="lab">三个平台零售可清</span>
       <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="platforms_units" data-fmt="int">—</span>
       <span class="sub">件 · 占库存 <span data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</span></span>
     </div>
@@ -82,16 +88,72 @@
     </div>
   </section>
 
+  <section class="op-sec" aria-labelledby="h-final">
+    <h2 id="h-final">最终方案：和运营原方案对比</h2>
+    <p class="op-note">货本已经花出去了，不管走哪个渠道都一样，所以选渠道看的是每件能收回多少现金：售价扣掉平台佣金、退款、配送和广告。盈亏再减去货本，按运营方案给的成本口径计算。</p>
+    <div class="op-grid">
+      <div class="op-card">
+        <h3 id="h-compare">三种做法 3 个月后的结果</h3>
+        <p class="op-note">运营原方案没有覆盖 B0FW9V5S3W，这里按它现在的速度和价格计入。悲观情况：零售渠道只完成六成，差的全部转批发。</p>
+        <div class="op-tablewrap">
+          <table class="op-table" data-source="scenario_compare" data-row-key="scenario">
+            <thead><tr>
+              <th data-field="scenario">做法</th>
+              <th data-field="units">清货量</th>
+              <th data-field="clear_rate">清货率</th>
+              <th data-field="b2b_units">其中批发</th>
+              <th data-field="cash">回款</th>
+              <th data-field="pnl">盈亏</th>
+            </tr></thead>
+            <tbody data-draw="compareTable"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="op-card">
+        <h3 id="h-chan">每个渠道每件能收回多少</h3>
+        <p class="op-note">亚马逊扣佣金、退款、推广、FBA 配送和广告（TACOS × 售价）；TikTok 扣平台和达人佣金、退款、MCF 发货费；TEMU 为供货价扣移库和海外仓发货费；批发扣移库费。除批发价 $21.81 来自运营方案外，TikTok、TEMU 的费率和其他批发价是估算，需要询价确认。</p>
+        <div class="op-tablewrap">
+          <table class="op-table" data-source="channel_econ" data-row-key="asin,channel">
+            <thead><tr>
+              <th data-field="asin">ASIN</th>
+              <th data-field="channel">渠道</th>
+              <th data-field="units">计划件数</th>
+              <th data-field="price">价格</th>
+              <th data-field="cash_per_unit">每件回款</th>
+              <th data-field="pnl_per_unit">每件盈亏</th>
+            </tr></thead>
+            <tbody data-draw="chanTable"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="op-card">
+      <h3 id="h-verdict">运营方案逐条判断</h3>
+      <ul class="op-verdict">
+        <li><span class="op-chip ok">采用</span><span><strong>Vine 修评分、拆父体</strong>：父体 3.9 星，BD 和转化都要靠它，继续执行。</span></li>
+        <li><span class="op-chip ok">采用</span><span><strong>砍 ACOS 70% 以上的泛词；B0GQYW1R46、B0GY8SCGC3 停掉常规广告，只在秒杀和站外窗口投</strong>。这三款现在的广告都在亏钱。</span></li>
+        <li><span class="op-chip ok">采用</span><span><strong>每月一场 BD + 5% Coupon + Slickdeals/站外</strong>，再加报黑五、网一和 12/7–12/18 圣诞档。</span></li>
+        <li><span class="op-chip ok">采用</span><span><strong>B0GY8SCGC3 定价 $34.19 打 ReliaRoads（$38.99），退款单周超过 20% 就熔断</strong>。它的退款率 13.6% 是四款里最高的。</span></li>
+        <li><span class="op-chip ok">采用并提前</span><span><strong>B0HG9L16S7 批发兜底 @$21.81</strong>：运营计划 2027 年 4 月才启动，改成 11/28 检查后就谈，12 月出第一批。按运营自己的成本，批发每件回款比亚马逊零售（TACOS 20%）还高，而且不亏。</span></li>
+        <li><span class="op-chip warn">调整</span><span><strong>B0HG9L16S7 的 TACOS 30%→18% 递减</strong>：改成上限 20%，不设 30% 的投入期。售价 $44.99 时 TACOS 只要超过约 16.5%，零售每件回款就不如批发。</span></li>
+        <li><span class="op-chip warn">调整</span><span><strong>B0GQYW1R46 的 TACOS 25%</strong>：压到 20%，并分一部分量到 TikTok 和 TEMU。</span></li>
+        <li><span class="op-chip warn">调整</span><span><strong>检查点</strong>：运营原方案写的是"12/26 清货合计 ≥80%"，但按它自己的月度阶梯 3 个月只能清约三成，两者对不上。改为 11/30 累计 13%、12/26 累计 45%、1/31 累计 80%。</span></li>
+        <li><span class="op-chip bad">不采用</span><span><strong>B0HG9L16S7 按零售节奏清到 2027 年 9 月</strong>：11 个月太慢，前 3 个月还是净亏损。</span></li>
+        <li><span class="op-chip bad">补漏</span><span><strong>方案没有覆盖 B0FW9V5S3W</strong>：这款有 5,737 件，是第二大库存。也<strong>没有用 TikTok 和 TEMU</strong>，而这两个渠道每件回款最高。</span></li>
+      </ul>
+    </div>
+  </section>
+
   <section class="op-sec" aria-labelledby="h-feas">
     <h2 id="h-feas">能不能清到目标</h2>
     <div class="op-grid">
       <div class="op-card">
-        <h3 id="h-water">各渠道可清量累计（激进方案）</h3>
+        <h3 id="h-water">各渠道可清量累计（最终方案）</h3>
         <p class="op-note">每根柱子是该渠道新增的可清量，依次累加。虚线是清货目标和总库存。</p>
         <div class="op-chart dash-skeleton" id="c-water" data-draw="water" data-source="waterfall kpi"></div>
       </div>
       <div class="op-card">
-        <h3 id="h-asin">分 ASIN 清货进度（激进方案）</h3>
+        <h3 id="h-asin">分 ASIN 清货进度（最终方案）</h3>
         <p class="op-note">灰色底条是当前库存，彩色是各渠道可清量，竖线是该 ASIN 的清货目标线。右侧是三平台清货率 → 加 B2B 后清货率。</p>
         <ul class="op-legend" aria-label="图例">
           <li><span class="op-sw" data-ch="0"></span>亚马逊</li>
@@ -109,7 +171,7 @@
     <div class="op-grid">
       <div class="op-card">
         <h3 id="h-econchart">每件广告费与每件毛利（近 30 天，全站点）</h3>
-        <p class="op-note">2026-09-23 至 10-22，来自油泵品线看板的领星结算数据。三款都已经是负毛利，B0HG9L16S7 每卖一件的广告费接近客单价的一半，靠加广告冲量会越清越亏。</p>
+        <p class="op-note">2026-09-23 至 10-22，来自油泵品线看板的领星结算数据（全站点合并，B0GY8SCGC3 的销量含美国以外站点，所以比上面的近 30 天销量高）。四款都已经是负毛利，B0HG9L16S7 每卖一件的广告费接近客单价的一半，靠加广告冲量会越清越亏。</p>
         <ul class="op-legend" aria-label="图例">
           <li><span class="op-sw" data-ch="0"></span>每件广告费</li>
           <li><span class="op-sw" data-ch="bad"></span>每件毛利（结算后）</li>
@@ -159,17 +221,17 @@
     <div class="op-grid">
       <div class="op-card">
         <h3 id="h-amzq">亚马逊月销量（2026 年 1–10 月）</h3>
-        <p class="op-note">B0GLXXSDXD 是 B0HG9L16S7 的同 SKU 老链接，3 月和 6 月月销过 2,000，说明这款产品在亚马逊有冲量空间。B0FW9V5S3W 从 1 月起持续下滑。</p>
+        <p class="op-note">B0GLXXSDXD 是 B0HG9L16S7 的同 SKU 老链接，3 月和 6 月月销过 2,000，说明这款产品在亚马逊有冲量空间。B0FW9V5S3W 从 1 月起持续下滑；B0GY8SCGC3 7–8 月上线冲了一波，9 月起明显回落。</p>
         <div class="op-chart dash-skeleton" id="c-amzq" data-draw="amzq" data-source="amazon_monthly"></div>
       </div>
       <div class="op-card">
         <h3 id="h-amzp">亚马逊月均成交价（美元）</h3>
-        <p class="op-note">销售额 ÷ 销量。三款都已经降到 $40–55，继续降价需要配合秒杀和站外 Deal。</p>
+        <p class="op-note">销售额 ÷ 销量。四款都已经降到 $40–55，继续降价需要配合秒杀和站外 Deal。</p>
         <div class="op-chart dash-skeleton" id="c-amzp" data-draw="amzp" data-source="amazon_asp"></div>
       </div>
       <div class="op-card">
         <h3 id="h-tktm">TikTok / TEMU 同款月销量（Ecarke 品牌）</h3>
-        <p class="op-note">RYBZ071H0A1 对应 B0HG9L16S7，RYBZ051H0A1 对应 B0GQYW1R46，RYBZ111H0A1 是 B0FW9V5S3W 的近似款。TikTok 是第二大渠道，TEMU 量最小。</p>
+        <p class="op-note">RYBZ071H0A1 对应 B0HG9L16S7，RYBZ051H0A1 对应 B0GQYW1R46，RYBZ111H0A1 是 B0GY8SCGC3 的同款（5 个适配器版），也接近 B0FW9V5S3W。TikTok 是第二大渠道；TEMU 整体量最小，但 RYBZ111H0A1 在 TEMU 卖得比 TikTok 好。</p>
         <div class="op-chart dash-skeleton" id="c-tktm" data-draw="tktm" data-source="tiktok_temu_monthly"></div>
       </div>
     </div>
@@ -178,7 +240,7 @@
   <section class="op-sec" aria-labelledby="h-table">
     <h2 id="h-table">分 ASIN 明细</h2>
     <div class="op-card">
-      <p class="op-note">近 30 天为 10/04–11/02。可售天数 = 库存 ÷ 近 30 天日均。三平台可清量为激进方案假设。</p>
+      <p class="op-note">近 30 天为 10/04–11/02。可售天数 = 库存 ÷ 近 30 天日均。三平台可清量为最终方案假设。</p>
       <div class="op-tablewrap">
         <table class="op-table" data-source="by_asin" data-row-key="asin">
           <thead><tr>
@@ -201,31 +263,32 @@
   </section>
 
   <section class="op-sec" aria-labelledby="h-do">
-    <h2 id="h-do">怎么做</h2>
+    <h2 id="h-do">3 个月执行节奏</h2>
     <div class="op-card">
       <ol class="op-steps">
-        <li><strong>亚马逊（主力）：</strong>HG9 定价 $39.99，FW9 定价 $34.99，GQY 定价 $44.99。报黑五（11/27）和网一（11/30）秒杀，加 coupon、站外 Deal。广告不要整体翻倍：HG9 的 CPA 已接近客单价的一半，只保留高转化词，省下的预算转给秒杀和站外 Deal，用价格换量。</li>
-        <li><strong>TikTok：</strong>用 Amazon MCF 直接从 FBA 发货，不用移库。定价 $49.99 左右，靠达人寄样、直播和 Flash Sale 拉量。这批货是 DIYTOOLIFZ 品牌，TikTok 店卖的是 Ecarke，需要单独建链接，并先确认 Ecarke 自己的库存，避免互相抢量。</li>
-        <li><strong>TEMU：</strong>从 FW9 和 GQY 移 300–500 件到海外仓或第三方仓，走半托管，报低价和秒杀。</li>
-        <li><strong>补足最后的缺口：</strong>12/15 复盘，没达标就启动 B2B、批发商或整批清算，重点处理 B0FW9V5S3W。</li>
+        <li><strong>W1–W2（11/3–11/16）：</strong>四款按最终定价改价：B0HG9L16S7 $44.99、B0FW9V5S3W $34.99、B0GQYW1R46 $44.99、B0GY8SCGC3 $34.19，各开 5% Coupon。砍掉 ACOS 70% 以上的广告词，B0HG9L16S7 的 TACOS 封顶 20%。开通 Amazon MCF，上 TikTok 链接（DIYTOOLIFZ 品牌单独建链，先确认 Ecarke 同款的库存），给达人寄样。B0FW9V5S3W、B0GQYW1R46、B0GY8SCGC3 各移一批货到海外仓，上 TEMU 半托管。同时找 2–3 家批发商询价。</li>
+        <li><strong>W3–W4（11/17–11/30）：</strong>黑五（11/27）和网一（11/30）报 BD/秒杀，Slickdeals 发帖。11/28 检查：累计清货 ≥13%，单周退款 ≤20%。不达标就先降 TikTok、TEMU 的价，不要加亚马逊广告。</li>
+        <li><strong>W5–W8（12/1–12/26）：</strong>12/7–12/18 圣诞 BD。B0HG9L16S7、B0FW9V5S3W 第一批批发出货。12/26 检查：累计 ≥45%。不达标就扩大批发量，不再追加零售投入。</li>
+        <li><strong>W9–W13（12/27–1/31）：</strong>新年清仓价，第二批批发。1/31 累计 ≥80%。剩下的 20% 回到正常价慢慢卖，或者给批发商报更低的价打包处理。</li>
       </ol>
+      <p class="op-note">两组成本数据对不上：运营方案里 B0HG9L16S7 的货本 + 头程是 $18.12，但领星结算毛利倒推出来的单件成本高得多。所以盈亏的绝对值要以财务成本为准。渠道排序不受影响，因为每件回款不含货本。</p>
     </div>
   </section>
 </div>
 
 <script>
 // 用户设定的目标与周期（常量）
-window.OP = { TARGET: 0.8, DAYS: 90, CHECKPOINTS: [{ month: '2026-11', rate: 0.25 }, { month: '2026-12', rate: 0.5 }, { month: '2027-01', rate: 0.8 }] };
+window.OP = { TARGET: 0.8, DAYS: 90, CHECKPOINTS: [{ month: '2026-11', rate: 0.13 }, { month: '2026-12', rate: 0.45 }, { month: '2027-01', rate: 0.8 }] };
 
 dash.calc('kpi', {
   title: '清货核心指标',
-  description: '3 个 ASIN 的库存合计、80% 目标、所需日均、三平台可清量和缺口（目标 80%，周期 90 天）。',
+  description: '4 个 ASIN 的库存合计、80% 目标、所需日均、三平台可清量和缺口（目标 80%，周期 90 天）。',
   inputs: ['core_inventory', 'clearance_scenarios'],
   fn: (core_inventory, clearance_scenarios) => {
     const sum = (rows, f) => rows.reduce((s, r) => s + f(r), 0);
     const inv = sum(core_inventory, (r) => Number(r.inventory));
     const q30 = sum(core_inventory, (r) => Number(r.qty_30d));
-    const plat = sum(clearance_scenarios, (r) => Number(r.amazon_aggressive) + Number(r.tiktok) + Number(r.temu));
+    const plat = sum(clearance_scenarios, (r) => Number(r.amazon) + Number(r.tiktok) + Number(r.temu));
     const b2b = sum(clearance_scenarios, (r) => Number(r.b2b));
     const target = inv * 0.8;
     return [{ total_inventory: inv, target_units: target, current_daily: q30 / 30, needed_daily: target / 90,
@@ -241,7 +304,7 @@ dash.calc('waterfall', {
   fn: (clearance_scenarios) => {
     const sum = (f) => clearance_scenarios.reduce((s, r) => s + Number(r[f]), 0);
     return [
-      { step: '亚马逊', units: sum('amazon_aggressive') },
+      { step: '亚马逊', units: sum('amazon') },
       { step: 'TikTok', units: sum('tiktok') },
       { step: 'TEMU', units: sum('temu') },
       { step: 'B2B/清算', units: sum('b2b') }
@@ -256,7 +319,7 @@ dash.calc('by_asin', {
   fn: (core_inventory, clearance_scenarios) => core_inventory.map((c) => {
     const s = clearance_scenarios.find((r) => r.asin === c.asin) || {};
     const inv = Number(c.inventory), q = Number(c.qty_30d);
-    const amazon = Number(s.amazon_aggressive), tiktok = Number(s.tiktok), temu = Number(s.temu), b2b = Number(s.b2b);
+    const amazon = Number(s.amazon), tiktok = Number(s.tiktok), temu = Number(s.temu), b2b = Number(s.b2b);
     const plat = amazon + tiktok + temu;
     return { asin: c.asin, name: c.name, inventory: inv, daily_30d: q / 30, asp_30d: Number(c.sales_30d) / q,
       days_supply: inv / (q / 30), target_units: inv * 0.8, amazon, tiktok, temu, b2b,
@@ -266,7 +329,7 @@ dash.calc('by_asin', {
 
 dash.calc('plan_cum', {
   title: '月度计划累计',
-  description: '每月各渠道计划清货量、当月合计、累计件数和累计清货率（÷ 3 个 ASIN 库存合计）。',
+  description: '每月各渠道计划清货量、当月合计、累计件数和累计清货率（÷ 4 个 ASIN 库存合计）。',
   inputs: ['monthly_plan', 'core_inventory'],
   fn: (monthly_plan, core_inventory) => {
     const inv = core_inventory.reduce((s, r) => s + Number(r.inventory), 0);
@@ -287,6 +350,58 @@ dash.calc('unit_econ', {
     const u = Number(r.units), s = Number(r.sales), ad = Number(r.ad_spend), gp = Number(r.gross_profit);
     return { asin: r.asin, units: u, aov: s / u, cpa: ad / Number(r.ad_orders), tacos: ad / s, margin: gp / s, ad_per_unit: ad / u, profit_per_unit: gp / u };
   })
+});
+
+dash.calc('channel_econ', {
+  title: '各渠道每件回款与盈亏',
+  description: '每个 ASIN 在每个渠道的计划件数、价格、每件回款（不含货本）、每件盈亏（减货本）和合计。费率常量见公式。',
+  inputs: ['channel_prices', 'cost_inputs'],
+  fn: (channel_prices, cost_inputs) => channel_prices.map((r) => {
+    const c = cost_inputs.find((x) => x.asin === r.asin);
+    const p = Number(r.price), rf = Number(c.refund_rate), u = Number(r.units);
+    let cash;
+    if (r.channel === '亚马逊') cash = p * (1 - 0.15 - rf - 0.02) - Number(c.fba_fee) - p * Number(r.tacos);
+    else if (r.channel === 'TikTok') cash = p * (1 - 0.08 - 0.20 - rf) - 10.5;
+    else if (r.channel === 'TEMU') cash = p * (1 - rf * 0.6) - 2 - 9;
+    else cash = p - 2;
+    const pnl = cash - Number(c.landed_cost) - (r.channel === '亚马逊' ? Number(c.storage_per_unit) : 0);
+    return { asin: r.asin, channel: r.channel, units: u, price: p, cash_per_unit: cash, pnl_per_unit: pnl, cash_total: cash * u, pnl_total: pnl * u };
+  })
+});
+
+dash.calc('scenario_compare', {
+  title: '三种做法对比',
+  description: '运营原方案、最终方案、最终方案悲观情况（零售完成六成、差额转批发）在 3 个月后的清货量、清货率、批发量、回款和盈亏。',
+  inputs: ['ops_plan', 'channel_econ', 'cost_inputs', 'core_inventory'],
+  fn: (ops_plan, channel_econ, cost_inputs, core_inventory) => {
+    const inv = core_inventory.reduce((s, r) => s + Number(r.inventory), 0);
+    const cost = (a) => cost_inputs.find((x) => x.asin === a);
+    let ou = 0, oc = 0, op = 0;
+    ops_plan.forEach((r) => {
+      const c = cost(r.asin), p = Number(r.price), u = Number(r.units);
+      const cash = p * (1 - 0.15 - Number(c.refund_rate) - 0.02) - Number(c.fba_fee) - p * Number(r.tacos);
+      ou += u; oc += cash * u; op += (cash - Number(c.landed_cost) - Number(c.storage_per_unit)) * u;
+    });
+    const sum = (rows, f) => rows.reduce((s, r) => s + r[f], 0);
+    const b2b = channel_econ.filter((r) => r.channel === '批发');
+    const fu = sum(channel_econ, 'units'), fb = sum(b2b, 'units');
+    let pu = 0, pc = 0, pp = 0, pb = 0;
+    core_inventory.forEach((ci) => {
+      const rows = channel_econ.filter((r) => r.asin === ci.asin);
+      let short = 0;
+      rows.filter((r) => r.channel !== '批发').forEach((r) => {
+        const u = Math.round(r.units * 0.6); short += r.units - u;
+        pu += u; pc += r.cash_per_unit * u; pp += r.pnl_per_unit * u;
+      });
+      const w = rows.find((r) => r.channel === '批发');
+      const wu = w.units + short; pu += wu; pb += wu; pc += w.cash_per_unit * wu; pp += w.pnl_per_unit * wu;
+    });
+    return [
+      { scenario: '运营原方案', units: ou, clear_rate: ou / inv, b2b_units: 0, cash: oc, pnl: op },
+      { scenario: '最终方案', units: fu, clear_rate: fu / inv, b2b_units: fb, cash: sum(channel_econ, 'cash_total'), pnl: sum(channel_econ, 'pnl_total') },
+      { scenario: '最终方案（悲观）', units: pu, clear_rate: pu / inv, b2b_units: pb, cash: pc, pnl: pp }
+    ];
+  }
 });
 
 dash.calc('amazon_asp', {
@@ -533,7 +648,7 @@ dash.draw('plan', (el) => {
 });
 
 // 亚马逊历史
-const AMZ_KEYS = ['B0HG9L16S7', 'B0FW9V5S3W', 'B0GQYW1R46', 'B0GLXXSDXD'];
+const AMZ_KEYS = ['B0HG9L16S7', 'B0FW9V5S3W', 'B0GQYW1R46', 'B0GY8SCGC3', 'B0GLXXSDXD'];
 const amzColor = (k) => k === 'B0GLXXSDXD' ? 'var(--cds-chart-muted)' : dash.colors[AMZ_KEYS.indexOf(k)];
 const amzLabel = (k) => k === 'B0GLXXSDXD' ? 'B0GLXX(老链接)' : k;
 dash.draw('amzq', (el) => {
@@ -599,6 +714,39 @@ dash.draw('econTable', (tb) => {
       const td = document.createElement('td'); td.textContent = fmt(d[f]);
       if ((f === 'margin' || f === 'profit_per_unit') && d[f] < 0) td.className = 'bad';
       if (f === 'tacos' && d[f] > 0.15) td.className = 'bad';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+});
+
+// 对比表与渠道表
+const OPmoney = (v) => (v < 0 ? '-$' : '$') + d3.format(',.0f')(Math.abs(v));
+const OPmoney2 = (v) => (v < 0 ? '-$' : '$') + d3.format(',.2f')(Math.abs(v));
+dash.draw('compareTable', (tb) => {
+  const r = dash.data('scenario_compare');
+  tb.replaceChildren();
+  if (r.status !== 'ok') return;
+  r.data.forEach((d) => {
+    const tr = document.createElement('tr');
+    [['scenario', String], ['units', OPF.int], ['clear_rate', OPF.pct], ['b2b_units', OPF.int], ['cash', OPmoney], ['pnl', OPmoney]].forEach(([f, fmt]) => {
+      const td = document.createElement('td'); td.textContent = fmt(d[f]);
+      if (f === 'clear_rate') td.className = d[f] >= OP.TARGET ? 'ok' : 'bad';
+      if (f === 'pnl') td.className = d[f] < 0 ? 'bad' : 'ok';
+      tr.appendChild(td);
+    });
+    tb.appendChild(tr);
+  });
+});
+dash.draw('chanTable', (tb) => {
+  const r = dash.data('channel_econ');
+  tb.replaceChildren();
+  if (r.status !== 'ok') return;
+  r.data.filter((d) => d.units > 0).forEach((d) => {
+    const tr = document.createElement('tr');
+    [['asin', String], ['channel', String], ['units', OPF.int], ['price', OPF.usd], ['cash_per_unit', OPmoney2], ['pnl_per_unit', OPmoney2]].forEach(([f, fmt]) => {
+      const td = document.createElement('td'); td.textContent = fmt(d[f]);
+      if (f === 'pnl_per_unit') td.className = d[f] < 0 ? 'bad' : 'ok';
       tr.appendChild(td);
     });
     tb.appendChild(tr);
