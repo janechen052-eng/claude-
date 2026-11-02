@@ -47,6 +47,17 @@
 .op-verdict strong { font-weight: var(--cds-font-weight-medium); }
 .op-chip { font-size: var(--cds-font-size-caption); border: 1px solid currentColor; border-radius: 999px; padding: 0 var(--cds-pad-sm); text-align: center; white-space: nowrap; }
 .op-chip.ok { color: var(--color-ok); } .op-chip.warn { color: var(--color-warn); } .op-chip.bad { color: var(--color-bad); }
+.op-prodgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: var(--cds-gap-md); }
+.op-prod { background: var(--color-panel); border: 1px solid var(--color-border-line); border-radius: var(--cds-radius); padding: var(--cds-pad-md); display: grid; grid-template-columns: 84px 1fr; gap: var(--cds-gap-md); align-items: start; min-width: 0; }
+.op-prod .pic { width: 84px; height: 84px; border-radius: var(--cds-radius); background: #fff; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 1px solid var(--color-border-line); }
+.op-prod .pic img { width: 100%; height: 100%; object-fit: contain; }
+.op-prod .pic span { font-size: var(--cds-font-size-caption); color: #6b6b6b; text-align: center; padding: 4px; }
+.op-prod .txt { display: grid; gap: 2px; min-width: 0; }
+.op-prod .nm { font-weight: var(--cds-font-weight-medium); font-size: var(--cds-font-size-body); }
+.op-prod .as { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); font-variant-numeric: tabular-nums; }
+.op-prod .full { font-size: var(--cds-font-size-caption); color: var(--color-fg-muted); line-height: 1.4; overflow-wrap: anywhere; }
+.op-prod .st { font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
+.op-thumb { width: 28px; height: 28px; object-fit: contain; background: #fff; border-radius: 4px; vertical-align: middle; margin-right: 6px; border: 1px solid var(--color-border-line); }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 .op-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
@@ -59,6 +70,11 @@
     <p class="op-take">4 个 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。运营原方案 3 个月只能清 <b data-draw="n" data-source="scenario_compare" data-where="scenario=%E8%BF%90%E8%90%A5%E5%8E%9F%E6%96%B9%E6%A1%88" data-field="clear_rate" data-fmt="pct">—</b>。不走批发，只靠亚马逊、TikTok、TEMU 零售，最终方案 3 个月能清到 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，离目标还差 <b data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</b> 件。按 1 月的速度，这部分大约到 2 月中旬补齐。</p>
     <p class="op-meta">清货期 2026-11-03 至 2027-01-31，共 <span data-draw="c" data-k="days">—</span> 天 · 库存为领星 11 月 1–2 日 HK11-US 店铺可用库存 · 各渠道可清量为测算假设</p>
   </header>
+
+  <section class="op-sec" aria-labelledby="h-prod">
+    <h2 id="h-prod">清货产品</h2>
+    <div class="op-prodgrid" data-draw="products" data-source="core_inventory"></div>
+  </section>
 
   <section class="op-tiles" aria-label="核心指标">
     <div class="op-tile">
@@ -273,6 +289,8 @@
     </div>
   </section>
 </div>
+
+<script src="images.js"></script>
 
 <script>
 // 用户设定的目标与周期（常量）
@@ -740,6 +758,25 @@ dash.draw('chanTable', (tb) => {
   });
 });
 
+// 产品卡片
+dash.draw('products', (el) => {
+  const r = dash.data('core_inventory');
+  el.replaceChildren();
+  if (r.status !== 'ok') { el.textContent = '—'; return; }
+  const imgs = window.OP_IMG || {};
+  r.data.forEach((d) => {
+    const card = document.createElement('div'); card.className = 'op-prod';
+    const pic = document.createElement('div'); pic.className = 'pic';
+    if (imgs[d.asin]) { const im = document.createElement('img'); im.src = imgs[d.asin]; im.alt = d.name; pic.appendChild(im); }
+    else { const s = document.createElement('span'); s.textContent = '暂无图片'; pic.appendChild(s); }
+    const txt = document.createElement('div'); txt.className = 'txt';
+    const mk = (cls, text) => { const e = document.createElement('div'); e.className = cls; e.textContent = text; return e; };
+    txt.append(mk('nm', d.name), mk('as', `${d.asin} · ${d.sku} · ${d.store}`), mk('full', d.product_name),
+      mk('st', `库存 ${OPF.int(Number(d.inventory))} 件 · 近 30 天卖 ${OPF.int(Number(d.qty_30d))} 件`));
+    card.append(pic, txt); el.appendChild(card);
+  });
+});
+
 // 明细表
 dash.draw('asinTable', (tb) => {
   const r = dash.data('by_asin');
@@ -750,6 +787,7 @@ dash.draw('asinTable', (tb) => {
     const tr = document.createElement('tr');
     cols.forEach(([f, fmt]) => {
       const td = document.createElement('td'); td.textContent = fmt(d[f]);
+      if (f === 'name' && window.OP_IMG && window.OP_IMG[d.asin]) { const im = document.createElement('img'); im.className = 'op-thumb'; im.src = window.OP_IMG[d.asin]; im.alt = ''; td.prepend(im); }
       if (f === 'platforms_rate') td.className = d[f] >= OP.TARGET ? 'ok' : 'bad';
       if (f === 'days_supply' && d[f] > 180) td.className = 'bad';
       tr.appendChild(td);
