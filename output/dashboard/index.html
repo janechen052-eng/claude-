@@ -144,6 +144,13 @@
       <div class="op-card">
         <h3 id="h-chan">每个渠道每件能收回多少</h3>
         <p class="op-note">亚马逊扣佣金、退款、推广、FBA 配送和广告（TACOS × 售价）；TikTok 扣平台和达人佣金、退款、MCF 发货费；TEMU 为供货价扣移库和海外仓发货费。TikTok、TEMU 的费率是估算，需要和平台、海外仓确认。</p>
+        <ul class="op-legend" aria-label="图例">
+          <li><span class="op-sw" data-ch="0"></span>亚马逊</li>
+          <li><span class="op-sw" data-ch="1"></span>TikTok</li>
+          <li><span class="op-sw" data-ch="2"></span>TEMU</li>
+          <li><span class="op-sw ref"></span>货本保本线（超过即盈利）</li>
+        </ul>
+        <div class="op-chart dash-skeleton" id="c-chan" data-draw="chanChart" data-source="channel_econ cost_inputs"></div>
         <div class="op-tablewrap">
           <table class="op-table" data-source="channel_econ" data-row-key="asin,channel">
             <thead><tr>
@@ -786,6 +793,45 @@ dash.draw('compareTable', (tb) => {
     tb.appendChild(tr);
   });
 });
+dash.draw('chanChart', (el) => {
+  const r = dash.data('channel_econ'), c = dash.data('cost_inputs');
+  if (r.status !== 'ok' || c.status !== 'ok') { OPfail(el, r.status === 'error' || c.status === 'error' ? 'error' : ''); return; }
+  el.classList.remove('dash-skeleton');
+  const CHN = ['亚马逊', 'TikTok', 'TEMU'];
+  const rows = r.data.filter((d) => d.units > 0);
+  const asins = Array.from(new Set(rows.map((d) => d.asin)));
+  const barH = 16, gap = 4, groupPad = 18, top = 4;
+  const groupH = (a) => rows.filter((d) => d.asin === a).length * (barH + gap) - gap;
+  const h = top + asins.reduce((s, a) => s + groupH(a) + groupPad, 0) + 22;
+  const { svg, w } = OPsvg(el, h);
+  const lw = d3.max(asins.map((a) => OPtextW(svg, a))) + 14;
+  const endW = OPtextW(svg, '$00.00（-$0.00）') + 10;
+  const maxV = d3.max(rows, (d) => d.cash_per_unit), maxL = d3.max(c.data, (d) => Number(d.landed_cost));
+  const x = d3.scaleLinear([0, Math.max(maxV, maxL) * 1.05], [lw, w - endW]).nice();
+  svg.append('g').attr('transform', `translate(0,${h - 22})`).call(d3.axisBottom(x).ticks(Math.max(2, Math.floor((w - lw - endW) / 70))).tickFormat(OPF.usd0).tickSize(-(h - 22 - top))).call(OPaxis).call((g) => g.select('.domain').remove());
+  const tip = OPtip(el);
+  let y = top;
+  asins.forEach((a) => {
+    const gr = rows.filter((d) => d.asin === a).sort((p, q) => CHN.indexOf(p.channel) - CHN.indexOf(q.channel));
+    const gh = groupH(a);
+    svg.append('text').attr('x', 0).attr('y', y + gh / 2).attr('dy', '0.32em').attr('fill', 'var(--color-fg)').style('font-size', 'var(--cds-font-size-caption)').text(a);
+    gr.forEach((d, i) => {
+      const by = y + i * (barH + gap), col = dash.colors[CHN.indexOf(d.channel)];
+      svg.append('rect').attr('x', x(0)).attr('y', by).attr('width', Math.max(1, x(d.cash_per_unit) - x(0))).attr('height', barH).attr('rx', 3).attr('fill', col)
+        .on('pointermove', (ev) => { const [px, py] = d3.pointer(ev, el); tip.show(px, py, `${a} · ${d.channel}`, [{ color: col, name: '每件回款', value: OPmoney2(d.cash_per_unit) }, { name: '每件盈亏', value: OPmoney2(d.pnl_per_unit) }, { name: '计划件数', value: OPF.int(d.units) }, { name: '合计盈亏', value: OPmoney(d.pnl_total) }]); })
+        .on('pointerleave', () => tip.hide());
+      const lab = svg.append('text').attr('x', x(d.cash_per_unit) + 6).attr('y', by + barH / 2).attr('dy', '0.32em').style('font-size', 'var(--cds-font-size-caption)').style('font-variant-numeric', 'tabular-nums');
+      lab.append('tspan').attr('fill', 'var(--color-fg)').text(OPmoney2(d.cash_per_unit));
+      lab.append('tspan').attr('fill', d.pnl_per_unit < 0 ? 'var(--color-bad)' : 'var(--color-ok)').text(`（${d.pnl_per_unit < 0 ? '' : '+'}${OPmoney2(d.pnl_per_unit)}）`);
+    });
+    const landed = Number((c.data.find((d) => d.asin === a) || {}).landed_cost);
+    if (isFinite(landed)) {
+      svg.append('line').attr('x1', x(landed)).attr('x2', x(landed)).attr('y1', y - 3).attr('y2', y + gh + 3).attr('stroke', 'var(--cds-chart-reference)').attr('stroke-width', 1.5).attr('stroke-dasharray', '4 3').attr('pointer-events', 'none');
+    }
+    y += gh + groupPad;
+  });
+});
+
 dash.draw('chanTable', (tb) => {
   const r = dash.data('channel_econ');
   tb.replaceChildren();
