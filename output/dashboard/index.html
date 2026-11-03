@@ -74,6 +74,7 @@
 .op-table tfoot td { font-weight: var(--cds-font-weight-medium); border-top: 1px solid var(--color-fg-muted); }
 .op-sum { display: flex; flex-wrap: wrap; gap: var(--cds-gap-xs) var(--cds-gap-lg); font-size: var(--cds-font-size-caption); font-variant-numeric: tabular-nums; }
 .op-sum b { font-weight: var(--cds-font-weight-medium); }
+.op [hidden], .op-tip[hidden] { display: none !important; }
 [data-dash-source-state=empty] { color: transparent; }
 [data-dash-source-state=refreshing] { opacity: .5; transition: opacity var(--cds-dur-slow); }
 .op-fail { display: flex; align-items: center; justify-content: center; gap: var(--cds-gap-xs); min-height: inherit; color: var(--color-fg-muted); font-size: var(--cds-font-size-caption); }
@@ -83,7 +84,7 @@
 <div class="op">
   <header class="op-head" id="top">
     <h1>油泵清货看板</h1>
-    <p class="op-take">4 个 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。运营原方案 3 个月只能清 <b data-draw="n" data-source="scenario_compare" data-where="scenario=%E8%BF%90%E8%90%A5%E5%8E%9F%E6%96%B9%E6%A1%88" data-field="clear_rate" data-fmt="pct">—</b>。不走批发，只靠亚马逊、TikTok、TEMU 零售，最终方案 3 个月能清到 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，离目标还差 <b data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</b> 件。按 1 月的速度，这部分大约到 2 月中旬补齐。</p>
+    <p class="op-take">4 个 ASIN 要在 1 月 31 日前清掉 <b data-draw="c" data-k="target">—</b> 的库存。运营原方案 3 个月只能清 <b data-draw="n" data-source="scenario_compare" data-where="scenario=%E8%BF%90%E8%90%A5%E5%8E%9F%E6%96%B9%E6%A1%88" data-field="clear_rate" data-fmt="pct">—</b>。不走批发，只靠亚马逊、TikTok、TEMU 零售，最终方案 3 个月能清到 <b data-draw="n" data-source="kpi" data-field="platforms_rate" data-fmt="pct">—</b>，离目标还差 <b data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int0">—</b> 件。按 1 月的速度，这部分大约到 2 月中旬补齐。</p>
     <p class="op-meta">清货期 2026-11-03 至 2027-01-31，共 <span data-draw="c" data-k="days">—</span> 天 · 库存为领星 11 月 1–2 日 HK11-US 店铺可用库存 · 各渠道可清量为测算假设</p>
   </header>
 
@@ -100,7 +101,7 @@
     </div>
     <div class="op-tile">
       <span class="lab">清货目标</span>
-      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="target_units" data-fmt="int">—</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="target_units" data-fmt="int0">—</span>
       <span class="sub">件 · 库存的 <span data-draw="c" data-k="target">—</span></span>
     </div>
     <div class="op-tile warn">
@@ -115,7 +116,7 @@
     </div>
     <div class="op-tile bad">
       <span class="lab">距目标缺口</span>
-      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int">—</span>
+      <span class="big dash-skeleton" data-draw="n" data-source="kpi" data-field="gap_units" data-fmt="int0">—</span>
       <span class="sub">件 · 按 1 月的速度约 2 月中旬补齐</span>
     </div>
   </section>
